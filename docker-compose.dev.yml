@@ -1,0 +1,56 @@
+version: "3.9"
+
+volumes:
+  app-data-dev:
+  redis-data-dev:
+  postgres-data-dev:
+  
+services:
+  app:
+    container_name: ${APP_NAME}-dev
+    build:
+      context: .
+      target: dev
+    command: npm run dev
+    env_file:
+      - .env.development
+    ports: 
+      - "${APP_PORT}:${APP_PORT}"
+    volumes:
+      - .:/app
+      - app-data-dev:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  postgres:
+    container_name: postgres-dev
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data-dev:/data
+      - ./src/config/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
