@@ -13,26 +13,114 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  username String  @id @db.VarChar(100)
-  password String  @db.VarChar(100)
-  name     String  @db.VarChar(100)
-  token    String? @db.VarChar(100)
+enum Role {
+  USER
+  ADMIN
+}
 
-  contacts Contact[]
+enum StatusUser {
+  PENDING_VERIFICATION
+  ACTIVE
+  BLOCKED
+}
+
+model User {
+  id              String     @id @default(uuid())
+  username        String     @unique @db.VarChar(100)
+  firstName       String     @db.VarChar(50)
+  lastName        String?    @db.VarChar(100)
+  email           String?    @db.VarChar(100)
+  password        String     @db.VarChar(100)
+  role            Role       @default(USER)
+  phone           String     @db.VarChar(20)
+  profilePictUrl  String?    @db.VarChar(255)
+  birdDate        DateTime   @db.Date
+  isEmailVerified Boolean    @default(false)
+  isPhoneVerified Boolean    @default(false)
+  status          StatusUser @default(PENDING_VERIFICATION)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+
+  emailVerifiedAt DateTime? @db.Timestamptz(3)
+  phoneVerifiedAt DateTime? @db.Timestamptz(3)
+
+  addresses Address[] // one user -> many addresses
 
   @@map("users")
 }
 
-model Contact {
-  id         String  @id @unique @default(uuid())
-  first_name String  @db.VarChar(100)
-  last_name  String? @db.VarChar(100)
-  email      String? @db.VarChar(100)
-  phone      String? @db.VarChar(20)
-  username   String  @db.VarChar(100)
+model Address {
+  id         String  @id @default(uuid())
+  street     String  @db.VarChar(255)
+  country    String  @db.VarChar(50)
+  postalCode String  @db.VarChar(10)
+  locations  Json
+  lat        Decimal @db.Decimal(10, 7)
+  lng        Decimal @db.Decimal(10, 7)
 
-  user User @relation(fields: [username], references: [username])
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
 
-  @@map("contacts")
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  subdistrictId String
+  subdistrict MasterSubdistrict @relation(fields: [subdistrictId], references: [id])
+  
+  @@map("addresses")
+}
+
+model MasterProvince { 
+  id String @id @default(uuid())
+  name String @db.VarChar(255)
+  code String @db.VarChar(10)
+  
+  masterCity MasterCity[] // one province -> many cities
+
+  @@map("master_provinces")
+}
+
+model MasterCity {
+  id String @id @default(uuid())
+  name String @db.VarChar(255)
+  code String @db.VarChar(10)
+  province Json
+
+  masterDistrict MasterDistrict[] // one city -> many districts
+
+  provinceId String
+  masterProvince MasterProvince @relation(fields: [provinceId], references: [id])
+  @@map("master_cities")
+}
+
+model MasterDistrict {
+  id String @id @default(uuid())
+  name String @db.VarChar(255)
+  code String @db.VarChar(10)
+  province Json
+  city Json
+
+  masterSubdistricts MasterSubdistrict[] // one district -> many subdistricts
+
+  cityId String
+  masterCity MasterCity @relation(fields: [cityId], references: [id])
+  
+  @@map("master_districts")
+}
+
+model MasterSubdistrict {
+  id String @id @default(uuid())
+  name String @db.VarChar(255)
+  code String @db.VarChar(10)
+  province Json
+  city Json
+  district Json
+
+  addresses Address[] // one subdictricts -> many addresses
+
+  districtId String
+  masterDistrict MasterDistrict @relation(fields: [districtId], references: [id])
+  
+  @@map("master_subdistricts")
 }
