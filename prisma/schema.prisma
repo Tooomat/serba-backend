@@ -29,12 +29,12 @@ model User {
   username        String     @unique @db.VarChar(100)
   firstName       String     @db.VarChar(50)
   lastName        String?    @db.VarChar(100)
-  email           String?    @db.VarChar(100)
+  email           String     @unique @db.VarChar(100)
   password        String     @db.VarChar(100)
   role            Role       @default(USER)
   phone           String     @db.VarChar(20)
   profilePictUrl  String?    @db.VarChar(255)
-  birdDate        DateTime   @db.Date
+  birthDate       DateTime   @db.Date
   isEmailVerified Boolean    @default(false)
   isPhoneVerified Boolean    @default(false)
   status          StatusUser @default(PENDING_VERIFICATION)
@@ -66,61 +66,62 @@ model Address {
   user   User   @relation(fields: [userId], references: [id])
 
   subdistrictId String
-  subdistrict MasterSubdistrict @relation(fields: [subdistrictId], references: [id])
-  
+  subdistrict   MasterSubdistrict @relation(fields: [subdistrictId], references: [id])
+
   @@map("addresses")
 }
 
-model MasterProvince { 
-  id String @id @default(uuid())
+model MasterProvince {
+  id   String @id @default(uuid())
   name String @db.VarChar(255)
   code String @db.VarChar(10)
-  
+
   masterCity MasterCity[] // one province -> many cities
 
   @@map("master_provinces")
 }
 
 model MasterCity {
-  id String @id @default(uuid())
-  name String @db.VarChar(255)
-  code String @db.VarChar(10)
+  id       String @id @default(uuid())
+  name     String @db.VarChar(255)
+  code     String @db.VarChar(10)
   province Json
 
   masterDistrict MasterDistrict[] // one city -> many districts
 
-  provinceId String
+  provinceId     String
   masterProvince MasterProvince @relation(fields: [provinceId], references: [id])
+
   @@map("master_cities")
 }
 
 model MasterDistrict {
-  id String @id @default(uuid())
-  name String @db.VarChar(255)
-  code String @db.VarChar(10)
+  id       String @id @default(uuid())
+  name     String @db.VarChar(255)
+  code     String @db.VarChar(10)
   province Json
-  city Json
+  city     Json
 
   masterSubdistricts MasterSubdistrict[] // one district -> many subdistricts
 
-  cityId String
+  cityId     String
   masterCity MasterCity @relation(fields: [cityId], references: [id])
-  
+
   @@map("master_districts")
 }
 
 model MasterSubdistrict {
-  id String @id @default(uuid())
-  name String @db.VarChar(255)
-  code String @db.VarChar(10)
+  id       String @id @default(uuid())
+  name     String @db.VarChar(255)
+  code     String @db.VarChar(10)
   province Json
-  city Json
+  city     Json
   district Json
 
   addresses Address[] // one subdictricts -> many addresses
 
-  districtId String
+  districtId     String
   masterDistrict MasterDistrict @relation(fields: [districtId], references: [id])
-  
+
   @@map("master_subdistricts")
 }

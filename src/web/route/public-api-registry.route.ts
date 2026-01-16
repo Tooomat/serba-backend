@@ -1,7 +1,9 @@
 import express from "express"
-import { ExampleController } from "../../controller/example.controller"
+import { AuthController } from "../../controller/auth.controller"
 
 export const publicRouter = express.Router()
 
 // router tanpa/tidak perlu login
-publicRouter.post("/api/example", ExampleController.controller)
+
+// AUTH 
+publicRouter.post("/api/auth/register", AuthController.register)

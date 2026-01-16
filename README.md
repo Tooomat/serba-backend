@@ -9,47 +9,119 @@
 - Test : Babel, Jest, dan supertest
 
 # STEPS TO RUN LOCALLY
+1. Clone Repository
 
 ```
 git clone https://github.com/Tooomat/node-ts-rest-api-template.git
 ```
 
-install dependencies:
+2. install dependencies:
 
 ```
 npm install
 ```
+
+3. Configure Environment Variables
+
+```
+cp .env.example .env.development
+
+```
 change .env value and db url in .env 
 
-run prisma db migration with:
+4. Run Prisma Migration (Local DB)
 
 ```
 npx prisma migrate dev
+
+or with npm:
+
+npm run prisma:migrate:dev
+
+```
+
+generate schema
+```
+npx prisma generate
+
+or with npm:
+
+npm run prisma:generate
+
 ```
 
 # Running the app with DOCKER
-- DEVELOPMENT
+- *DEVELOPMENT*
 ```
 docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build
 
 ```
-or
+or simply:
+
 ```bash
 docker compose -f docker-compose.dev.yml up -d --build
 
 ```
 
-- TEST
+or with npm:
 ```
-docker compose -f docker-compose.test.yml up --abort-on-container-exit
+npm run dev:docker:up
+```
+
+ -> migrate prisma to docker (DEV)
+```
+docker exec -it app-dev npx prisma migrate dev
 
 ```
-- PRODUCTION
+
+for delete use npm down:
 ```
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+npm run dev:docker:down
+```
+
+`! drop data` with npm down + volume:
+```
+npm run dev:docker:down:volume
+```
+
+- *TEST (JEST + PRISMA)*
+```
+docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit
 
 ```
-or
+    This will:
+    - Start test database & Redis
+    - Run Prisma migration
+    - Execute Jest tests
+    - Stop containers automatically
+
+or with npm:
+```
+npm run test:docker:up
+```
+
+for delete volume use npm down volume:
+```
+npm run test:docker:down:volume
+```
+
+- *PRODUCTION - BUILD & RUN (Docker)*
+1. Build image
+```
+docker build -t serba-backend:latest .
+```
+
+2. Run container
+```
+docker run -d --name serba-backend --env-file .env.production -p 8080:8080 serba-backend:latest
+```
+
+- *PRODUCTION - VIA DOCKER COMPOSE (SERVER)*
+```
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+
+```
+or simply:
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 
@@ -57,25 +129,26 @@ docker compose -f docker-compose.prod.yml up -d
 
 # Running the app without DOCKER (YOU HAVE TO CHANGE ENV FILE)
 
-By Default, to run the app with hot-reload simply run
+1. Development (Hot Reload)
 
 ```
 npm run dev
 ```
 
-If you want to start the build version, run it with :
+2. Production Build
 
 ```
+npm run build
 npm run start
 ```
 
-# run test file
+3. test file
 ```
 npm run test
 ```
 
-# Creating new feature 
-- Create your first migration to set up the database tables:
+# Creating new feature (LOCAL)
+1. Initialize Database (First Time Only)
 ```
 npx prisma migrate dev --name init
 
@@ -83,7 +156,7 @@ npx prisma migrate dev --name init
 npx prisma generate
 ```
 
-- Create a new schema (if needed) on prisma/schema.prisma
+- Update Prisma Schema
 migrate schema with command:
 ```
 npx prisma migrate dev
