@@ -6,7 +6,7 @@ volumes:
   
 services:
   app:
-    container_name: ${APP_NAME}-prod
+    container_name: app-prod
     build:
       context: .
       target: prod
