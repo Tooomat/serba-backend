@@ -145,6 +145,10 @@ npm run start
 3. test file
 ```
 npm run test
+
+or with spesifik file:
+
+test/auth.login.test.ts
 ```
 
 # Creating new feature (LOCAL)

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import path from 'path'
+import type { StringValue } from "ms"
 
 const NODE_ENV = process.env.NODE_ENV || ""
 
@@ -27,6 +28,7 @@ export interface EnvConfig {
 
   JWT_REFRESH_SECRET: string
   JWT_REFRESH_EXPIRE: string
+
   JWT_ACCESS_SECRET: string
   JWT_ACCESS_EXPIRE: string
 
@@ -60,16 +62,11 @@ export const config: EnvConfig = {
   DB_PASSWORD: process.env.DB_PASSWORD || "",
   DB_NAME: required("DB_NAME"),
 
-  JWT_REFRESH_SECRET: 
-    NODE_ENV === 'production'
-      ? required('JWT_REFRESH_SECRET')
-      : process.env.JWT_REFRESH_SECRET || 'dev-secret',
-  JWT_REFRESH_EXPIRE: process.env.JWT_EXPIRE || '7d',
-  JWT_ACCESS_SECRET: 
-    NODE_ENV === 'production'
-      ? required('JWT_ACCESS_SECRET')
-      : process.env.JWT_ACCESS_SECRET || 'dev-secret',
-  JWT_ACCESS_EXPIRE: process.env.JWT_EXPIRE || '1h',
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET!,
+  JWT_REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE as StringValue,
+  
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET!,
+  JWT_ACCESS_EXPIRE: process.env.JWT_ACCESS_EXPIRE as StringValue,
 
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
 

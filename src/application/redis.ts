@@ -7,3 +7,7 @@ export const redis = new Redis({
     password: config.REDIS_PASSWORD,
     db: config.REDIS_DB
 })
+
+export async function saveRefreshToken(id: string, jti: string, token: string, ttlSeconds: number) {
+    return redis.set(`refresh:${id}:${jti}`, token, "EX", ttlSeconds)
+}
