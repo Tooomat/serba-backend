@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { registerRequest, registerResponse } from "../model/user.model";
+import { loginRequest, registerRequest } from "../model/auth.model";
 import { AuthService } from "../service/auth.service";
 import { success_handler } from "../web/http/web-response.http";
 
@@ -11,6 +11,18 @@ export class AuthController {
             const result = await AuthService.register(request)
 
             success_handler(res, "Registration successful", result, 201)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    static async login(req: Request, res: Response, next: NextFunction) {
+        try {
+            const request: loginRequest = req.body as loginRequest
+
+            const result = await AuthService.login(request, res)
+
+            success_handler(res, "login successful", result, 200)
         } catch (e) {
             next(e)
         }

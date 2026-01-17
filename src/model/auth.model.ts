@@ -2,6 +2,7 @@ import { UUID } from "crypto"
 import { StatusUser, User } from "../generated/prisma/client"
 import { UUIDTypes } from "uuid"
 
+// ======================== REGISTER =========================
 export type  registerRequest = {
     username: string
     email: string
@@ -43,4 +44,14 @@ export function toRegisterResponse(user: User) {
         status: user.status,
         createdAt: user.createdAt
     }
+}
+
+// ======================== LOGIN =========================
+export type loginRequest = {
+    usernameOrEmail: string
+    password: string
+}
+
+export type loginResponse = {
+    accessToken: string
 }

@@ -50,7 +50,17 @@ export class AuthValidation {
                 (val) => /^\+62\d{9,12}$/.test(val),
                 { message: "Phone number must have 9-12 digits after +62" }
             ),
-    })  
+    }) 
+
+    static readonly LOGINSCHEMA = z.object({
+        usernameOrEmail: z
+            .string()
+            .max(100),
+        password: z
+            .string()
+            .max(100),
+    })
 }
 
 export type RegisterRequest = z.infer<typeof AuthValidation.REGISTERSCHEMA>
+export type LoginRequest = z.infer<typeof AuthValidation.LOGINSCHEMA>
