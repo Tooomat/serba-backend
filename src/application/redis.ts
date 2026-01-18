@@ -11,3 +11,11 @@ export const redis = new Redis({
 export async function saveRefreshToken(id: string, jti: string, token: string, ttlSeconds: number) {
     return redis.set(`refresh:${id}:${jti}`, token, "EX", ttlSeconds)
 }
+
+export async function getRefreshToken(id: string, jti: string) {
+    return redis.get(`refresh:${id}:${jti}`)
+}
+
+export async function deleteRefreshToken(id: string, jti: string) {
+    return redis.del(`refresh${id}:${jti}`)
+}

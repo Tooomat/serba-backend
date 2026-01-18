@@ -27,4 +27,14 @@ export class AuthController {
             next(e)
         }
     }
+
+    static async renewToken(req: Request, res: Response, next: NextFunction) {
+        try {
+            const result = await AuthService.renewToken(req)
+
+            success_handler(res, "Successful generate new token", result, 200)
+        } catch (e) {
+            next(e)
+        }
+    }
 }

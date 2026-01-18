@@ -11,14 +11,11 @@
     "dev:docker:up": "docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build",
     "dev:docker:down": "docker compose --env-file .env.development -f docker-compose.dev.yml down",
     "dev:docker:down:volume": "docker compose --env-file .env.development -f docker-compose.dev.yml down -v",
-
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "test:docker:up": "docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit",
     "test:docker:down:volume": "docker compose --env-file .env.test -f docker-compose.test.yml down -v",
-    
     "build": "tsc",
     "start": "cross-env NODE_ENV=production node dist/index.ts",
-    
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test -- prisma migrate deploy",
@@ -35,8 +32,15 @@
       "**/test/**/*.spec.ts"
     ],
     "testEnvironment": "node",
-    "roots": ["<rootDir>/test"],
-    "moduleFileExtensions": ["ts", "js", "json", "node"],
+    "roots": [
+      "<rootDir>/test"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json",
+      "node"
+    ],
     "verbose": true,
     "detectOpenHandles": true,
     "forceExit": true,
@@ -49,6 +53,7 @@
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "ioredis": "^5.9.1",
@@ -63,6 +68,7 @@
     "@babel/preset-typescript": "^7.28.5",
     "@jest/globals": "^30.2.0",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
