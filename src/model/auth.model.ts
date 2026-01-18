@@ -55,3 +55,8 @@ export type loginRequest = {
 export type loginResponse = {
     accessToken: string
 }
+
+// ======================== RENEW TOKEN =========================
+export type renewTokenResponse = {
+    newAccessToken: string
+}

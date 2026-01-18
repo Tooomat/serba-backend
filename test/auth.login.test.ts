@@ -65,6 +65,7 @@ describe("POST /api/auth/login", () => {
     it("should login successfully and return access token + set refresh cookie", async () => {
         const res = await supertest(server.webApp)
             .post("/api/auth/login")
+            .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "loginuser",
                 password: "Password123!"
@@ -84,6 +85,7 @@ describe("POST /api/auth/login", () => {
     it("should reject login with wrong password", async () => {
         const res = await supertest(server.webApp)
             .post("/api/auth/login")
+            .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "loginuser",
                 password: "WrongPassword"
@@ -97,6 +99,7 @@ describe("POST /api/auth/login", () => {
     it("should reject login if user not found", async () => {
         const res = await supertest(server.webApp)
             .post("/api/auth/login")
+            .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "unknown",
                 password: "Password123!"
@@ -110,6 +113,7 @@ describe("POST /api/auth/login", () => {
     it("should reject login for blocked user", async () => {
         const res = await supertest(server.webApp)
             .post("/api/auth/login")
+            .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "blockeduser",
                 password: "Password123!"

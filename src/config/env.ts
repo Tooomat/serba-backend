@@ -34,6 +34,11 @@ export interface EnvConfig {
 
   LOG_LEVEL: string
 
+  HTTPONLY_COOKIES: boolean
+  SECURE_COOKIES: boolean
+  SAMESITE_COOKIES: boolean | "lax" | "strict" | "none" | undefined
+  PATH_COOKIES: string
+
   CORS_ORIGIN: string
 
   REDIS_HOST: string
@@ -50,6 +55,19 @@ function required(key: string): string {
   return value
 }
 
+function parseSameSite(value: string | undefined): "lax" | "strict" | "none" {
+  const normalized = value?.toLowerCase()
+  if (normalized === "lax" || normalized === "strict" || normalized === "none") {
+    return normalized
+  }
+  return "strict"
+}
+
+function parseBoolean(value: string | undefined, defaultValue: boolean = false): boolean {
+  if (!value) return defaultValue
+  return value.toLowerCase() === 'true' || value === '1'
+}
+
 export const config: EnvConfig = {
   NODE_ENV: NODE_ENV as EnvConfig['NODE_ENV'],
   APP_PORT: Number(process.env.APP_PORT || 3000),
@@ -62,13 +80,24 @@ export const config: EnvConfig = {
   DB_PASSWORD: process.env.DB_PASSWORD || "",
   DB_NAME: required("DB_NAME"),
 
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET!,
-  JWT_REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE as StringValue,
+  JWT_REFRESH_SECRET: 
+    NODE_ENV === 'production'
+      ? required('JWT_REFRESH_SECRET')
+      : process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret',
+  JWT_REFRESH_EXPIRE: (process.env.JWT_REFRESH_EXPIRE || '7d') as StringValue,
   
-  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET!,
-  JWT_ACCESS_EXPIRE: process.env.JWT_ACCESS_EXPIRE as StringValue,
+  JWT_ACCESS_SECRET: 
+    NODE_ENV === 'production'
+      ? required('JWT_ACCESS_SECRET')
+      : process.env.JWT_ACCESS_SECRET || 'dev-access-secret',
+  JWT_ACCESS_EXPIRE: (process.env.JWT_ACCESS_EXPIRE || '1d') as StringValue,
 
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+
+  HTTPONLY_COOKIES: parseBoolean(process.env.HTTPONLY_COOKIES),
+  SECURE_COOKIES: parseBoolean(process.env.SECURE_COOKIES),
+  SAMESITE_COOKIES: parseSameSite(process.env.SAMESITE_COOKIES),
+  PATH_COOKIES: process.env.PATH_COOKIES || '/',
 
   CORS_ORIGIN: process.env.CORS_ORIGIN || "",
 

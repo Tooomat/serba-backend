@@ -5,15 +5,19 @@ import { Role } from "../generated/prisma/enums"
 import { ResponseError } from "../error/service-response.error"
 import { randomUUID } from "crypto"
 
-export type jwtPayload = {
+export type accessTokenPayload = {
     sub: string
     username: string
     role: Role
+}
+
+export type refreshTokenPayload = {
+    sub: string
     jti: string
 }
 
 export class JWT {
-    static generateAccessToken(payload: Omit<jwtPayload, "jti">) {
+    static generateAccessToken(payload: accessTokenPayload) {
         const options: SignOptions = {
             algorithm: "HS256",
             expiresIn: config.JWT_ACCESS_EXPIRE as StringValue,
@@ -39,11 +43,11 @@ export class JWT {
         return { token, jti }
     }
 
-    static verifyAccessToken(token: string): jwtPayload {
+    static verifyAccessToken(token: string): accessTokenPayload {
         try {
             const decode = jwt.verify(token, config.JWT_ACCESS_SECRET, {
                 algorithms: ["HS256"]
-            }) as jwtPayload
+            }) as accessTokenPayload
 
             return decode 
         } catch (e) {
@@ -57,11 +61,11 @@ export class JWT {
         }
     }
 
-    static verifyRefreshToken(token: string): jwtPayload {
+    static verifyRefreshToken(token: string): refreshTokenPayload  {
         try {
             const decode = jwt.verify(token, config.JWT_REFRESH_SECRET, {
                 algorithms: ["HS256"]
-            }) as jwtPayload
+            }) as refreshTokenPayload 
 
             return decode 
         } catch (e) {
