@@ -7,7 +7,7 @@ import { accessTokenPayload, JWT } from "../utils/jwt.utils";
 import { AuthValidation } from "../validation/auth.validation";
 import { Validation } from "../validation/validation";
 import bcrypt from "bcrypt";
-import { getRefreshToken, saveRefreshToken } from "../application/redis";
+import { blacklistAccessToken, deleteRefreshToken, getRefreshToken, saveRefreshToken } from "../application/redis";
 
 export class AuthService {
     static async register(req: model.registerRequest): Promise<model.registerResponse> {
@@ -83,7 +83,7 @@ export class AuthService {
         const { token: refreshToken, jti } = JWT.generateRefreshToken({ sub: user.id })
 
         // save refresh token to redis
-        saveRefreshToken(
+        await saveRefreshToken(
             user.id, 
             jti, 
             refreshToken, 
@@ -143,5 +143,24 @@ export class AuthService {
         return {
             newAccessToken: newAccessToken
         }
+    }
+
+    static async logout(req: Request, res: Response, accessToken: string, exp: number): Promise<void> {
+        const refreshToken = req.cookies.refresh_token
+        if (!refreshToken) {
+            throw new ResponseError(401, "Missing refresh token")
+        }
+
+        const payload = JWT.verifyRefreshToken(refreshToken)
+        await blacklistAccessToken(accessToken, exp)
+        await deleteRefreshToken(payload.sub, payload.jti)
+
+        res.clearCookie("refresh_token", {
+                httpOnly: config.HTTPONLY_COOKIES,
+                secure: config.SECURE_COOKIES, // localhost
+                sameSite: config.SAMESITE_COOKIES,
+                path: config.PATH_COOKIES, // only send to
+            }
+        )
     }
 }

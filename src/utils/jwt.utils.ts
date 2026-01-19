@@ -78,5 +78,14 @@ export class JWT {
             throw e;
         }
     }
-}
+
+    static getExp(token: string): number | null {
+        const decoded = jwt.decode(token)
+
+        if (!decoded || typeof decoded !== "object") return null
+
+        return "exp" in decoded ? decoded.exp as number : null
+    }
+
+ }
 
