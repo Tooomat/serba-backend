@@ -1,21 +1,58 @@
 {
-  "name": "ts-rest-api-template",
+  "name": "serba",
   "version": "1.0.0",
   "description": "- Language: Typescript\r - ORM : Prisma\r - Database : MySQL\r - Validation : Zod\r - HTTP Framework : Express\r - Logging : Winston\r - Test : Babel, Jest, dan supertest",
   "main": "src/index.ts",
   "directories": {
     "test": "test"
   },
-  "scripts": {
-    "test": "cross-env NODE_ENV=test jest",
+    "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev:docker:up": "docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build",
+    "dev:docker:down": "docker compose --env-file .env.development -f docker-compose.dev.yml down",
+    "dev:docker:down:volume": "docker compose --env-file .env.development -f docker-compose.dev.yml down -v",
+   
+    "test": "dotenv -e .env.test cross-env NODE_ENV=test jest --runInBand",
+    "test:docker:up": "docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit",
+    "test:docker:down:volume": "docker compose --env-file .env.test -f docker-compose.test.yml down -v",
+    
     "build": "tsc",
-    "start": "cross-env NODE_ENV=production node dist/index.ts"
+    "start": "dotenv -e .env.production cross-env NODE_ENV=production node dist/index.ts",
+    
+    "prisma:generate": "prisma generate", 
+    "prisma:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
+    "prisma:migrate:test": "dotenv -e .env.test -- prisma migrate deploy",
+    "prisma:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
+
+    "prisma:seed:dev": "dotenv -e .env.development -- ts-node prisma/seeds/index.seeds.ts",
+    "prisma:seed:test": "dotenv -e .env.test -- ts-node prisma/seeds/index.seeds.ts",
+    "prisma:seed:prod": "dotenv -e .env.production -- node dist/prisma/seeds/index.seeds.ts",
+
+    "prisma:studio:dev": "dotenv -e .env.development -- prisma studio",
+    "prisma:studio:test": "dotenv -e .env.test -- prisma studio --port 5556"
   },
   "jest": {
     "transform": {
       "^.+\\.[t|j]sx?$": "babel-jest"
-    }
+    },
+    "testMatch": [
+      "**/test/**/*.test.ts",
+      "**/test/**/*.spec.ts"
+    ],
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/test"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json",
+      "node"
+    ],
+    "verbose": true,
+    "detectOpenHandles": true,
+    "forceExit": true,
+    "testTimeout": 30000
   },
   "author": "Hadi Dwi Ardiansyah",
   "license": "ISC",
@@ -24,9 +61,11 @@
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "ioredis": "^5.9.1",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
     "uuid": "^13.0.0",
     "winston": "^3.19.0",
@@ -37,12 +76,15 @@
     "@babel/preset-typescript": "^7.28.5",
     "@jest/globals": "^30.2.0",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.6",
     "@types/supertest": "^6.0.3",
     "babel-jest": "^30.2.0",
     "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "jest": "^30.2.0",
     "prisma": "^7.2.0",
     "supertest": "^7.1.4",

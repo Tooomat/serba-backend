@@ -1,10 +1,9 @@
 import express from "express"
-import { ExampleController } from "../../controller/example.controller"
-
+import { AuthMiddleware } from "../middleware/auth.middleware"
+import { AuthController } from "../../controller/auth.controller"
 export const privateRouter = express.Router()
 
-// privateRouter.use(authMiddleware)
+privateRouter.use(AuthMiddleware.checkAuthorization)
 
-privateRouter.post("/", ExampleController.controller)
-// userPrivateRouter.get("/", UserController.getMe)
-// userPrivateRouter.post("/logout", UserController.logout)
+// auth
+privateRouter.post("/api/auth/logout", AuthController.logout)

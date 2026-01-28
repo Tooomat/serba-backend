@@ -1,15 +1,23 @@
+version: "3.9"
+
+volumes:
+  postgres-data-test:
+  redis-data-test:
+
 services:
   postgres:
     image: postgres:16
     container_name: postgres-test
     environment:
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: test_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: test
     ports:
       - "5433:5432"
+    volumes:
+      - postgres-data-test:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test -d test_db"]
+      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -20,14 +28,14 @@ services:
     ports:
       - "6380:6379"
     command: redis-server --save "" --appendonly no
-
-  app:
-    image: node:20-alpine
-    container_name: app-test
-    working_dir: /app
     volumes:
-      - .:/app
-    command: npm run test
+      - redis-data-test:/data
+
+  app-test:
+    container_name: app-test
+    build:
+      context: .
+      target: test
     env_file:
       - .env.test
     depends_on:

@@ -1,102 +1,264 @@
-# Teach stack
-- Language: Typescript
-- ORM : Prisma
-- Database : MySQL
-- Cache : Redis
-- Validation : Zod
-- HTTP Framework : Express
-- Logging : Winston
-- Test : Babel, Jest, dan supertest
+# Node.js TypeScript REST API Template
 
-# STEPS TO RUN LOCALLY
+Template backend REST API berbasis **Node.js + TypeScript** dengan arsitektur clean (controller–service–model), siap untuk **development, testing, dan production** menggunakan **Docker**.
 
-```
+---
+
+## Tech Stack
+
+* **Language**: TypeScript
+* **HTTP Framework**: Express
+* **ORM**: Prisma
+* **Database**: Postgres
+* **Cache**: Redis
+* **Validation**: Zod
+* **Logging**: Winston
+* **Testing**: Jest, Babel, Supertest
+
+---
+
+## Prerequisites
+
+Pastikan tools berikut sudah terinstall:
+
+* Node.js **v18+**
+* Docker & Docker Compose
+* Postgres (jika tidak pakai Docker)
+* Redis (jika tidak pakai Docker)
+
+---
+
+## Setup & Run (LOCAL)
+
+### 1. Clone Repository
+
+```bash
 git clone https://github.com/Tooomat/node-ts-rest-api-template.git
+cd node-ts-rest-api-template
 ```
 
-install dependencies:
+---
 
-```
+### 2. Install Dependencies
+
+```bash
 npm install
 ```
-change .env value and db url in .env 
 
-run prisma db migration with:
+---
 
+### 3. Setup Environment Variables
+
+Salin file environment contoh:
+
+```bash
+cp .env.example .env.development
+cp .env.example .env.development.docker
+cp .env.example .env.test
+cp .env.example .env.production
 ```
+
+Lalu sesuaikan isi `.env` terutama:
+
+* `DATABASE_URL`
+* `DB_*`
+* `REDIS_*`
+* `JWT_*`
+
+---
+
+### 4. Prisma Migration (Local Database)
+
+```bash
 npx prisma migrate dev
+npx prisma generate
 ```
+ 
+Atau via npm script:
 
-# Running the app with DOCKER
-- DEVELOPMENT
-```
-docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build
-
-```
-or
 ```bash
-docker compose -f docker-compose.dev.yml up -d --build
-
+npm run prisma:migrate:dev
+npm run prisma:generate:dev
 ```
 
-- TEST
-```
-docker compose -f docker-compose.test.yml up --abort-on-container-exit
+---
 
-```
-- PRODUCTION
-```
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+### 5. Run App (Local)
 
-```
-or
+#### Development (Hot Reload)
+
 ```bash
-docker compose -f docker-compose.prod.yml up -d
-
-```
-
-# Running the app without DOCKER (YOU HAVE TO CHANGE ENV FILE)
-
-By Default, to run the app with hot-reload simply run
-
-```
 npm run dev
 ```
 
-If you want to start the build version, run it with :
+### Testing
 
-```
-npm run start
-```
-
-# run test file
-```
+```bash
 npm run test
 ```
 
-# Creating new feature 
-- Create your first migration to set up the database tables:
-```
-npx prisma migrate dev --name init
+Test file tertentu:
 
-
-npx prisma generate
+```bash
+npm run test -- test/auth.login.test.ts
 ```
 
-- Create a new schema (if needed) on prisma/schema.prisma
-migrate schema with command:
+#### Production (Tanpa Docker)
+
+```bash
+npm run build
+npm run start
 ```
+
+---
+
+## Running with DOCKER
+
+- DEVELOPMENT
+
+```bash
+docker compose --env-file .env.development.docker -f docker-compose.dev.yml up -d --build 
+```
+
+atau simple:
+```bash
+docker compose -f docker-compose.dev.yml up -d --build 
+
+```
+
+Atau via npm:
+```bash
+npm run dev:docker:up
+```
+
+#### Prisma migrate (DEV Docker)
+
+```bash
+docker exec -it app-dev npx prisma migrate dev
+```
+
+#### Prisma seeder Dev
+
+```bash
+docker exec app-dev npm run prisma:seed:dev
+
+```
+
+#### Stop & Remove Container
+
+```bash
+npm run dev:docker:down
+```
+
+⚠️ **Hapus data + volume**:
+
+```bash
+npm run dev:docker:down:volume
+```
+
+---
+
+- TESTING (Jest + Prisma + Docker)
+
+```bash
+docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit
+```
+
+Proses ini akan:
+
+* Menjalankan Postgres & Redis test
+* Menjalankan Prisma migration
+* Menjalankan Jest test
+* Otomatis stop container
+
+Via npm:
+
+```bash
+npm run test:docker:up
+```
+
+---
+
+- PRODUCTION (Docker)
+
+#### Build Image
+
+```bash
+docker build -t serba-backend:latest .
+```
+
+#### Run Container
+
+```bash
+docker run -d --name serba-backend --env-file .env.production -p 8080:8080 serba-backend:latest
+```
+
+---
+
+### Production (Docker Compose – Server)
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+```
+
+#### Prisma seeder prod
+
+```bash
+docker exec -it app-prod npm run prisma:seed:prod
+```
+
+---
+
+## Creating New Feature (Guideline)
+
+1. Update Prisma Schema
+
+```bash
 npx prisma migrate dev
 ```
 
-- create model on `/model` folder 
+2. Generate Prisma Client
 
-- Create validation for that model (for create and update if any) on `/validation` folder
+```bash
+npx prisma generate
+```
 
-- Create the service layer on `/service`
+3. Buat model di folder `/model`
 
-- Link it into controller in `/controller`
+4. Buat validation (Zod) di `/validation`
 
-- Create new routes file instance at `/route/public` if user dont need login or `/route/private` if user need login , for example user.route.ts
+5. Buat service logic di `/service`
 
-- Register the routes into public and private registry (`route/public-api-registry.route.ts` and `route/private-api-registry.route.ts`)
+6. Buat controller di `/controller`
+
+7. Buat route:
+
+* `/route/public` → tanpa auth
+* `/route/private` → perlu auth
+
+8. Register route ke:
+
+* `route/public-api-registry.route.ts`
+* `route/private-api-registry.route.ts`
+
+---
+
+## Prisma Utilities
+
+```bash
+npm run prisma:studio:dev
+npm run prisma:seed:dev
+npm run prisma:reset:dev
+```
+
+---
+
+## Author
+
+**serba**
+
+---
+
+## License
+
+ISC
