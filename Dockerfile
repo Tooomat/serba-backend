@@ -25,7 +25,8 @@ FROM base AS test
 ENV NODE_ENV=test
 COPY .env.test .env.test
 RUN npx prisma generate
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run test"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed:test && npm run test"]
+# CMD ["sh", "-c", "npx prisma migrate deploy && npm run test"]
 
 # =========================
 # Build
@@ -41,6 +42,7 @@ FROM node:22-alpine AS prod
 WORKDIR /app
 
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/public ./public 
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY package*.json ./
