@@ -5,6 +5,6 @@ export const publicRouter = express.Router()
 
 // router tanpa/tidak perlu login
 // AUTH 
-publicRouter.post("/api/auth/register", AuthController.register)
-publicRouter.post("/api/auth/login", AuthController.login)
-publicRouter.post("/api/auth/refresh", AuthController.renewToken)
+publicRouter.post("/public/api/auth/register", AuthController.register)
+publicRouter.post("/public/api/auth/login", AuthController.login)
+publicRouter.post("/public/api/auth/refresh", AuthController.renewToken)

@@ -1,6 +1,4 @@
-import { UUID } from "crypto"
 import { StatusUser, User } from "../generated/prisma/client"
-import { UUIDTypes } from "uuid"
 
 // ======================== REGISTER =========================
 export type  registerRequest = {

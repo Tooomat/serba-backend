@@ -9,7 +9,7 @@ Template backend REST API berbasis **Node.js + TypeScript** dengan arsitektur cl
 * **Language**: TypeScript
 * **HTTP Framework**: Express
 * **ORM**: Prisma
-* **Database**: MySQL
+* **Database**: Postgres
 * **Cache**: Redis
 * **Validation**: Zod
 * **Logging**: Winston
@@ -23,7 +23,7 @@ Pastikan tools berikut sudah terinstall:
 
 * Node.js **v18+**
 * Docker & Docker Compose
-* MySQL (jika tidak pakai Docker)
+* Postgres (jika tidak pakai Docker)
 * Redis (jika tidak pakai Docker)
 
 ---
@@ -73,12 +73,12 @@ Lalu sesuaikan isi `.env` terutama:
 npx prisma migrate dev
 npx prisma generate
 ```
-
+ 
 Atau via npm script:
 
 ```bash
 npm run prisma:migrate:dev
-npm run prisma:generate
+npm run prisma:generate:dev
 ```
 
 ---
@@ -89,6 +89,18 @@ npm run prisma:generate
 
 ```bash
 npm run dev
+```
+
+### Testing
+
+```bash
+npm run test
+```
+
+Test file tertentu:
+
+```bash
+npm run test -- test/auth.login.test.ts
 ```
 
 #### Production (Tanpa Docker)
@@ -102,14 +114,19 @@ npm run start
 
 ## Running with DOCKER
 
-### Development (Docker)
+- DEVELOPMENT
 
 ```bash
-docker compose --env-file .env.development.docker -f docker-compose.dev.yml up -d --build
+docker compose --env-file .env.development.docker -f docker-compose.dev.yml up -d --build 
+```
+
+atau simple:
+```bash
+docker compose -f docker-compose.dev.yml up -d --build 
+
 ```
 
 Atau via npm:
-
 ```bash
 npm run dev:docker:up
 ```
@@ -118,6 +135,13 @@ npm run dev:docker:up
 
 ```bash
 docker exec -it app-dev npx prisma migrate dev
+```
+
+#### Prisma seeder Dev
+
+```bash
+docker exec app-dev npm run prisma:seed:dev
+
 ```
 
 #### Stop & Remove Container
@@ -134,7 +158,7 @@ npm run dev:docker:down:volume
 
 ---
 
-### Testing (Jest + Prisma + Docker)
+- TESTING (Jest + Prisma + Docker)
 
 ```bash
 docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit
@@ -142,7 +166,7 @@ docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-con
 
 Proses ini akan:
 
-* Menjalankan MySQL & Redis test
+* Menjalankan Postgres & Redis test
 * Menjalankan Prisma migration
 * Menjalankan Jest test
 * Otomatis stop container
@@ -155,7 +179,7 @@ npm run test:docker:up
 
 ---
 
-### Production (Docker)
+- PRODUCTION (Docker)
 
 #### Build Image
 
@@ -177,18 +201,10 @@ docker run -d --name serba-backend --env-file .env.production -p 8080:8080 serba
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
----
-
-## Testing (Local)
+#### Prisma seeder prod
 
 ```bash
-npm run test
-```
-
-Test file tertentu:
-
-```bash
-npm run test -- test/auth.login.test.ts
+docker exec -it app-prod npm run prisma:seed:prod
 ```
 
 ---
