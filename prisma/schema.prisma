@@ -125,3 +125,16 @@ model MasterSubdistrict {
 
   @@map("master_subdistricts")
 }
+
+model JobCategories {
+  id        String    @id @default(uuid())
+  code      String    @unique @db.VarChar(50)
+  name      String    @unique @db.VarChar(100)
+  image1    String
+  image2    String
+  image3    String
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+
+  @@map("job_categories")
+}
