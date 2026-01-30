@@ -7,6 +7,7 @@ const img = (category: string, name: string, index: number) =>
 
 const jobCategoriesSeed = [
   {
+    id: "jc1",
     code: "HOME_REPAIR",
     name: "Perbaikan Rumah",
     image1: img("HOME_REPAIR", "home-repair", 1),
@@ -14,6 +15,7 @@ const jobCategoriesSeed = [
     image3: img("HOME_REPAIR", "home-repair", 3),
   },
   {
+    id: "jc2",
     code: "CLEANING",
     name: "Kebersihan & Sanitasi",
     image1: img("CLEANING", "cleaning", 1),
@@ -21,6 +23,7 @@ const jobCategoriesSeed = [
     image3: img("CLEANING", "cleaning", 3),
   },
   {
+    id: "jc3",
     code: "ELECTRONICS",
     name: "Elektronik",
     image1: img("ELECTRONICS", "electronics", 1),
@@ -28,6 +31,7 @@ const jobCategoriesSeed = [
     image3: img("ELECTRONICS", "electronics", 3),
   },
   {
+    id: "jc4",
     code: "AUTOMOTIVE",
     name: "Kendaraan & Otomotif",
     image1: img("AUTOMOTIVE", "automotive", 1),
@@ -35,6 +39,7 @@ const jobCategoriesSeed = [
     image3: img("AUTOMOTIVE", "automotive", 3),
   },
   {
+    id: "jc5",
     code: "PERSONAL_CARE",
     name: "Perawatan Diri",
     image1: img("PERSONAL_CARE", "personal-care", 1),
@@ -42,6 +47,7 @@ const jobCategoriesSeed = [
     image3: img("PERSONAL_CARE", "personal-care", 3),
   },
   {
+    id: "jc6",
     code: "EVENT_SERVICES",
     name: "Acara & Event",
     image1: img("EVENT_SERVICES", "event", 1),
@@ -49,6 +55,7 @@ const jobCategoriesSeed = [
     image3: img("EVENT_SERVICES", "event", 3),
   },
   {
+    id: "jc7",
     code: "EDUCATION",
     name: "Pendidikan & Les",
     image1: img("EDUCATION", "education", 1),
@@ -56,6 +63,7 @@ const jobCategoriesSeed = [
     image3: img("EDUCATION", "education", 3),
   },
   {
+    id: "jc8",
     code: "CREATIVE",
     name: "Kreatif & Desain",
     image1: img("CREATIVE", "creative", 1),
@@ -63,6 +71,7 @@ const jobCategoriesSeed = [
     image3: img("CREATIVE", "creative", 3),
   },
   {
+    id: "jc9",
     code: "FnB",
     name: "Makanan & Minuman",
     image1: img("FNB", "FnB", 1),
@@ -70,6 +79,7 @@ const jobCategoriesSeed = [
     image3: img("FNB", "FnB", 3),
   },
   {
+    id: "jc10",
     code: "HEALTH_WELLNESS",
     name: "Kesehatan & Kebugaran",
     image1: img("HEALTH_WELLNESS", "health", 1),
@@ -77,6 +87,7 @@ const jobCategoriesSeed = [
     image3: img("HEALTH_WELLNESS", "health", 3),
   },
   {
+    id: "jc11",
     code: "TRANSPORT_DELIVERY",
     name: "Transportasi & Pengiriman",
     image1: img("TRANSPORT_DELIVERY", "transport", 1),
@@ -84,6 +95,7 @@ const jobCategoriesSeed = [
     image3: img("TRANSPORT_DELIVERY", "transport", 3),
   },
   {
+    id: "jc12",
     code: "CONSTRUCTION",
     name: "Konstruksi & Renovasi",
     image1: img("CONSTRUCTION", "construction", 1),
@@ -91,6 +103,7 @@ const jobCategoriesSeed = [
     image3: img("CONSTRUCTION", "construction", 3),
   },
   {
+    id: "jc13",
     code: "GARDENING",
     name: "Taman & Pertamanan",
     image1: img("GARDENING", "gardening", 1),
@@ -98,6 +111,7 @@ const jobCategoriesSeed = [
     image3: img("GARDENING", "gardening", 3),
   },
   {
+    id: "jc14",
     code: "PET_CARE",
     name: "Perawatan Hewan",
     image1: img("PET_CARE", "pet-care", 1),
@@ -105,6 +119,7 @@ const jobCategoriesSeed = [
     image3: img("PET_CARE", "pet-care", 3),
   },
   {
+    id: "jc15",
     code: "TECH_DIGITAL",
     name: "Teknologi Digital",
     image1: img("TECH_DIGITAL", "tech", 1),
@@ -120,9 +135,10 @@ export async function seedJobCategories() {
         imgVal.imageWebpIsExist(item.image3)
         await prismaClient.jobCategories.upsert ({
             where: {
-                code: item.code
+                id: item.id
             },
             update: {
+                code: item.code,
                 name: item.name,
                 image1: item.image1,
                 image2: item.image2,

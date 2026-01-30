@@ -19,8 +19,9 @@
     "build": "tsc",
     "start": "dotenv -e .env.production cross-env NODE_ENV=production node dist/index.ts",
     
-    "prisma:generate": "prisma generate", 
-    "prisma:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
+    "prisma:generate:dev": "dotenv -e .env.local -- prisma generate",
+     
+    "prisma:migrate:dev": "dotenv -e .env.local -- prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test -- prisma migrate deploy",
     "prisma:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
 

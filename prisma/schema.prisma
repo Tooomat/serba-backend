@@ -127,7 +127,7 @@ model MasterSubdistrict {
 }
 
 model JobCategories {
-  id        String    @id @default(uuid())
+  id        String    @id
   code      String    @unique @db.VarChar(50)
   name      String    @unique @db.VarChar(100)
   image1    String?

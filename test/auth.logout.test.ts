@@ -4,8 +4,6 @@ import * as server from "../src/application/server"
 import { prismaClient } from "../src/application/database"
 import { redis } from "../src/application/redis"
 import { JWT } from "../src/utils/jwt.utils"
-import { config } from "../src/config/env"
-import jwt from 'jsonwebtoken'
 
 describe("POST /api/auth/logout", () => {
     let accessToken: string
@@ -24,7 +22,7 @@ describe("POST /api/auth/logout", () => {
 
     beforeEach(async () => {
         const registerRes = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .send({
                 username: "testuser",
                 email: "testuser@example.com",
@@ -38,7 +36,7 @@ describe("POST /api/auth/logout", () => {
         userId = registerRes.body.data.id
 
         const loginRes = await supertest(server.webApp)
-            .post("/api/auth/login")
+            .post("/public/api/auth/login")
             .send({
                 usernameOrEmail: "testuser",
                 password: "Password123!"
@@ -110,7 +108,7 @@ describe("POST /api/auth/logout", () => {
             .set('Cookie', refreshTokenCookie)
 
         const res = await supertest(server.webApp)
-            .post("/api/auth/refresh")
+            .post("/public/api/auth/refresh")
             .set('Cookie', refreshTokenCookie)
 
         expect(res.status).toBe(401)
