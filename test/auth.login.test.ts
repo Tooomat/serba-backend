@@ -5,7 +5,7 @@ import { prismaClient } from "../src/application/database"
 import { redis } from "../src/application/redis"
 import bcrypt from "bcrypt"
 
-describe("POST /api/auth/login", () => {
+describe("POST /public/api/auth/login", () => {
 
     beforeEach(async () => {
         await prismaClient.user.deleteMany({
@@ -64,7 +64,7 @@ describe("POST /api/auth/login", () => {
     // ✅ SUCCESS
     it("should login successfully and return access token + set refresh cookie", async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/login")
+            .post("/public/api/auth/login")
             .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "loginuser",
@@ -84,7 +84,7 @@ describe("POST /api/auth/login", () => {
     // ❌ INVALID PASSWORD
     it("should reject login with wrong password", async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/login")
+            .post("/public/api/auth/login")
             .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "loginuser",
@@ -98,7 +98,7 @@ describe("POST /api/auth/login", () => {
     // ❌ USER NOT FOUND
     it("should reject login if user not found", async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/login")
+            .post("/public/api/auth/login")
             .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "unknown",
@@ -112,7 +112,7 @@ describe("POST /api/auth/login", () => {
     // ❌ BLOCKED USER
     it("should reject login for blocked user", async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/login")
+            .post("/public/api/auth/login")
             .set("Content-Type", "application/json")
             .send({
                 usernameOrEmail: "blockeduser",

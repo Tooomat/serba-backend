@@ -5,7 +5,7 @@ import { prismaClient } from '../src/application/database'
 import { redis } from '../src/application/redis'
 import { JWT } from '../src/utils/jwt.utils'
 
-describe('POST /api/auth/refresh', () => {
+describe('POST /public/api/auth/refresh', () => {
   let refreshTokenCookie: string
   let userId: string
 
@@ -20,7 +20,7 @@ describe('POST /api/auth/refresh', () => {
   beforeEach(async () => {
     // register
     await supertest(server.webApp)
-      .post('/api/auth/register')
+      .post('/public/api/auth/register')
       .send({
         username: 'refreshuser',
         email: 'refresh@example.com',
@@ -32,7 +32,7 @@ describe('POST /api/auth/refresh', () => {
 
     // login
     const loginRes = await supertest(server.webApp)
-      .post('/api/auth/login')
+      .post('/public/api/auth/login')
       .send({
         usernameOrEmail: 'refreshuser',
         password: 'Password123!'
@@ -75,7 +75,7 @@ describe('POST /api/auth/refresh', () => {
 
   it('should refresh access token successfully', async () => {
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
       .set('Cookie', refreshTokenCookie)
 
     expect(res.status).toBe(200)
@@ -86,7 +86,7 @@ describe('POST /api/auth/refresh', () => {
   it('should allow refresh token to be reused multiple times', async () => {
     for (let i = 0; i < 3; i++) {
       const res = await supertest(server.webApp)
-        .post('/api/auth/refresh')
+        .post('/public/api/auth/refresh')
         .set('Cookie', refreshTokenCookie)
 
       expect(res.status).toBe(200)
@@ -98,7 +98,7 @@ describe('POST /api/auth/refresh', () => {
 
   it('should reject when refresh token cookie missing', async () => {
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
 
     expect(res.status).toBe(401)
     expect(res.body.errors).toBe('Missing refresh token')
@@ -106,7 +106,7 @@ describe('POST /api/auth/refresh', () => {
 
   it('should reject invalid refresh token', async () => {
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
       .set('Cookie', 'refresh_token=invalid.token.value')
 
     expect(res.status).toBe(401)
@@ -126,7 +126,7 @@ describe('POST /api/auth/refresh', () => {
     await new Promise(r => setTimeout(r, 1100))
 
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
       .set('Cookie', `refresh_token=${token}`)
 
     expect(res.status).toBe(401)
@@ -141,7 +141,7 @@ describe('POST /api/auth/refresh', () => {
     await redis.del(`refresh:${payload.sub}:${payload.jti}`)
 
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
       .set('Cookie', refreshTokenCookie)
 
     expect(res.status).toBe(401)
@@ -161,7 +161,7 @@ describe('POST /api/auth/refresh', () => {
     )
 
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
       .set('Cookie', refreshTokenCookie)
 
     expect(res.status).toBe(401)
@@ -174,7 +174,7 @@ describe('POST /api/auth/refresh', () => {
     })
 
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
       .set('Cookie', refreshTokenCookie)
 
     expect(res.status).toBe(401)
@@ -188,7 +188,7 @@ describe('POST /api/auth/refresh', () => {
     })
 
     const res = await supertest(server.webApp)
-      .post('/api/auth/refresh')
+      .post('/public/api/auth/refresh')
       .set('Cookie', refreshTokenCookie)
 
     expect(res.status).toBe(403)

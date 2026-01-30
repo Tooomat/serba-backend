@@ -3,7 +3,7 @@ import supertest from "supertest"
 import * as server from "../src/application/server"
 import { prismaClient } from "../src/application/database"
 
-describe("POST /api/auth/register", () => {
+describe("POST /public/api/auth/register", () => {
     
     beforeEach(async () => {
         await prismaClient.user.deleteMany({
@@ -32,7 +32,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 1: Successful Registration
     it('should register new user successfully', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -63,7 +63,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 2: Registration without optional fields
     it('should register user without optional fields (lastName, profilePictUrl)', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser2",
@@ -83,7 +83,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 3: Invalid - Empty username
     it('should reject registration with empty username', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "",
@@ -104,7 +104,7 @@ describe("POST /api/auth/register", () => {
         const longUsername = "a".repeat(101)
         
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: longUsername,
@@ -123,7 +123,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 5: Invalid - Invalid email format
     it('should reject registration with invalid email format', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -142,7 +142,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 6: Invalid - Password too short
     it('should reject registration with password less than 8 characters', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -161,7 +161,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 7: Invalid - Empty firstName
     it('should reject registration with empty firstName', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -180,7 +180,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 8: Invalid - Invalid date format
     it('should reject registration with invalid date format', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -199,7 +199,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 9: Invalid - Phone number without +62
     it('should reject registration with phone number without +62 prefix', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -218,7 +218,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 10: Valid - Phone number with spaces and dashes
     it('should accept phone number with spaces and dashes', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -237,7 +237,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 11: Invalid - Phone number too short
     it('should reject registration with phone number too short', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -256,7 +256,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 12: Invalid - Phone number too long
     it('should reject registration with phone number too long', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
@@ -276,7 +276,7 @@ describe("POST /api/auth/register", () => {
     it('should reject registration with duplicate username', async () => {
         // Create first user
         await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "existinguser",
@@ -289,7 +289,7 @@ describe("POST /api/auth/register", () => {
 
         // Try to create user with same username
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "existinguser",
@@ -309,7 +309,7 @@ describe("POST /api/auth/register", () => {
     it('should reject registration with duplicate email', async () => {
         // Create first user
         await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "existinguser",
@@ -322,7 +322,7 @@ describe("POST /api/auth/register", () => {
 
         // Try to create user with same email
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "differentuser",
@@ -341,7 +341,7 @@ describe("POST /api/auth/register", () => {
     // Test Case 15: Missing required fields
     it('should reject registration with missing required fields', async () => {
         const res = await supertest(server.webApp)
-            .post("/api/auth/register")
+            .post("/public/api/auth/register")
             .set("Content-Type", "application/json")
             .send({
                 username: "testuser",
