@@ -24,6 +24,34 @@ enum StatusUser {
   BLOCKED
 }
 
+enum JobSite {
+  ON_SITE
+  HYBRID
+  REMOTE
+}
+
+enum BudgetTypeJob {
+  Fixed
+  HOURLY
+  NEGOTIABLE
+}
+
+enum LevelJob {
+  BEGINER
+  INTERMEDIATE
+  EXPERT
+}
+
+enum TypeJob {
+  NON_URGENT
+  URGENT
+}
+
+enum StatusJob {
+  OPEN
+  COMPLETED
+}
+
 model User {
   id              String     @id @default(uuid())
   username        String     @unique @db.VarChar(100)
@@ -47,6 +75,8 @@ model User {
 
   addresses Address[] // one user -> many addresses
 
+  jobs Job[] // one user -> create many job
+
   @@map("users")
 }
 
@@ -67,6 +97,8 @@ model Address {
 
   subdistrictId String
   subdistrict   MasterSubdistrict @relation(fields: [subdistrictId], references: [id])
+
+  jobs Job[] // one addresses -> many job
 
   @@map("addresses")
 }
@@ -137,5 +169,61 @@ model JobCategories {
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @db.Timestamptz(3)
 
+  // one job categories -> many categories Mapping
+  categoriesMapping CategoriesMapping[]
+
   @@map("job_categories")
+}
+
+model CategoriesMapping {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(3)
+
+  jobCategoryId String
+  jobCategories JobCategories @relation(fields: [jobCategoryId], references: [id])
+
+  jobId String
+  job Job @relation(fields: [jobId], references: [id])
+
+  @@map("categories_mapping")
+}
+
+model Job {
+  id                   String         @id @default(uuid())
+  title                String         @db.VarChar(255)
+  introduction         String?        @db.Text
+  description          String         @db.Text
+  qualification        String         @db.Text
+  jobSite              JobSite
+  budgetMin            Int?
+  budgetMax            Int?
+  budgetType           BudgetTypeJob? // Fixed, Hourly, Negotiable
+  level                LevelJob[] // Beginner, Intermediate, Expert
+  required             Int
+  status               StatusJob      @default(OPEN) // Open, Completed
+  applicationCount     Int            @default(0)
+  dayOfWeek            String?        @db.VarChar(20) // Senin, Selasa, … , Minggu
+  startTime            DateTime?      @db.Time()
+  endTime              DateTime?      @db.Time()
+  scheduleDate         DateTime?      @db.Date
+  locations            Json
+  jobCategories        Json
+  isPublic             Boolean        @default(true)
+  acceptedApplicant    Json?
+  type                 TypeJob        @default(NON_URGENT)
+  estimatedDurationDay Int?
+  createdAt            DateTime       @db.Timestamptz(3)
+  updatedAt            DateTime?      @updatedAt @db.Timestamptz(3)
+
+  // one Job -> many Categories Mapping
+  categoriesMapping CategoriesMapping[]
+
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  addressId String
+  address Address @relation(fields: [addressId], references: [id])
+
+  @@map("jobs")
 }
