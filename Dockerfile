@@ -13,7 +13,7 @@ COPY . .
 # Development
 # =========================
 FROM base AS dev
-ENV NODE_ENV=test
+ENV NODE_ENV=development
 COPY .env.development .env.development
 RUN npx prisma generate
 CMD ["npm", "run", "dev"]
@@ -25,7 +25,7 @@ FROM base AS test
 ENV NODE_ENV=test
 COPY .env.test .env.test
 RUN npx prisma generate
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed:test && npm run test"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run test"]
 # CMD ["sh", "-c", "npx prisma migrate deploy && npm run test"]
 
 # =========================

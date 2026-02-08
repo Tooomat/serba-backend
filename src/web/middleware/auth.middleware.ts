@@ -23,11 +23,13 @@ export class AuthMiddleware {
         if (!authHeader) {
             throw new ResponseError(401, "Missing Authorization header")
         }
-        if (!authHeader.startsWith("Bearer")) {
+
+        const parts = authHeader.split(" ")
+        if (parts.length !== 2 || parts[0] !== "Bearer") {
             throw new ResponseError(401, "Invalid authorization format")
         }
         
-        const token = authHeader.substring(7)
+        const token = parts[1]
         if (!token) {
             throw new ResponseError(401, "Missing access token")
         }
@@ -44,7 +46,7 @@ export class AuthMiddleware {
             }
         })
         if (!user) {
-            throw new ResponseError(401, "User not found")
+            throw new ResponseError(401, "Unauthorized")
         }
         if (user.status === "BLOCKED") {
             throw new ResponseError(403, "Account has been blocked")

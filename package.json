@@ -6,21 +6,22 @@
   "directories": {
     "test": "test"
   },
-    "scripts": {
+  "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
     "dev:docker:up": "docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build",
+    "dev:docker:start": "docker compose --env-file .env.development -f docker-compose.dev.yml start",
+    "dev:docker:stop": "docker compose --env-file .env.development -f docker-compose.dev.yml stop",
     "dev:docker:down": "docker compose --env-file .env.development -f docker-compose.dev.yml down",
     "dev:docker:down:volume": "docker compose --env-file .env.development -f docker-compose.dev.yml down -v",
-   
+
     "test": "dotenv -e .env.test cross-env NODE_ENV=test jest --runInBand",
     "test:docker:up": "docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit",
     "test:docker:down:volume": "docker compose --env-file .env.test -f docker-compose.test.yml down -v",
-    
+
     "build": "tsc",
     "start": "dotenv -e .env.production cross-env NODE_ENV=production node dist/index.ts",
-    
+
     "prisma:generate:dev": "dotenv -e .env.local -- prisma generate",
-     
     "prisma:migrate:dev": "dotenv -e .env.local -- prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test -- prisma migrate deploy",
     "prisma:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
@@ -28,7 +29,7 @@
     "prisma:seed:dev": "dotenv -e .env.development -- ts-node prisma/seeds/index.seeds.ts",
     "prisma:seed:test": "dotenv -e .env.test -- ts-node prisma/seeds/index.seeds.ts",
     "prisma:seed:prod": "dotenv -e .env.production -- node dist/prisma/seeds/index.seeds.ts",
-
+    
     "prisma:studio:dev": "dotenv -e .env.development -- prisma studio",
     "prisma:studio:test": "dotenv -e .env.test -- prisma studio --port 5556"
   },
@@ -63,6 +64,7 @@
     "@prisma/client": "^7.2.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
+    "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "ioredis": "^5.9.1",
