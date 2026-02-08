@@ -175,7 +175,7 @@ describe("POST /api/auth/logout", () => {
             .set('Cookie', refreshTokenCookie)
 
         expect(res.status).toBe(401)
-        expect(res.body.errors).toBe("Missing access token")
+        expect(res.body.errors).toBe("Invalid authorization format")
     })
 
     it('should reject logout with invalid access token', async () => {
@@ -221,7 +221,7 @@ describe("POST /api/auth/logout", () => {
             .set('Cookie', refreshTokenCookie)
 
         expect(res.status).toBe(401)
-        expect(res.body.errors).toBe("User not found")
+        expect(res.body.errors).toBe("Unauthorized")
     })
 
     it('should reject logout when user account is blocked', async () => {
@@ -293,7 +293,7 @@ describe("POST /api/auth/logout", () => {
         await new Promise(resolve => setTimeout(resolve, 1100))
 
         const loginRes = await supertest(server.webApp)
-            .post("/api/auth/login")
+            .post("/public/api/auth/login")
             .send({
                 usernameOrEmail: "testuser",
                 password: "Password123!"

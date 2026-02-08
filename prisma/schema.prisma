@@ -104,9 +104,9 @@ model Address {
 }
 
 model MasterProvince {
-  id   String @id @default(uuid())
+  id   String @id
   name String @db.VarChar(255)
-  code String @db.VarChar(10)
+  code String @unique @db.VarChar(20)
 
   masterCity MasterCity[] // one province -> many cities
 
@@ -114,9 +114,9 @@ model MasterProvince {
 }
 
 model MasterCity {
-  id       String @id @default(uuid())
+  id       String @id
   name     String @db.VarChar(255)
-  code     String @db.VarChar(10)
+  code     String @unique @db.VarChar(20)
   province Json
 
   masterDistrict MasterDistrict[] // one city -> many districts
@@ -128,9 +128,9 @@ model MasterCity {
 }
 
 model MasterDistrict {
-  id       String @id @default(uuid())
+  id       String @id
   name     String @db.VarChar(255)
-  code     String @db.VarChar(10)
+  code     String @unique @db.VarChar(20)
   province Json
   city     Json
 
@@ -143,9 +143,9 @@ model MasterDistrict {
 }
 
 model MasterSubdistrict {
-  id       String @id @default(uuid())
+  id       String @id 
   name     String @db.VarChar(255)
-  code     String @db.VarChar(10)
+  code     String @unique @db.VarChar(20)
   province Json
   city     Json
   district Json

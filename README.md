@@ -116,19 +116,25 @@ npm run start
 
 - DEVELOPMENT
 
+#### Build Services
+
 ```bash
-docker compose --env-file .env.development.docker -f docker-compose.dev.yml up -d --build 
+docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build 
 ```
 
 atau simple:
 ```bash
 docker compose -f docker-compose.dev.yml up -d --build 
-
 ```
 
 Atau via npm:
 ```bash
 npm run dev:docker:up
+```
+
+#### Run Srvices
+```bash
+npm run dev:docker:start
 ```
 
 #### Prisma migrate (DEV Docker)
@@ -141,10 +147,9 @@ docker exec -it app-dev npx prisma migrate dev
 
 ```bash
 docker exec app-dev npm run prisma:seed:dev
-
 ```
 
-#### Stop & Remove Container
+#### Restart & Remove Container
 
 ```bash
 npm run dev:docker:down
@@ -154,6 +159,11 @@ npm run dev:docker:down
 
 ```bash
 npm run dev:docker:down:volume
+```
+#### Stop container
+
+```bash
+npm run dev:docker:stop
 ```
 
 ---
@@ -177,36 +187,70 @@ Via npm:
 npm run test:docker:up
 ```
 
+#### remove container test
+```bash
+npm run test:docker:down:volume
+```
 ---
 
 - PRODUCTION (Docker)
 
-#### Build Image
+1. Build Image
 
 ```bash
 docker build -t serba-backend:latest .
 ```
-
-#### Run Container
+atau build version:
 
 ```bash
-docker run -d --name serba-backend --env-file .env.production -p 8080:8080 serba-backend:latest
+docker build -t serba-backend:1.0.0 .
 ```
+
+2. Run Container
+
+```bash
+docker run -d --name serba-backend --env-file .env.production -p 8080:8080 --restart unless-stopped serba-backend:latest
+```
+--restart unless-stopped untuk:
+
+* server reboot → container auto hidup lagi
 
 ---
 
 ### Production (Docker Compose – Server)
 
+1. Run Services
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
-#### Prisma seeder prod
+2. check status
+```bash
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f app
+```
+3. Prisma Migration (kalau tidak otomatis)
+```bash
+docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+```
+4. Prisma seeder prod
 
 ```bash
 docker exec -it app-prod npm run prisma:seed:prod
 ```
 
+5. Restart container (tanpa hapus data)
+```bash
+docker compose -f docker-compose.prod.yml restart app
+```
+
+6. Update Deployment Flow
+```bash
+git pull
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+```
 ---
 
 ## Creating New Feature (Guideline)
