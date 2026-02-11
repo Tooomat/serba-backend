@@ -1,6 +1,6 @@
-import { JobCategories } from "../generated/prisma/client"
+import { JobCategory } from "../generated/prisma/client"
 
-export type jobCategoriesResponse = {
+export type jobCategoryResponse = {
     id: string
     code: string
     name: string
@@ -11,7 +11,7 @@ export type getJobCaregoryRequest = {
     id: string
 }
 
-export function toJobCategoriesResponse(jobCategory: JobCategories): jobCategoriesResponse {
+export function toJobCategoryResponse(jobCategory: JobCategory): jobCategoryResponse {
     return {
         id: jobCategory.id,
         code: jobCategory.code,

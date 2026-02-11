@@ -6,19 +6,19 @@ import { Validation } from "../validation/validation";
 import { AuthRequest } from "../web/middleware/auth.middleware";
 
 export class JobCategoriesService {
-    static async getAll(auth: AuthRequest): Promise<Array<model.jobCategoriesResponse>>{
-        const jobCategories = await prismaClient.jobCategories.findMany({
+    static async getAll(auth: AuthRequest): Promise<Array<model.jobCategoryResponse>>{
+        const jobCategories = await prismaClient.jobCategory.findMany({
             where: {
                 isActive: true
             }
         })
 
-        return jobCategories.map((jobCategory) => model.toJobCategoriesResponse(jobCategory))
+        return jobCategories.map((jobCategory) => model.toJobCategoryResponse(jobCategory))
     }
 
-    static async get(auth: AuthRequest, req: model.getJobCaregoryRequest): Promise<model.jobCategoriesResponse> {
+    static async get(auth: AuthRequest, req: model.getJobCaregoryRequest): Promise<model.jobCategoryResponse> {
         const validation = Validation.validate(JobCategoriesValidation.GETSCHEMA, req)
-        const jobCategories = await prismaClient.jobCategories.findUnique({
+        const jobCategories = await prismaClient.jobCategory.findUnique({
             where: {
                 id: validation.id
             }
@@ -27,6 +27,6 @@ export class JobCategoriesService {
             throw new ResponseError(404, "job categories not found")
         }
 
-        return model.toJobCategoriesResponse(jobCategories)
+        return model.toJobCategoryResponse(jobCategories)
     }
 }

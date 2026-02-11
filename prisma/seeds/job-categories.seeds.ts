@@ -1,11 +1,8 @@
 import { prismaClient } from "../../src/application/database"
 import * as imgVal from "../../src/validation/image.validation"
-import path from "path"
 
-export const BASE_IMAGE_PATH = path.resolve(
-  process.cwd(),
-  "/public/assets/images/job-categories"
-)
+export const BASE_IMAGE_PATH = "public/assets/images/job-categories"
+
 const img = (category: string, name: string, index: number) =>
   `${BASE_IMAGE_PATH}/${category}/${name}-${index}.webp`
 
@@ -137,7 +134,7 @@ export async function seedJobCategories() {
         imgVal.imageWebpIsExist(item.image1)
         imgVal.imageWebpIsExist(item.image2)
         imgVal.imageWebpIsExist(item.image3)
-        await prismaClient.jobCategories.upsert ({
+        await prismaClient.jobCategory.upsert ({
             where: {
                 id: item.id
             },

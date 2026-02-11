@@ -11,7 +11,7 @@ describe("Job Categories API", () => {
 
     beforeEach(async () => {
         // cleanup
-        await prismaClient.jobCategories.deleteMany({})
+        await prismaClient.jobCategory.deleteMany({})
         await prismaClient.user.deleteMany({
             where: { username: "testuser" }
         })
@@ -42,7 +42,7 @@ describe("Job Categories API", () => {
         accessToken = loginRes.body.data.accessToken
 
         // seed job categories
-        await prismaClient.jobCategories.createMany({
+        await prismaClient.jobCategory.createMany({
             data: [
                 {
                     id: "jc1",
@@ -67,7 +67,7 @@ describe("Job Categories API", () => {
     })
 
     afterEach(async () => {
-        await prismaClient.jobCategories.deleteMany({})
+        await prismaClient.jobCategory.deleteMany({})
         await prismaClient.user.deleteMany({})
         await redis.flushdb()
     })
