@@ -1,16 +1,13 @@
-import { getProvinceRequest, provinceResponse, toProvinceResponse } from "../model/provinces.model";
-import { Validation } from "../validation/validation";
-import { ProvincesValidation } from "../validation/provinces.validation";
+import { provinceResponse, toProvinceResponse } from "../model/provinces.model";
 import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
 
 export class ProvincesService {
-    static async get(req: getProvinceRequest): Promise<provinceResponse> {
-        const validation = Validation.validate(ProvincesValidation.GET_SCHEMA, req)
+    static async get(provinceId: string): Promise<provinceResponse> {
 
         const province = await prismaClient.masterProvince.findUnique({
             where: {
-                id: validation.provinceId
+                id: provinceId
             }
         })
 

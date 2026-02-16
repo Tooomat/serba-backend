@@ -5,9 +5,9 @@ export type  registerRequest = {
     username: string
     email: string
     password: string
-    profilePictUrl?: string | null 
+    profilePictUrl?: string
     firstName: string
-    lastName?: string | null
+    lastName?: string
     birthDate: Date
     phone: string
 }
@@ -16,13 +16,13 @@ export type registerResponse = {
     id: string
     username: string
     email: string
-    profilePictUrl?: string | null | undefined
+    profilePictUrl?: string | null 
     firstName: string
-    lastName?: string | null | undefined
+    lastName?: string | null 
     birthDate: Date
     phone: string
-    isEmailVerified?: boolean | false
-    isPhoneVerified?: boolean | false
+    isEmailVerified?: boolean 
+    isPhoneVerified?: boolean
     status: StatusUser
     createdAt: Date
 }
@@ -32,9 +32,9 @@ export function toRegisterResponse(user: User) {
         id: user.id,
         username: user.username,
         email: user.email,
-        profilePictUrl: user.profilePictUrl ?? null,
+        profilePictUrl: user.profilePictUrl,
         firstName: user.firstName,
-        lastName: user.lastName ?? null,
+        lastName: user.lastName,
         birthDate: user.birthDate,
         phone: user.phone,
         isEmailVerified: user?.isEmailVerified,

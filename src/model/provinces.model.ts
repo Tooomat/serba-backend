@@ -1,9 +1,5 @@
 import { MasterProvince } from "../generated/prisma/client"
 
-export type getProvinceRequest = {
-    provinceId: string
-}
-
 export type provinceResponse = {
     id: string
     code: string

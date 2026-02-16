@@ -2,22 +2,17 @@ import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
 import { 
     districtByCityResponse, 
-    districtResponse, 
-    getDistrictByCityRequest, 
-    getDistrictRequest, 
+    districtResponse,  
     toDistrictByCityResponse, 
     toDistrictResponse 
 } from "../model/districts.model";
-import { DistrictsValidation } from "../validation/districts.validation";
-import { Validation } from "../validation/validation";
 
 export class DistrictService {
-    static async get(req: getDistrictRequest): Promise<districtResponse> {
-        const validation = Validation.validate(DistrictsValidation.GET_SCHEMA, req)
+    static async get(districtId: string): Promise<districtResponse> {
 
         const district = await prismaClient.masterDistrict.findUnique({
             where: {
-                id: validation.districtId
+                id: districtId
             }
         })
 
@@ -28,12 +23,11 @@ export class DistrictService {
         return toDistrictResponse(district)
     }
 
-    static async getByCity(req: getDistrictByCityRequest): Promise<Array<districtByCityResponse>> {
-        const validation = Validation.validate(DistrictsValidation.GET_DISTRICT_BY_CITY_SCHEMA, req)
+    static async getByCity(cityId: string): Promise<Array<districtByCityResponse>> {
 
         const districtsByCity = await prismaClient.masterDistrict.findMany({
             where:{
-                cityId: validation.cityId
+                cityId: cityId
             },
             orderBy: {
                 name: "asc" 

@@ -3,21 +3,16 @@ import { ResponseError } from "../error/service-response.error";
 import { 
     cityByProvinceResponse, 
     cityResponse, 
-    getCitiesByProvinceRequest, 
-    getCityRequest, 
     toCityByProvinceResponse, 
     toCityResponse 
 } from "../model/cities.model";
-import { CitiesValidation } from "../validation/cities.validation";
-import { Validation } from "../validation/validation";
 
 export class CitiesService {
-    static async get(req: getCityRequest): Promise<cityResponse> {
-        const validation = Validation.validate(CitiesValidation.GET_SCHEMA, req)
-        
+    static async get(cityId: string): Promise<cityResponse> {
+
         const city = await prismaClient.masterCity.findUnique({
             where: {
-                id: validation.cityId
+                id: cityId
             }
         })
         
@@ -28,12 +23,11 @@ export class CitiesService {
         return toCityResponse(city)
     }
 
-    static async getByProvince(req: getCitiesByProvinceRequest): Promise<Array<cityByProvinceResponse>> {
-        const validation = Validation.validate(CitiesValidation.GET_CITY_BY_PROVINCE_SCHEMA, req)
+    static async getByProvince(provinceId: string): Promise<Array<cityByProvinceResponse>> {
 
         const citiesByProvince = await prismaClient.masterCity.findMany({
             where: {
-                provinceId: validation.provinceId
+                provinceId: provinceId
             },
             orderBy: {
                 name: "asc" 

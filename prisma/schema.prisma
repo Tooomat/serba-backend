@@ -24,6 +24,11 @@ enum StatusUser {
   BLOCKED
 }
 
+enum Mark {
+  HOME
+  OFFICE
+}
+
 enum JobSite {
   ON_SITE
   HYBRID
@@ -81,10 +86,12 @@ model User {
 
 model Address {
   id         String  @id @default(uuid())
-  street     String  @db.VarChar(255)
+  street     String  @db.Text
   country    String  @default("Indonesia")
   postalCode String  @map("postal_code") @db.VarChar(10)
-  benchmark  String  @db.Text
+  benchmark  String? @db.Text
+  markAs     Mark    @map("mark_as")
+  isPrimary  Boolean @default(true) @map("is_primary")
   locations  Json
   lat        Decimal @db.Decimal(10, 7)
   lng        Decimal @db.Decimal(10, 7)

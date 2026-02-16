@@ -32,17 +32,23 @@ export class AuthService {
 
         validation.password = await bcrypt.hash(validation.password, 10)
 
+        const userData: any = {
+            username: validation.username,
+            email: validation.email,
+            password: validation.password,
+            firstName: validation.firstName,
+            birthDate: validation.birthDate,
+            phone: validation.phone,
+        }
+        if (validation.lastName !== undefined) {
+            userData.lastName = validation.lastName
+        }
+        if (validation.profilePictUrl !== undefined) {
+            userData.profilePictUrl = validation.profilePictUrl
+        }
+
         const user = await prismaClient.user.create({
-            data: {
-                username: validation.username,
-                email: validation.email,
-                password: validation.password,
-                firstName: validation.firstName,
-                birthDate: validation.birthDate,
-                phone: validation.phone,
-                lastName: validation.lastName ?? null,
-                profilePictUrl: validation.profilePictUrl ?? null,
-            }
+            data: userData
         })
 
         return model.toRegisterResponse(user)

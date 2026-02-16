@@ -6,6 +6,7 @@ import { ProvincesController } from "../../controller/provinces.controller"
 import { CitiesController } from "../../controller/cities.controller"
 import { DistrictsController } from "../../controller/districts.controller"
 import { SubDistrictsController } from "../../controller/sub-districts.controller"
+import { AddressesController } from "../../controller/addresses.controller"
 
 export const privateRouter = express.Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
@@ -27,7 +28,7 @@ privateRouter.get("/api/cities", CitiesController.getAll)
 privateRouter.get("/api/provinces/:provinceId/cities", CitiesController.getByProvince)
 
 // districs
-privateRouter.get("/api/districts/:districtId", DistrictsController.get)
+privateRouter.get("/api/districts/:districtId", DistrictsController.get) 
 privateRouter.get("/api/districts", DistrictsController.getAll)
 privateRouter.get("/api/cities/:cityId/districts", DistrictsController.getByCity)
 
@@ -36,3 +37,9 @@ privateRouter.get("/api/subDistricts/:subDistrictId", SubDistrictsController.get
 privateRouter.get("/api/subDistricts", SubDistrictsController.getAll)
 privateRouter.get("/api/districts/:districtId/subDistricts", SubDistrictsController.getByDistrict)
 
+// addresses
+privateRouter.get("/api/addresses", AddressesController.getAll)
+privateRouter.post("/api/addresses", AddressesController.create)
+privateRouter.get("/api/addresses/:addressId", AddressesController.get)
+privateRouter.patch("/api/addresses/:addressId", AddressesController.update)
+privateRouter.delete("/api/addresses/:addressId", AddressesController.delete)
