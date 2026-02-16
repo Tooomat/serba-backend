@@ -145,7 +145,7 @@ docker exec -it app-dev npx prisma migrate dev
 
 #### Generate Prisma
 ```bash
-docker exec -it app-dev npx prisma generate
+docker exec -it app-dev npx prisma generate 
 ```
 
 #### Prisma seeder Dev

@@ -18,9 +18,7 @@ export class AuthValidation {
         profilePictUrl: z
             .string()
             .max(255)
-            .optional()
-            .nullable()
-            .default(null),
+            .optional(),
         firstName: z
             .string()
             .min(1, 'first name must contain at least 1 characters')
@@ -28,9 +26,7 @@ export class AuthValidation {
         lastName: z
             .string()
             .max(100)
-            .optional()
-            .nullable()
-            .default(null),
+            .optional(),
         birthDate: z
             .string()
             .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")

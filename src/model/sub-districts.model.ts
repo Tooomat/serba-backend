@@ -7,9 +7,7 @@ type locationJson = {
     name: string
 }
 
-export type getSubDistrictRequest = {
-    subDistrictId: string
-}
+// ================================== GET ==================================
 export type subDistrictResponse = {
     id: string
     code: string
@@ -45,9 +43,7 @@ export function toSubDistrictResponse(subDistricts: MasterSubdistrict): subDistr
     }
 }
 
-export type getSubDistrictByDistricRequest = {
-    districtId: string
-}
+// ================================== GET BY DISTRICT ==================================
 export type subDistrictByDistrictResponse = {
     id: string
     name: string
