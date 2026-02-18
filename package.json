@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "dotenv -e .env.development cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
     "dev:docker:up": "docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build",
     "dev:docker:start": "docker compose --env-file .env.development -f docker-compose.dev.yml start",
     "dev:docker:stop": "docker compose --env-file .env.development -f docker-compose.dev.yml stop",
@@ -21,8 +21,8 @@
     "build": "tsc",
     "start": "dotenv -e .env.production cross-env NODE_ENV=production node dist/index.ts",
 
-    "prisma:generate:dev": "dotenv -e .env.local -- prisma generate",
-    "prisma:migrate:dev": "dotenv -e .env.local -- prisma migrate dev",
+    "prisma:generate:dev": "dotenv -e .env.development -- prisma generate",
+    "prisma:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test -- prisma migrate deploy",
     "prisma:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
 

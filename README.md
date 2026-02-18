@@ -53,7 +53,6 @@ Salin file environment contoh:
 
 ```bash
 cp .env.example .env.development
-cp .env.example .env.development.docker
 cp .env.example .env.test
 cp .env.example .env.production
 ```
@@ -67,7 +66,7 @@ Lalu sesuaikan isi `.env` terutama:
 
 ---
 
-### 4. Prisma Migration (Local Database)
+### 4. Prisma Migration (LOCAL)
 
 ```bash
 npx prisma migrate dev
@@ -83,9 +82,9 @@ npm run prisma:generate:dev
 
 ---
 
-### 5. Run App (Local)
+### 5. Run App (LOCAL)
 
-#### Development (Hot Reload)
+#### DEVELOPMENT (Hot Reload)
 
 ```bash
 npm run dev
@@ -101,13 +100,6 @@ Test file tertentu:
 
 ```bash
 npm run test -- test/auth.login.test.ts
-```
-
-#### Production (Tanpa Docker)
-
-```bash
-npm run build
-npm run start
 ```
 
 ---
@@ -289,6 +281,8 @@ npx prisma generate
 
 * `route/public-api-registry.route.ts`
 * `route/private-api-registry.route.ts`
+
+9. Create seeder di `prisma/seeds`
 
 ---
 
