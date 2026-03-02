@@ -1,5 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/client";
 import { z } from "zod";
+import { Mark } from "../generated/prisma/enums";
 
 export class AddressesValidation {
     static readonly CREATE_SCHEMA = z.object({
@@ -19,8 +20,9 @@ export class AddressesValidation {
             .string()
             .toLowerCase()
             .refine((val) => ["home", "office"].includes(val), {
-                message: "mark as must be either home or office"
-            }),
+                message: "mark as must be either Home or Office"
+            })
+            .transform(val => val === "home" ? Mark.HOME : Mark.OFFICE),
         isPrimary: z
             .coerce
             .boolean(),
@@ -61,8 +63,9 @@ export class AddressesValidation {
             .string()
             .toLowerCase()
             .refine((val) => ["home", "office"].includes(val), {
-                message: "mark as must be either home or office"
+                message: "mark as must be either Home or Office"
             })
+            .transform(val => val === "home" ? Mark.HOME : Mark.OFFICE)
             .optional(),
         isPrimary: z
             .coerce

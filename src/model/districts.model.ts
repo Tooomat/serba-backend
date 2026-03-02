@@ -12,16 +12,8 @@ export type districtResponse = {
     id: string
     code: string
     name: string
-    province: {
-        id: string
-        code: string
-        name: string
-    }
-    city: {
-        id: string
-        code: string
-        name: string
-    }
+    province: locationJson
+    city: locationJson
 }
 export function toDistrictResponse(district: MasterDistrict): districtResponse {
     const province = parseJsonLocation<locationJson>(district.province)

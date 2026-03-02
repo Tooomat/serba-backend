@@ -8,7 +8,7 @@ export type  registerRequest = {
     profilePictUrl?: string
     firstName: string
     lastName?: string
-    birthDate: Date
+    birthDate: string
     phone: string
 }
 
@@ -21,8 +21,6 @@ export type registerResponse = {
     lastName?: string | null 
     birthDate: Date
     phone: string
-    isEmailVerified?: boolean 
-    isPhoneVerified?: boolean
     status: StatusUser
     createdAt: Date
 }
@@ -37,9 +35,9 @@ export function toRegisterResponse(user: User) {
         lastName: user.lastName,
         birthDate: user.birthDate,
         phone: user.phone,
-        isEmailVerified: user?.isEmailVerified,
-        isPhoneVerified: user?.isPhoneVerified,
         status: user.status,
+        isEmailVerified: user.isEmailVerified,
+        isPhoneVerified: user.isPhoneVerified,
         createdAt: user.createdAt
     }
 }

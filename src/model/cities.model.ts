@@ -12,11 +12,7 @@ export type cityResponse = {
     id: string
     code: string
     name: string
-    province: {
-        id: string
-        code: string
-        name: string
-    }
+    province: locationJson
 }
 export function toCityResponse(city: MasterCity): cityResponse {
     const province = parseJsonLocation<locationJson>(city.province)
