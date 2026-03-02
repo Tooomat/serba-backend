@@ -266,4 +266,6 @@ model JobApplication {
 
   jobId String
   job   Job    @relation(fields: [jobId], references: [id])
+
+  @@map("job_application")
 }

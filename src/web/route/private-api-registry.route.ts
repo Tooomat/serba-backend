@@ -8,12 +8,16 @@ import { DistrictsController } from "../../controller/districts.controller"
 import { SubDistrictsController } from "../../controller/sub-districts.controller"
 import { AddressesController } from "../../controller/addresses.controller"
 import { JobsController } from "../../controller/jobs.controller"
+import { UsersController } from "../../controller/users.controller"
 
 export const privateRouter = express.Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
 
 // auth
 privateRouter.post("/api/auth/logout", AuthController.logout)
+
+//user
+privateRouter.get("/api/users/current", UsersController.current)
 
 // job categories
 privateRouter.get("/api/jobCategories/:jobCategoryId", JobCategoriesController.get)
