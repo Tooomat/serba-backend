@@ -11,7 +11,7 @@ webApp.use(cookieParser())
 webApp.use(
   "/public",
   express.static(path.join(process.cwd(), "public"))
-);
+)
 webApp.use(router)
 webApp.use(ErrorHandlerMiddleware)
 

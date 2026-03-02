@@ -12,21 +12,9 @@ export type subDistrictResponse = {
     id: string
     code: string
     name: string
-    province: {
-        id: string
-        code: string
-        name: string
-    }
-    city: {
-        id: string
-        code: string
-        name: string
-    }
-    district: {
-        id: string
-        code: string
-        name: string
-    }
+    province: locationJson
+    city: locationJson
+    district: locationJson
 }
 export function toSubDistrictResponse(subDistricts: MasterSubdistrict): subDistrictResponse {
     const province = parseJsonLocation<locationJson>(subDistricts.province)

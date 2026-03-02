@@ -73,7 +73,7 @@ const jobCategoriesSeed = [
   },
   {
     id: "jc9",
-    code: "FnB",
+    code: "FNB",
     name: "Makanan & Minuman",
     image1: img("FNB", "FnB", 1),
     image2: img("FNB", "FnB", 2),
@@ -130,33 +130,17 @@ const jobCategoriesSeed = [
 ]
 
 export async function seedJobCategories() {
-    for (const item of jobCategoriesSeed) {
-        imgVal.imageWebpIsExist(item.image1)
-        imgVal.imageWebpIsExist(item.image2)
-        imgVal.imageWebpIsExist(item.image3)
-        await prismaClient.jobCategory.upsert ({
-            where: {
-                id: item.id
-            },
-            update: {
-                code: item.code,
-                name: item.name,
-                image1: item.image1,
-                image2: item.image2,
-                image3: item.image3
-            },
-            create: item,
-        })
-    }
+  await prismaClient.jobCategory.deleteMany({})
 
-    console.log("Job Categories seeded")
+  for (const item of jobCategoriesSeed) {
+      imgVal.imageWebpIsExist(item.image1)
+      imgVal.imageWebpIsExist(item.image2)
+      imgVal.imageWebpIsExist(item.image3)
+  }
+
+  await prismaClient.jobCategory.createMany({
+      data: jobCategoriesSeed
+  })
+
+  console.log("Job Categories seeded")
 }
-
-seedJobCategories()
-  .catch((e) => {
-    console.error("Job Categories failed", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prismaClient.$disconnect();
-  })

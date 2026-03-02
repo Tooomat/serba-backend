@@ -63,7 +63,7 @@ export class AddressesService {
                 subdistrictId: validate.subdistrictId,
                 street: validate.street,
                 postalCode: validate.postalCode,
-                markAs: validate.markAs === "home" ? "HOME" : "OFFICE",
+                markAs: validate.markAs,
                 isPrimary: validate.isPrimary,
                 lat: validate.lat,
                 lng: validate.lng,
@@ -203,7 +203,7 @@ export class AddressesService {
             if (validate.postalCode !== undefined) updateData.postalCode = validate.postalCode
             if (validate.benchmark !== undefined) updateData.benchmark = validate.benchmark
             if (validate.markAs !== undefined) {
-                updateData.markAs = validate.markAs === "home" ? "HOME" : "OFFICE"
+                updateData.markAs = validate.markAs
             }
             if (validate.isPrimary !== undefined) updateData.isPrimary = validate.isPrimary
             if (validate.lat !== undefined) updateData.lat = validate.lat
@@ -221,7 +221,7 @@ export class AddressesService {
         })
     }
 
-    static async delete(userId: string, addressId: string) {
+    static async delete(userId: string, addressId: string): Promise<void> {
 
         return await prismaClient.$transaction(async (tx) => {
             const address = await tx.address.findFirst({

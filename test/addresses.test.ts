@@ -151,7 +151,7 @@ describe("Address API Tests", () => {
                     street: "Jl. Merdeka No. 123",
                     postalCode: "60123",
                     benchmark: "Dekat Indomaret",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -161,7 +161,7 @@ describe("Address API Tests", () => {
             expect(res.body.success).toBe(true)
             expect(res.body.data.street).toBe("Jl. Merdeka No. 123")
             expect(res.body.data.isPrimary).toBe(true)
-            expect(res.body.data.markAs).toBe("HOME")
+            expect(res.body.data.markAs).toBe("Home")
             expect(res.body.data.benchmark).toBe("Dekat Indomaret")
             expect(res.body.data.locations.subdistrict.name).toBe("Tegalsari")
         })
@@ -174,7 +174,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Merdeka No. 123",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: false,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -194,7 +194,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Pertama",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -208,7 +208,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Kedua",
                     postalCode: "60124",
-                    markAs: "office",
+                    markAs: "Office",
                     isPrimary: false,
                     lat: "-7.2576",
                     lng: "112.7522"
@@ -216,7 +216,7 @@ describe("Address API Tests", () => {
 
             expect(res.status).toBe(201)
             expect(res.body.data.isPrimary).toBe(false)
-            expect(res.body.data.markAs).toBe("OFFICE")
+            expect(res.body.data.markAs).toBe("Office")
         })
 
         it("should auto-unset old primary when creating new primary address", async () => {
@@ -228,7 +228,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Primary 1",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -244,7 +244,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Primary 2",
                     postalCode: "60124",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2576",
                     lng: "112.7522"
@@ -267,7 +267,7 @@ describe("Address API Tests", () => {
                         subdistrictId: subdistrictId,
                         street: `Jl. Address ${i + 1}`,
                         postalCode: "60123",
-                        markAs: i === 0 ? "home" : "office",
+                        markAs: i === 0 ? "Home" : "Office",
                         isPrimary: i === 0,
                         lat: `-7.${2575 + i}`,
                         lng: `112.${7521 + i}`
@@ -300,7 +300,7 @@ describe("Address API Tests", () => {
                     subdistrictId: "invalid-id",
                     street: "Jl. Merdeka",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -318,7 +318,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Merdeka",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "100",  // > 90
                     lng: "112.7521"
@@ -336,7 +336,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Merdeka",
                     postalCode: "123",  // Not 5 digits
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -360,7 +360,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Address 1",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -373,7 +373,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Address 2",
                     postalCode: "60124",
-                    markAs: "office",
+                    markAs: "Office",
                     isPrimary: false,
                     lat: "-7.2576",
                     lng: "112.7522"
@@ -412,7 +412,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Test",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -443,9 +443,9 @@ describe("Address API Tests", () => {
             // Create another user
             const hashed = await bcrypt.hash("Password123!", 10)
             const otherUser = await prismaClient.user.create({
-                data: {
+                data: { 
                     username: "otheruser",
-                    email: "other@example.com",
+                    email: "otheruser@example.com",
                     password: hashed,
                     firstName: "Other",
                     birthDate: new Date("2000-01-01"),
@@ -513,7 +513,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Old",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -544,7 +544,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Test",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -557,11 +557,11 @@ describe("Address API Tests", () => {
                 .patch(`/api/addresses/${addressId}`)
                 .set("Authorization", `Bearer ${accessToken}`)
                 .send({
-                    markAs: "office"
+                    markAs: "Office"
                 })
 
             expect(res.status).toBe(200)
-            expect(res.body.data.markAs).toBe("OFFICE")
+            expect(res.body.data.markAs).toBe("Office")
         })
 
         it("should reject unsetting last primary address", async () => {
@@ -573,7 +573,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Primary",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -603,7 +603,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Primary 1",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -619,7 +619,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Primary 2",
                     postalCode: "60124",
-                    markAs: "office",
+                    markAs: "Office",
                     isPrimary: true,
                     lat: "-7.2576",
                     lng: "112.7522"
@@ -651,7 +651,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Primary",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -664,7 +664,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Non-Primary",
                     postalCode: "60124",
-                    markAs: "office",
+                    markAs: "Office",
                     isPrimary: false,
                     lat: "-7.2576",
                     lng: "112.7522"
@@ -695,7 +695,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Primary",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"
@@ -710,7 +710,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Non-Primary",
                     postalCode: "60124",
-                    markAs: "office",
+                    markAs: "Office",
                     isPrimary: false,
                     lat: "-7.2576",
                     lng: "112.7522"
@@ -741,7 +741,7 @@ describe("Address API Tests", () => {
                     subdistrictId: subdistrictId,
                     street: "Jl. Only",
                     postalCode: "60123",
-                    markAs: "home",
+                    markAs: "Home",
                     isPrimary: true,
                     lat: "-7.2575",
                     lng: "112.7521"

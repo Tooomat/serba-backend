@@ -44,7 +44,7 @@ describe("POST /public/api/auth/register", () => {
                 phone: "+628123456789"
             })
         
-        expect(res.status).toBe(201)
+        expect(res.status).toBe(201) 
         expect(res.body.success).toBe(true)
         expect(res.body.data).toBeDefined()
         expect(res.body.data.id).toBeDefined()
@@ -194,6 +194,208 @@ describe("POST /public/api/auth/register", () => {
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
         expect(res.body.errors).toBeDefined()
+    })
+
+    // NEW: Test Case 8b: Invalid - Invalid date format (MM/DD/YYYY)
+    it('should reject registration with invalid date format (MM/DD/YYYY)', async () => {
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: "01/01/2000",
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(400)
+        expect(res.body.success).toBe(false)
+        expect(res.body.errors).toBeDefined()
+    })
+
+    // Test Case 8c: Invalid - Invalid date (February 30)
+    it('should reject registration with invalid date (February 30)', async () => {
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: "2000-02-30",
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(400)
+        expect(res.body.success).toBe(false)
+        expect(res.body.errors).toBeDefined()
+    })
+
+    // Test Case 8d: Invalid - Invalid month (month 13)
+    it('should reject registration with invalid month (13)', async () => {
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: "2000-13-01",
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(400)
+        expect(res.body.success).toBe(false)
+        expect(res.body.errors).toBeDefined()
+    })
+
+    // Test Case 8e: Invalid - Birth date in the future
+    it('should reject registration with birth date in the future', async () => {
+        const futureDate = new Date()
+        futureDate.setFullYear(futureDate.getFullYear() + 1)
+        const futureDateStr = futureDate.toISOString().split('T')[0]
+
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: futureDateStr,
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(400)
+        expect(res.body.success).toBe(false)
+        expect(res.body.errors).toBeDefined()
+    })
+
+    // Test Case 8f: Invalid - Birth date is today
+    it('should reject registration with birth date as today', async () => {
+        const today = new Date().toISOString().split('T')[0]
+
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: today,
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(400)
+        expect(res.body.success).toBe(false)
+        expect(res.body.errors).toBeDefined()
+    })
+
+    // Test Case 8g: Invalid - Birth date before 1900
+    it('should reject registration with birth date before 1900', async () => {
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: "1899-12-31",
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(400)
+        expect(res.body.success).toBe(false)
+        expect(res.body.errors).toBeDefined()
+    })
+
+    // Test Case 8h: Invalid - User under 15 years old
+    it('should reject registration if user is under 15 years old', async () => {
+        const fourteenYearsAgo = new Date()
+        fourteenYearsAgo.setFullYear(fourteenYearsAgo.getFullYear() - 14)
+        const dateStr = fourteenYearsAgo.toISOString().split('T')[0]
+
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: dateStr,
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(400)
+        expect(res.body.success).toBe(false)
+        expect(res.body.errors).toBeDefined()
+    })
+
+    // NEW: Test Case 8i: Valid - User exactly 15 years old (edge case)
+    it('should accept registration if user is exactly 15 years old', async () => {
+        const fifteenYearsAgo = new Date()
+        fifteenYearsAgo.setFullYear(fifteenYearsAgo.getFullYear() - 15)
+        fifteenYearsAgo.setDate(fifteenYearsAgo.getDate() - 1) // 1 day earlier to ensure >= 15
+        const dateStr = fifteenYearsAgo.toISOString().split('T')[0]
+
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: dateStr,
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(201)
+        expect(res.body.success).toBe(true)
+    })
+
+    // Test Case 8j: Valid - Birth date on leap year (Feb 29)
+    it('should accept valid leap year date (February 29, 2000)', async () => {
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: "2000-02-29",
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(201)
+        expect(res.body.success).toBe(true)
+    })
+
+    // Test Case 8k: Valid - Old but valid birth date (1900-01-01)
+    it('should accept birth date exactly on January 1, 1900', async () => {
+        const res = await supertest(server.webApp)
+            .post("/public/api/auth/register")
+            .set("Content-Type", "application/json")
+            .send({
+                username: "testuser",
+                email: "test@example.com",
+                password: "Password123!",
+                firstName: "Test",
+                birthDate: "1900-01-01",
+                phone: "+628123456789"
+            })
+
+        expect(res.status).toBe(201)
+        expect(res.body.success).toBe(true)
     })
 
     // Test Case 9: Invalid - Phone number without +62

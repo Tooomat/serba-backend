@@ -7,21 +7,23 @@
     "test": "test"
   },
   "scripts": {
-    "dev": "dotenv -e .env.development cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "dotenv -e .env.development -- cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
     "dev:docker:up": "docker compose --env-file .env.development -f docker-compose.dev.yml up -d --build",
     "dev:docker:start": "docker compose --env-file .env.development -f docker-compose.dev.yml start",
     "dev:docker:stop": "docker compose --env-file .env.development -f docker-compose.dev.yml stop",
     "dev:docker:down": "docker compose --env-file .env.development -f docker-compose.dev.yml down",
     "dev:docker:down:volume": "docker compose --env-file .env.development -f docker-compose.dev.yml down -v",
 
-    "test": "dotenv -e .env.test cross-env NODE_ENV=test jest --runInBand",
+    "test": "dotenv -e .env.test -- cross-env NODE_ENV=test jest --runInBand",
     "test:docker:up": "docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit",
     "test:docker:down:volume": "docker compose --env-file .env.test -f docker-compose.test.yml down -v",
 
     "build": "tsc",
-    "start": "dotenv -e .env.production cross-env NODE_ENV=production node dist/index.ts",
+    "start": "dotenv -e .env.production -- cross-env NODE_ENV=production node dist/index.ts",
 
     "prisma:generate:dev": "dotenv -e .env.development -- prisma generate",
+    "prisma:generate:test": "dotenv -e .env.test -- prisma generate",
+
     "prisma:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test -- prisma migrate deploy",
     "prisma:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
@@ -29,7 +31,7 @@
     "prisma:seed:dev": "dotenv -e .env.development -- ts-node prisma/seeds/index.seeds.ts",
     "prisma:seed:test": "dotenv -e .env.test -- ts-node prisma/seeds/index.seeds.ts",
     "prisma:seed:prod": "dotenv -e .env.production -- node dist/prisma/seeds/index.seeds.ts",
-    
+
     "prisma:studio:dev": "dotenv -e .env.development -- prisma studio",
     "prisma:studio:test": "dotenv -e .env.test -- prisma studio --port 5556"
   },

@@ -7,6 +7,7 @@ import { CitiesController } from "../../controller/cities.controller"
 import { DistrictsController } from "../../controller/districts.controller"
 import { SubDistrictsController } from "../../controller/sub-districts.controller"
 import { AddressesController } from "../../controller/addresses.controller"
+import { JobsController } from "../../controller/jobs.controller"
 
 export const privateRouter = express.Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
@@ -43,3 +44,11 @@ privateRouter.post("/api/addresses", AddressesController.create)
 privateRouter.get("/api/addresses/:addressId", AddressesController.get)
 privateRouter.patch("/api/addresses/:addressId", AddressesController.update)
 privateRouter.delete("/api/addresses/:addressId", AddressesController.delete)
+
+// jobs
+privateRouter.post("/api/jobs", JobsController.create)
+privateRouter.get("/api/jobs/provider", JobsController.listMyCreatedJobs)
+privateRouter.get("/api/jobs/search", JobsController.searchJobs)
+privateRouter.get("/api/jobs/:jobId", JobsController.get)
+privateRouter.patch("/api/jobs/:jobId", JobsController.update)
+privateRouter.delete("/api/jobs/:jobId", JobsController.delete)

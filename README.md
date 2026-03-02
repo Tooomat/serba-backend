@@ -80,9 +80,14 @@ npm run prisma:migrate:dev
 npm run prisma:generate:dev
 ```
 
+### 5. Seeder (LOCAL)
+
+```bash
+npm run prisma:seed:dev
+```
 ---
 
-### 5. Run App (LOCAL)
+### 6. Run App (LOCAL)
 
 #### DEVELOPMENT (Hot Reload)
 
@@ -92,6 +97,17 @@ npm run dev
 
 ### Testing
 
+- migrate and generate
+```bash
+npm run prisma:migrate:test
+npm run prisma:generate:test
+```
+- seed to test
+```bash
+npm run prisma:seed:test
+```
+
+- run 
 ```bash
 npm run test
 ```
@@ -101,7 +117,6 @@ Test file tertentu:
 ```bash
 npm run test -- test/auth.login.test.ts
 ```
-
 ---
 
 ## Running with DOCKER
@@ -162,7 +177,6 @@ npm run dev:docker:down:volume
 ```bash
 npm run dev:docker:stop
 ```
-
 ---
 
 - TESTING (Jest + Prisma + Docker)
