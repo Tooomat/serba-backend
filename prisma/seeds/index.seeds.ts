@@ -21,10 +21,10 @@ async function seed(){
   console.log("📂 images Path:", BASE_IMAGE_PATH)
 
   await seedJobCategories()
-  // MasterLocations.masterProvince(PATH_FILE_WILAYAH)
-  // MasterLocations.masterCities(PATH_FILE_WILAYAH)
-  // MasterLocations.masterDistricts(PATH_FILE_WILAYAH)
-  // MasterLocations.masterSubDistricts(PATH_FILE_WILAYAH)
+  await MasterLocations.masterProvince(PATH_FILE_WILAYAH)
+  await MasterLocations.masterCities(PATH_FILE_WILAYAH)
+  await MasterLocations.masterDistricts(PATH_FILE_WILAYAH)
+  await MasterLocations.masterSubDistricts(PATH_FILE_WILAYAH)
 
   console.log("ALL SEEDING DONE")
 }
