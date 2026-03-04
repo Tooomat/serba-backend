@@ -258,7 +258,7 @@ model JobApplication {
   coverLetter    String?              @map("cover_letter") @db.Text
   proposedBudged Int?                 @map("proposed_budged")
   isAccepted     Boolean              @default(false) @map("is_accepted")
-  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  appliedAt      DateTime             @default(now()) @map("applied_at") @db.Timestamptz(3)
   status         statusJobApplication @default(PENDING)
 
   workerId String
@@ -267,5 +267,5 @@ model JobApplication {
   jobId String
   job   Job    @relation(fields: [jobId], references: [id])
 
-  @@map("job_application")
+  @@map("job_applications")
 }
