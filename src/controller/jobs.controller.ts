@@ -90,27 +90,26 @@ export class JobsController {
                 request.jobCategoriesId = toArray(auth.query.jobCategoriesId) as string[]
             }
             if (auth.query.title) {
-                request.title = auth.query.title as string
+                request.title = String(auth.query.title)
             }
             if (auth.query.level) {
                 request.level = toArray(auth.query.level) as string[]
             }
             if (auth.query.status) {
-                request.status = auth.query.status as string
+                request.status = String(auth.query.status)
             }
             if (auth.query.provinceId) {
-                request.provinceId = auth.query.provinceId as string
+                request.provinceId = String(auth.query.provinceId)
             }
             if (auth.query.cityId) {
-                request.cityId = auth.query.cityId as string
+                request.cityId = String(auth.query.cityId)
             }
             if (auth.query.districtId) {
-                request.districtId = auth.query.districtId as string
+                request.districtId = String(auth.query.districtId)
             }
             if (auth.query.subdistrictId) {
-                request.subdistrictId = auth.query.subdistrictId as string
-            }
-
+                request.subdistrictId = String(auth.query.subdistrictId)
+        }
             const { id: userId } = auth.user!
 
             const results = await JobsService.searchJobs(userId, request)
@@ -123,23 +122,23 @@ export class JobsController {
     static async update(auth: AuthRequest, res: Response, next: NextFunction) {
         try {
             const request: updateJobRequest = {
-                addressId: auth.body.addressId ? auth.body.addressId as string : undefined,
+                addressId: auth.body.addressId ? String(auth.body.addressId) : undefined,
                 jobCategoriesId: auth.query.jobCategoriesId ? toArray(auth.query.jobCategoriesId) as string[] : undefined,
-                title: auth.body.title ? auth.body.title as string : undefined,
-                introduction: auth.body.introduction ? auth.body.introduction as string : undefined,
-                description: auth.body.description ? auth.body.description as string : undefined,
+                title: auth.body.title ? String(auth.body.title) : undefined,
+                introduction: auth.body.introduction ? String(auth.body.introduction) : undefined,
+                description: auth.body.description ? String(auth.body.description) : undefined,
                 level: auth.body.level ? toArray(auth.body.level) as string[] : undefined,
-                type: auth.body.type ? auth.body.type as string : undefined,
-                required: auth.body.required ? auth.body.required as number : undefined,
-                jobSite: auth.body.jobSite ? auth.body.jobSite as string : undefined,
-                budgetMin: auth.body.budgetMin ? auth.body.budgetMin as number : undefined,
-                budgetMax: auth.body.budgetMax ? auth.body.budgetMax as number : undefined, 
-                budgetType: auth.body.budgetType ? auth.body.budgetType as string : undefined,
-                status: auth.body.status ? auth.body.status as string : undefined,
-                startTime: auth.body.startTime ? auth.body.startTime as string : undefined,
-                endTime: auth.body.endTime ? auth.body.endTime as string : undefined,
-                startDate: auth.body.startDate ? auth.body.startDate as string : undefined,
-                endDate: auth.body.endDate ? auth.body.endDate as string : undefined
+                type: auth.body.type ? String(auth.body.type) : undefined,
+                required: auth.body.required ? Number(auth.body.required) : undefined,  
+                jobSite: auth.body.jobSite ? String(auth.body.jobSite) : undefined,
+                budgetMin: auth.body.budgetMin ? Number(auth.body.budgetMin) : undefined,  
+                budgetMax: auth.body.budgetMax ? Number(auth.body.budgetMax) : undefined,  
+                budgetType: auth.body.budgetType ? String(auth.body.budgetType) : undefined,
+                status: auth.body.status ? String(auth.body.status) : undefined,
+                startTime: auth.body.startTime ? String(auth.body.startTime) : undefined,
+                endTime: auth.body.endTime ? String(auth.body.endTime) : undefined,
+                startDate: auth.body.startDate ? String(auth.body.startDate) : undefined,
+                endDate: auth.body.endDate ? String(auth.body.endDate) : undefined,
             }
             
             const jobId: string = String(auth.params.jobId)
