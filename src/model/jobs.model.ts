@@ -53,7 +53,10 @@ export type jobListPublicResponse = {
     primaryImage: string
 }
 
-export function toJobListPublicResponse(job: Job, image: string): jobListPublicResponse {
+export function toJobListPublicResponse(
+    job: Job, 
+    image: string
+): jobListPublicResponse {
     const locations = parseJsonLocation<locationJson>(job.locations)
     const jobAge = getTimeAgo(job.createdAt, 'en')
     
@@ -144,7 +147,9 @@ export type jobResponse = {
     updatedAt?: Date | null
 }
 
-export function toJobResponse(job: Job): jobResponse{
+export function toJobResponse(
+    job: Job
+): jobResponse{
     const locations = parseJsonLocation<locationJson>(job.locations)
     
     const response: jobResponse = {
@@ -237,8 +242,8 @@ export type jobDetailResponse = {
 
 export function toJobDetailResponse(
     job: Job, 
-    user: User, 
-    categories: JobCategory[], 
+    user: Pick<User, 'id' | 'firstName' | 'lastName' | 'username' | 'profilePictUrl' | 'isEmailVerified' | 'isPhoneVerified'>, 
+    categories: Pick<JobCategory, 'id' | 'name'>[], 
     isProvider: boolean,
     acceptedApplicants?: acceptedApplicantResponse[] | null
 ): jobDetailResponse {
@@ -362,8 +367,8 @@ export type jobListResponse = {
 
 export function toJobListResponse(
     job: Job, 
-    user: User, 
-    categories: JobCategory[], 
+    user: Pick<User, 'id' | 'firstName' | 'lastName' | 'username' | 'profilePictUrl' | 'isEmailVerified' | 'isPhoneVerified'>, 
+    categories: Pick<JobCategory, 'id' | 'name'>[], 
     isProvider: boolean, 
     distance?: string | null
 ): jobListResponse {

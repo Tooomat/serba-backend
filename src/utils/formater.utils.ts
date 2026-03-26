@@ -1,4 +1,16 @@
-import { BudgetTypeJob, JobSite, LevelJob, StatusJob, TypeJob } from "../generated/prisma/enums"
+import { BudgetTypeJob, JobSite, LevelJob, NotificationType, StatusJob, statusJobApplication, StatusUser, TypeJob } from "../generated/prisma/enums"
+
+export const userFormatter = {
+    status: (status: StatusUser): string => {
+        const map: Record<StatusUser, string> = {
+            [StatusUser.PENDING_VERIFICATION]: 'Pending Verification',
+            [StatusUser.ACTIVE]: 'Active',
+            [StatusUser.BLOCKED]: 'Blocked'
+        }
+
+        return map[status] || status
+    }
+}
 
 export const JobFormatters = {
     type: (type: TypeJob): string => {
@@ -50,7 +62,43 @@ export const JobFormatters = {
     }
 }
 
+export const jobApplicationFormater = {
+    status: (statusApp: statusJobApplication): string => {
+        const map: Record<statusJobApplication, string> = {
+            [statusJobApplication.ACCEPTED]: 'Accepted',
+            [statusJobApplication.SHORTLISTED]: 'Shortlisted',
+            [statusJobApplication.APPLIED]: 'Applied',
+            [statusJobApplication.REJECTED]: 'Rejected',
+            [statusJobApplication.REVIEWED]: 'Reviewed'
+        }
+        return map[statusApp] || statusApp
+    }
+}
+
+export const notificationsFormater = {
+    type: (type: NotificationType): string => {
+        const map: Record<NotificationType, string> = {
+            [NotificationType.JOB_ACCEPTED]: 'Job Accepted',
+            [NotificationType.JOB_APPLIED]: 'Job Applied',
+            [NotificationType.JOB_REJECTED]: 'Job Rejected',
+            [NotificationType.JOB_REVIEWED]: 'Job Reviewed'
+        }
+
+        return map[type] || status
+    }
+}
+
 export const toArray = (value: any): string[] | undefined => {
                             if (!value) return undefined
                             return Array.isArray(value) ? value : [value]
                         }
+
+export function getFullName(first: string, last?: string | null): string {
+    return last ? `${first} ${last}` : first
+}
+
+export function maskEmail(email: string): string {
+    const [local, domain] = email.split('@')
+    const masked = local![0] + '***'
+    return `${masked}@${domain}`
+}

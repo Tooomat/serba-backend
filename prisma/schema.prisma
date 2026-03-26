@@ -63,10 +63,23 @@ enum StatusJob {
 }
 
 enum statusJobApplication {
-  PENDING
+  APPLIED
   REVIEWED
+  SHORTLISTED
   ACCEPTED
   REJECTED
+}
+
+enum NotificationType {
+  JOB_APPLIED
+  JOB_REVIEWED
+  JOB_ACCEPTED
+  JOB_REJECTED
+}
+
+enum TypeReview {
+  WORKER_TO_PROVIDER
+  PROVIDER_TO_WORKER
 }
 
 model User {
@@ -90,13 +103,31 @@ model User {
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
   phoneVerifiedAt DateTime? @map("phone_verified_at") @db.Timestamptz(3)
 
-  addresses       Address[]
-  jobs            Job[]
-  jobApplications JobApplication[]
+  emailVerifications EmailVerification[]
+  addresses          Address[]
+  jobs               Job[]
+  jobApplications    JobApplication[] 
+  notifications      Notifications[]
+  bookmarks Bookmarks[]
+  reviewsGiven   Reviews[] @relation("Reviewer")
+  reviewsReceived Reviews[] @relation("Reviewee")
 
   @@map("users")
 }
 
+model EmailVerification {
+  id        String    @id
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_verifications")
+}
+ 
 model Address {
   id         String  @id @default(uuid())
   street     String  @db.Text
@@ -225,6 +256,7 @@ model Job {
   required Int
 
   status           StatusJob @default(OPEN)
+  acceptedCount    Int       @default(0) @map("accepted_count")
   applicationCount Int       @default(0) @map("application_count")
 
   startTime DateTime? @map("start_time") @db.Time()
@@ -243,29 +275,95 @@ model Job {
   categoriesMapping CategoriesMapping[]
 
   jobProviderId String @map("job_provider_id")
-  user          User   @relation(fields: [jobProviderId], references: [id])
+  jobProvider   User   @relation(fields: [jobProviderId], references: [id])
 
   addressId String  @map("address_id")
   address   Address @relation(fields: [addressId], references: [id])
 
   jobApplications JobApplication[]
+  bookmarks Bookmarks[]
 
   @@map("jobs")
 }
 
+model Bookmarks {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user User @relation(fields: [userId], references: [id])
+
+  jobId String @map("job_id")
+  job Job @relation(fields: [jobId], references: [id])
+
+  @@unique([userId, jobId])
+  @@map("bookmarks")
+}
+
 model JobApplication {
-  id             String               @id @default(uuid())
-  coverLetter    String?              @map("cover_letter") @db.Text
-  proposedBudged Int?                 @map("proposed_budged")
-  isAccepted     Boolean              @default(false) @map("is_accepted")
-  appliedAt      DateTime             @default(now()) @map("applied_at") @db.Timestamptz(3)
-  status         statusJobApplication @default(PENDING)
+  id          String  @id @default(uuid())
+  coverLetter String? @map("cover_letter") @db.Text
 
-  workerId String
-  user     User   @relation(fields: [workerId], references: [id])
+  appliedAt  DateTime  @default(now()) @map("applied_at") @db.Timestamptz(3)
+  acceptedAt DateTime? @map("accepted_at") @db.Timestamptz(3)
+  rejectedAt DateTime? @map("rejected_at") @db.Timestamptz(3)
+  reviewedAt DateTime? @map("reviewed_at") @db.Timestamptz(3)
 
-  jobId String
-  job   Job    @relation(fields: [jobId], references: [id])
+  status statusJobApplication @default(APPLIED)
 
+  workerId String @map("worker_id")
+  worker   User   @relation(fields: [workerId], references: [id])
+
+  jobId         String          @map("job_id")
+  job           Job             @relation(fields: [jobId], references: [id])
+  notifications Notifications[]
+  reviews Reviews[]
+
+  @@unique([workerId, jobId]) // worker tidak bisa apply job yang sama dua kali
   @@map("job_applications")
+}
+
+model Notifications {
+  id String @id @default(uuid())
+
+  type    NotificationType
+  title   String
+  message String           @db.Text
+
+  isRead Boolean @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  jobApplicationId String         @map("job_application_id")
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
+
+  @@map("notifications")
+}
+
+model Reviews {
+  id String @id @default(uuid())
+
+  rating Int     // 1 - 5
+  comment String? @db.Text
+  type TypeReview
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // siapa yang kasih review
+  reviewerId String @map("reviewer_id")
+  reviewer   User   @relation("Reviewer", fields: [reviewerId], references: [id])
+
+  // siapa yang direview
+  revieweeId String @map("reviewee_id")
+  reviewee   User   @relation("Reviewee", fields: [revieweeId], references: [id])
+
+  jobApplicationId String @map("job_application_id")
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
+
+  @@unique([reviewerId, jobApplicationId])
+  @@map("reviews")
 }

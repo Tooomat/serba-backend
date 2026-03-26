@@ -22,7 +22,11 @@ export function parseTimeToDate(time: string): Date {
     return now
 }
 
-export function parseDateToDay(date: Date): string{
+export function parseDateToDay(date: Date | null): string | null{
+    if (date === null) {
+        return null
+    }
+
     const days = [
         'Sunday',
         'Monday',

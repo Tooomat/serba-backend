@@ -1,7 +1,6 @@
 import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
-import { Job } from "../generated/prisma/client";
-import { Pagable } from "../model/helper/paging.helper";
+import { buildPaging, Pagable } from "../model/helper/paging.helper";
 import { 
     acceptedApplicantResponse,
     createJobRequest, 
@@ -23,13 +22,43 @@ import { JobsValidation } from "../validation/jobs.validation";
 import { Validation } from "../validation/validation";
 
 export class JobsService { 
-    static async create(userId: string, req: createJobRequest): Promise<jobResponse> {
+    static async create(jobProviderId: string, req: createJobRequest): Promise<jobResponse> {
         const validate = Validation.validate(JobsValidation.CREATE_SCHEMA, req)
 
         return await prismaClient.$transaction(async (tx) => {
+            const provider = await tx.user.findUnique({
+                where: {
+                    id: jobProviderId
+                },
+                select: {
+                    id: true,
+                    status: true
+                }
+            }) 
+            if (!provider) {
+                throw new ResponseError(
+                    404,
+                    "Job provider not found"
+                )
+            }
+
+            // if (provider.status === 'PENDING_VERIFICATION') {
+            //     throw new ResponseError(
+            //         400,
+            //         "Please complete your account verification first"
+            //     )
+            // }
+            
             const address = await tx.address.findUnique({
                 where: {
                     id: validate.addressId
+                },
+                select: {
+                    id: true,
+                    lat: true,
+                    lng: true,
+                    street: true,
+                    locations: true
                 }
             })
             if (!address) {
@@ -40,7 +69,7 @@ export class JobsService {
             }
 
             const jobData: any = {
-                jobProviderId: userId,
+                jobProviderId: jobProviderId,
                 addressId: validate.addressId,
                 title: validate.title,
                 description: validate.description,
@@ -76,6 +105,9 @@ export class JobsService {
                     id: {
                         in: validate.jobCategoriesId
                     }
+                },
+                select: {
+                    id: true
                 }
             })
             if (categories.length !== validate.jobCategoriesId.length) {
@@ -84,15 +116,14 @@ export class JobsService {
                     "One or more job categories not found"
                 )
             }
-            if (categories.length === validate.jobCategoriesId.length) {
-                await tx.categoriesMapping.createMany({
-                    data: validate.jobCategoriesId.map((categoryId) => ({
-                        jobCategoryId: categoryId,
-                        jobId: job.id
-                    }))
-                })
-            }
 
+            await tx.categoriesMapping.createMany({
+                data: validate.jobCategoriesId.map((categoryId) => ({
+                    jobCategoryId: categoryId,
+                    jobId: job.id
+                }))
+            })
+            
             return toJobResponse(job)
         })
     }
@@ -130,7 +161,7 @@ export class JobsService {
             })
         ])
 
-        const totalPage = Math.ceil(totalData/validate.size)
+        const totalPage = Math.max(1, Math.ceil(totalData / validate.size))
 
         // ALGORITMA 
         // 1. Image kategori dipakai berurutan (image1 → image2 → image3).
@@ -155,16 +186,12 @@ export class JobsService {
 
         return {
             data: datas,
-            paging: {
-                currentPage: validate.page,
-                totalPage: totalPage,
-                totalElement: totalData,
-                size: validate.size,
-                nextPage: validate.page < totalPage,
-                previousPage: validate.page > 1,
-                firstPage: validate.page === 1,
-                lastPage: validate.page === totalPage
-            }
+            paging: buildPaging(
+                validate.page,
+                validate.size,
+                totalData,
+                totalPage
+            )
         }
 
     }
@@ -176,10 +203,15 @@ export class JobsService {
                 id: jobId
             },
             include: {
-                user: {}, 
+                jobProvider: true,
                 categoriesMapping: { 
                     include: {
-                        jobCategory: {} 
+                        jobCategory: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
                     }
                 }
             }
@@ -188,7 +220,7 @@ export class JobsService {
             throw new ResponseError(404, "Job not found")
         }
 
-        let isProvider = job.user.id === userId
+        const isProvider = job.jobProvider.id === userId
         
         const categories = job.categoriesMapping.map(
             (mapping) => mapping.jobCategory
@@ -200,28 +232,36 @@ export class JobsService {
                 where: {
                     AND: [
                         { jobId: jobId },
-                        { isAccepted: true }
+                        { status: 'ACCEPTED' }
                     ]
                 },
                 include: {
-                    user: true
+                    worker: {
+                        select: {
+                            id: true,
+                            username: true,
+                            firstName: true,
+                            lastName: true,
+                            profilePictUrl: true
+                        }
+                    }
                 },
                 orderBy: {
-                    createdAt: 'desc'
+                    appliedAt: 'desc'
                 }
             })
 
             worker = jobApplications.map(jobApplication => ({
-                id: jobApplication.user.id,
-                username: jobApplication.user.username,
-                name: [jobApplication.user.firstName, jobApplication.user.lastName].filter(Boolean).join(' '),
-                profilePictUrl: jobApplication.user.profilePictUrl
+                id: jobApplication.worker.id,
+                username: jobApplication.worker.username,
+                name: [jobApplication.worker.firstName, jobApplication.worker.lastName].filter(Boolean).join(' '),
+                profilePictUrl: jobApplication.worker.profilePictUrl
             }))
         }
 
         return toJobDetailResponse(
             job, 
-            job.user, 
+            job.jobProvider, 
             categories, 
             isProvider,
             worker
@@ -239,10 +279,25 @@ export class JobsService {
                     jobProviderId: userId
                 },
                 include: {
-                    user: {},
+                    jobProvider: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            username: true,
+                            profilePictUrl: true,
+                            isEmailVerified: true,
+                            isPhoneVerified: true
+                        }
+                    },
                     categoriesMapping: {
                         include: {
-                            jobCategory: {}
+                            jobCategory: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
                         }
                     }
                 },
@@ -260,9 +315,9 @@ export class JobsService {
             })
         ])
 
-        const totalPage = Math.ceil(totalData/validate.size)
+        const totalPage = Math.max(1, Math.ceil(totalData / validate.size))
         const datas: jobListResponse[] = jobsProvider.map((job) => {
-            let isProvider = job.user.id === userId
+            const isProvider = job.jobProvider.id === userId
         
             const categories = job.categoriesMapping.map(
                 (mapping) => mapping.jobCategory
@@ -270,7 +325,7 @@ export class JobsService {
 
             return toJobListResponse(
                 job,
-                job.user,
+                job.jobProvider,
                 categories,
                 isProvider
             )
@@ -278,16 +333,12 @@ export class JobsService {
 
         return {
             data: datas,
-            paging: {
-                currentPage: validate.page,
-                totalPage: totalPage,
-                totalElement: totalData,
-                size: validate.size,
-                nextPage: validate.page < totalPage,
-                previousPage: validate.page > 1,
-                firstPage: validate.page === 1,
-                lastPage: validate.page === totalPage
-            }
+            paging: buildPaging(
+                validate.page,
+                validate.size,
+                totalData,
+                totalPage
+            )
         }
     }
     
@@ -394,7 +445,7 @@ export class JobsService {
                     AND: filters
                 },
                 include: {
-                    user: true,
+                    jobProvider: true,
                     categoriesMapping: {
                         include: {
                             jobCategory: true
@@ -415,9 +466,9 @@ export class JobsService {
             })
         ])
 
-        const totalPage = Math.ceil(totalData/validate.size)
+        const totalPage = Math.max(1, Math.ceil(totalData / validate.size))
         const datas: jobListResponse[] = jobs.map(job => {
-            let isProvider = job.user.id === userId
+            const isProvider = job.jobProvider.id === userId
         
             const categories = job.categoriesMapping.map(
                 (mapping) => mapping.jobCategory
@@ -425,7 +476,7 @@ export class JobsService {
 
             return toJobListResponse(
                 job,
-                job.user,
+                job.jobProvider,
                 categories,
                 isProvider
             )
@@ -433,16 +484,12 @@ export class JobsService {
 
         return {
             data: datas,
-            paging: {
-                currentPage: validate.page,
-                totalPage: totalPage,
-                totalElement: totalData,
-                size: validate.size,
-                nextPage: validate.page < totalPage,
-                previousPage: validate.page > 1,
-                firstPage: validate.page === 1,
-                lastPage: validate.page === totalPage
-            }
+            paging: buildPaging(
+                validate.page,
+                validate.size,
+                totalData,
+                totalPage
+            )
         }
     }
 
@@ -455,7 +502,11 @@ export class JobsService {
                     id: jobId
                 },
                 include: {
-                    user: true
+                    jobProvider: {
+                        select: {
+                            id: true
+                        }
+                    }
                 }
             })
             if (!job) {
@@ -464,7 +515,7 @@ export class JobsService {
             if (job.status === 'CLOSED') {
                 throw new ResponseError(400, "Status job closed, cannot be to update")
             }
-            if (job.user.id !== userId) {
+            if (job.jobProvider.id !== userId) {
                 throw new ResponseError(401, "Not the owner job")
             }
 
@@ -473,6 +524,13 @@ export class JobsService {
                 const address = await tx.address.findUnique({
                     where: {
                         id: validate.addressId
+                    },
+                    select: {
+                        id: true,
+                        lat: true,
+                        lng: true,
+                        street: true,
+                        locations: true
                     }
                 })
                 if (!address) {
@@ -493,6 +551,9 @@ export class JobsService {
                         id: {
                             in: validate.jobCategoriesId
                         }
+                    },
+                    select: {
+                        id: true
                     }
                 })
                 if (jobCategories.length !== validate.jobCategoriesId.length) {
@@ -517,7 +578,6 @@ export class JobsService {
                     where: {
                         AND: [
                             { jobId: jobId },
-                            { isAccepted: true },
                             { status: 'ACCEPTED' }
                         ]
                     }
@@ -533,12 +593,9 @@ export class JobsService {
             if (validate.description !== undefined) jobData.description = validate.description
             if (validate.level !== undefined) jobData.level = validate.level
             if (validate.type !== undefined) jobData.type = validate.type
-            if (validate.required !== undefined) jobData.required = validate.required
             if (validate.jobSite !== undefined) jobData.jobSite = validate.jobSite
-            if (validate.budgetMin !== undefined && validate.budgetMax !== undefined) {
-                jobData.budgetMin = validate.budgetMin
-                jobData.budgetMax = validate.budgetMax
-            } 
+            if (validate.budgetMin !== undefined) jobData.budgetMin = validate.budgetMin
+            if (validate.budgetMax !== undefined) jobData.budgetMax = validate.budgetMax
             if (validate.budgetType !== undefined) jobData.budgetType = validate.budgetType
             if (validate.status !== undefined) jobData.status = validate.status
             if (validate.startTime !== undefined) jobData.startTime = parseTimeToDate(validate.startTime)
@@ -564,13 +621,17 @@ export class JobsService {
                     id: jobId
                 },
                 include: {
-                    user: true
+                    jobProvider: {
+                        select: {
+                            id: true
+                        }
+                    }
                 }
             })
             if (!job) {
-                throw new ResponseError(404, "Job no found")
+                throw new ResponseError(404, "Job not found")
             }
-            if (job.user.id !== userId) {
+            if (job.jobProvider.id !== userId) {
                 throw new ResponseError(401, "Not the owner job")
             }
             if (job.status === 'CLOSED') {

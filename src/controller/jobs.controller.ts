@@ -8,7 +8,6 @@ import {
 } from "../model/jobs.model";
 import { JobsService } from "../service/jobs.service";
 import { success_handler } from "../web/http/web-response.http";
-import { LevelJob, StatusJob } from "../generated/prisma/enums";
 import { toArray } from "../utils/formater.utils";
 
 export class JobsController {

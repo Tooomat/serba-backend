@@ -19,6 +19,8 @@ export interface EnvConfig {
   APP_PORT: number
   APP_URL: string
 
+  FRONTEND_URL: string
+
   DATABASE_URL: string
   DB_HOST: string
   DB_USER: string
@@ -45,6 +47,8 @@ export interface EnvConfig {
   REDIS_PORT: number
   REDIS_PASSWORD: string
   REDIS_DB: number
+
+  RESEND_API_KEY: string
 }
 
 function required(key: string): string {
@@ -72,6 +76,8 @@ export const config: EnvConfig = {
   NODE_ENV: NODE_ENV as EnvConfig['NODE_ENV'],
   APP_PORT: Number(process.env.APP_PORT || 3000),
   APP_URL: required("APP_URL"),
+
+  FRONTEND_URL: required("FRONTEND_URL"),
 
   DATABASE_URL: required('DATABASE_URL'),
   DB_HOST: required("DB_HOST"),
@@ -105,4 +111,6 @@ export const config: EnvConfig = {
   REDIS_PORT: Number(process.env.REDIS_PORT || 6379),
   REDIS_PASSWORD: required("REDIS_PASSWORD"),
   REDIS_DB: Number(process.env.REDIS_DB || 0),
+
+  RESEND_API_KEY: required("RESEND_API_KEY")
 }
