@@ -67,14 +67,7 @@ Lalu sesuaikan isi `.env` terutama:
 ---
 
 ### 4. Prisma Migration (LOCAL)
-
-```bash
-npx prisma migrate dev
-npx prisma generate
-```
  
-Atau via npm script:
-
 ```bash
 npm run prisma:migrate:dev
 npm run prisma:generate:dev

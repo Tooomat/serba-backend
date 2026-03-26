@@ -1,13 +1,15 @@
 import { config } from "../config/env";
 import { Redis } from "ioredis";
 
-export const redis = new Redis({
+export const redisConnection = {
     port: config.REDIS_PORT,
     host: config.REDIS_HOST,
     password: config.REDIS_PASSWORD,
     db: config.REDIS_DB,
     lazyConnect: true,
-})
+}
+
+export const redis = new Redis(redisConnection)
 
 redis.on("error", (err) => {
     if (config.NODE_ENV !== "test") {

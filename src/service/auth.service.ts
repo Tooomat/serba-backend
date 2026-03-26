@@ -8,6 +8,7 @@ import { AuthValidation } from "../validation/auth.validation";
 import { Validation } from "../validation/validation";
 import bcrypt from "bcrypt";
 import { blacklistAccessToken, deleteRefreshToken, getRefreshToken, saveRefreshToken } from "../application/redis";
+import { EmailVerificationsService } from "./email-verifications.service";
 
 export class AuthService {
     static async register(req: model.registerRequest): Promise<model.registerResponse> {
@@ -50,6 +51,9 @@ export class AuthService {
         const user = await prismaClient.user.create({
             data: userData
         })
+        
+        // fire and forget, tidak perlu await agar tidak block response register
+        EmailVerificationsService.sendOnRegister(user.id)
 
         return model.toRegisterResponse(user)
     }
@@ -73,6 +77,10 @@ export class AuthService {
         // Check if user account is blocked
         if (user.status === 'BLOCKED') {
             throw new ResponseError(403, "Account has been blocked");
+        }
+
+        if (!user.emailVerifiedAt  && user.isEmailVerified === false) {
+            throw new ResponseError(404, "Verify your email first")
         }
 
         const isPasswordValid = await bcrypt.compare(validation.password, user.password)
@@ -132,7 +140,7 @@ export class AuthService {
             where: {
                 id: payload.sub
             }
-        })
+        }) 
         if (!user) {
             throw new ResponseError(401, "User not found")
         }

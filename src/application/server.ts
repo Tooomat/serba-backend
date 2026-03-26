@@ -3,6 +3,8 @@ import { ErrorHandlerMiddleware } from "../web/middleware/web-error-handler.midd
 import router from "../web/route";
 import cookieParser from "cookie-parser";
 import path from "path";
+import "../queues/notifications/notification.worker";
+import "../queues/emails/email.worker";
 
 export const webApp = express();
 

@@ -1,5 +1,6 @@
 import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
+import { Prisma } from "../generated/prisma/client";
 import { 
     addressesResponse, 
     createAddressesRequest, 
@@ -19,7 +20,7 @@ export class AddressesService {
                     userId: userId,
                 }
             })
-            if (totalAddress === 0 && validate.isPrimary === false) { 
+            if (totalAddress === 0 && validate.isPrimary !== true) { 
                 throw new ResponseError(
                     400, 
                     "First address must be primary"
@@ -49,6 +50,14 @@ export class AddressesService {
             const subDistrict = await tx.masterSubdistrict.findUnique({
                 where: {
                     id: validate.subdistrictId
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    code: true,
+                    province: true,
+                    city: true,
+                    district: true
                 }
             })
             if (!subDistrict) {
@@ -58,9 +67,17 @@ export class AddressesService {
                 )
             }
 
-            const addressData: any = {
-                userId: userId,
-                subdistrictId: validate.subdistrictId,
+            const addressData: Prisma.AddressCreateInput = {
+                user: {
+                    connect: {
+                        id: userId
+                    }
+                },
+                subdistrict: {
+                    connect: {
+                        id: validate.subdistrictId
+                    }
+                },
                 street: validate.street,
                 postalCode: validate.postalCode,
                 markAs: validate.markAs,
@@ -95,7 +112,11 @@ export class AddressesService {
         const addresses = await prismaClient.address.findMany({
             where: {
                 userId: userId
-            }
+            },
+            orderBy: [
+                { isPrimary: "desc" },
+                { createdAt: "asc" }
+            ]
         })
 
         return addresses.map(address => toAddressesResponse(address))
@@ -114,7 +135,7 @@ export class AddressesService {
         if (!address) {
             throw new ResponseError(
                 404,
-                "Not created address yet"
+                "Address not found"
             )
         }
 
@@ -157,7 +178,7 @@ export class AddressesService {
             }
 
             if (validate.isPrimary === false && address.isPrimary === true) {
-                const TotalPrimaryAddress = await tx.address.count({
+                const totalPrimaryAddress = await tx.address.count({
                     where: {
                         AND: [
                             { userId: userId },
@@ -166,7 +187,7 @@ export class AddressesService {
                     }
                 })
 
-                if (TotalPrimaryAddress === 1) {
+                if (totalPrimaryAddress === 1) {
                     throw new ResponseError(
                         400,
                         "At least one primary address is required"
@@ -179,6 +200,14 @@ export class AddressesService {
                 const subdistrict = await tx.masterSubdistrict.findUnique({
                     where: {
                         id: validate.subdistrictId
+                    }, 
+                    select: {
+                        id: true,
+                        name: true,
+                        code: true,
+                        province: true,
+                        city: true,
+                        district: true
                     }
                 })
                 if (!subdistrict) {
@@ -197,14 +226,12 @@ export class AddressesService {
                 }
             }
 
-            const updateData: any = {}
-            if (validate.subdistrictId !== undefined) updateData.subdistrictId = validate.subdistrictId
+            const updateData: Prisma.AddressUncheckedUpdateInput = {}
+            if (validate.subdistrictId !== undefined) updateData.subdistrictId = validate.subdistrictId     
             if (validate.street !== undefined) updateData.street = validate.street
             if (validate.postalCode !== undefined) updateData.postalCode = validate.postalCode
             if (validate.benchmark !== undefined) updateData.benchmark = validate.benchmark
-            if (validate.markAs !== undefined) {
-                updateData.markAs = validate.markAs
-            }
+            if (validate.markAs !== undefined) updateData.markAs = validate.markAs 
             if (validate.isPrimary !== undefined) updateData.isPrimary = validate.isPrimary
             if (validate.lat !== undefined) updateData.lat = validate.lat
             if (validate.lng !== undefined) updateData.lng = validate.lng
@@ -228,11 +255,17 @@ export class AddressesService {
                 where: {
                     id: addressId,
                     userId: userId
+                },
+                select: {
+                    id: true,
+                    isPrimary: true
                 }
             })
             if (!address) {
                 throw new ResponseError(
-                    404, "Address not found")
+                    404, 
+                    "Address not found"
+                )
             }
             if (address.isPrimary) {
                 const anotherAddress = await tx.address.findFirst({
@@ -241,6 +274,9 @@ export class AddressesService {
                         NOT: {
                             id: addressId
                         }
+                    },
+                    select: {
+                        id: true
                     },
                     orderBy: {
                         createdAt: 'asc'

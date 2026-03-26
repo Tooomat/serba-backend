@@ -1,4 +1,4 @@
-import express from "express"
+import { Router } from "express"
 import { AuthMiddleware } from "../middleware/auth.middleware"
 import { AuthController } from "../../controller/auth.controller"
 import { JobCategoriesController } from "../../controller/job-categories.controller"
@@ -9,8 +9,11 @@ import { SubDistrictsController } from "../../controller/sub-districts.controlle
 import { AddressesController } from "../../controller/addresses.controller"
 import { JobsController } from "../../controller/jobs.controller"
 import { UsersController } from "../../controller/users.controller"
+import { JobApplicationController } from "../../controller/job-application.controller"
+import { NotificationsController } from "../../controller/notifications.controller"
+import { BookmarkController } from "../../controller/bookmarks.controller"
 
-export const privateRouter = express.Router()
+export const privateRouter = Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
 
 // auth
@@ -56,3 +59,24 @@ privateRouter.get("/api/jobs/search", JobsController.searchJobs)
 privateRouter.get("/api/jobs/:jobId", JobsController.get)
 privateRouter.patch("/api/jobs/:jobId", JobsController.update)
 privateRouter.delete("/api/jobs/:jobId", JobsController.delete)
+
+// boorkmarks
+privateRouter.post("/api/jobs/:jobId/bookmarks", BookmarkController.add)
+privateRouter.get("/api/bookmarks", BookmarkController.list)
+privateRouter.delete("/api/bookmarks/:bookmarkId", BookmarkController.delete)
+
+// job application
+privateRouter.post("/api/jobs/:jobId/jobApplications", JobApplicationController.create)
+privateRouter.patch("/api/jobApplications/:jobApplicationId/status", JobApplicationController.updateStatus)
+privateRouter.get("/api/jobApplications/:jobApplicationId", JobApplicationController.getDetail)
+privateRouter.get("/api/jobs/:jobId/jobApplications", JobApplicationController.getListForJobProvider)
+privateRouter.get("/api/jobApplications", JobApplicationController.getListForWorker)
+
+// reviews
+
+
+// notifications
+privateRouter.get("/api/notifications", NotificationsController.list)
+privateRouter.put("/api/notifications/:notificationId", NotificationsController.update)
+privateRouter.put("/api/notifications", NotificationsController.markAllAsRead)
+privateRouter.delete("/api/notifications/:notificationId", NotificationsController.delete)

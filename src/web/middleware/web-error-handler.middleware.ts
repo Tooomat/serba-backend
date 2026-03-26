@@ -9,7 +9,9 @@ const getStatusMessage = (status: number): string => {
         403: "Forbidden",
         404: "Not found",
         409: "Conflict",
+        410: "Gone",
         422: "Unprocessable entity",
+        429: "Too many requests",
         500: "Internal server error",
         502: "Bad gateway",
         503: "Service unavailable"
