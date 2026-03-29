@@ -6,7 +6,7 @@ import { Decimal } from "@prisma/client/runtime/client"
 import { JobFormatters } from "../utils/formater.utils"
 import { config } from "../config/env"
 
-type locationJson = {
+export type locationJobJson = {
     lat: Decimal
     lng: Decimal
     street: string
@@ -41,7 +41,7 @@ export type jobListPublicResponse = {
     jobProviderId: string
 	addressId: string
 	isPublic: boolean
-	locations: locationJson
+	locations: locationJobJson
     title: string
     type: string
     jobSite: string
@@ -49,7 +49,7 @@ export type jobListPublicResponse = {
     budgetMax?: number | null
     budgetType?: string | null
     status: string 
-    jobAge: string
+    jobAge?: string | null
     primaryImage: string
 }
 
@@ -57,8 +57,8 @@ export function toJobListPublicResponse(
     job: Job, 
     image: string
 ): jobListPublicResponse {
-    const locations = parseJsonLocation<locationJson>(job.locations)
-    const jobAge = getTimeAgo(job.createdAt, 'en')
+    const locations = parseJsonLocation<locationJobJson>(job.locations)
+    const jobAge = getTimeAgo(job.createdAt, 'id')
     
     const baseUrl = config.APP_URL.replace(/\/+$/, '')
     const pathImage = `${baseUrl}${image.startsWith('/') ? '' : '/'}${image}`
@@ -127,7 +127,7 @@ export type jobResponse = {
     jobProviderId: string
 	addressId: string
 	isPublic: boolean
-	locations: locationJson
+	locations: locationJobJson
     title: string
     introduction?: string | null
     description: string
@@ -150,7 +150,7 @@ export type jobResponse = {
 export function toJobResponse(
     job: Job
 ): jobResponse{
-    const locations = parseJsonLocation<locationJson>(job.locations)
+    const locations = parseJsonLocation<locationJobJson>(job.locations)
     
     const response: jobResponse = {
         id: job.id,
@@ -215,7 +215,7 @@ export type jobDetailResponse = {
     addressId: string
     isProvider: boolean
     isPublic: boolean
-    locations: locationJson
+    locations: locationJobJson
     title: string
     introduction?: string | null
     description: string
@@ -247,7 +247,7 @@ export function toJobDetailResponse(
     isProvider: boolean,
     acceptedApplicants?: acceptedApplicantResponse[] | null
 ): jobDetailResponse {
-    const locations = parseJsonLocation<locationJson>(job.locations)
+    const locations = parseJsonLocation<locationJobJson>(job.locations)
 
     let estimatedDurationDays: string | null = null;
     if (job.startDate && job.endDate) {
@@ -350,15 +350,15 @@ export type jobListResponse = {
     introduction?: string | null
     isProvider: boolean
     isPublic: boolean
-    locations: locationJson
+    locations: locationJobJson
     type: string
     jobSite: string
     budgetMin?: number | null
     budgetMax?: number | null
     budgetType?: string | null
     status: string
-    jobAge: string
     distance?: string | null
+    jobAge?: string | null
     categories: Array<{
         id: string
         name: string
@@ -372,8 +372,8 @@ export function toJobListResponse(
     isProvider: boolean, 
     distance?: string | null
 ): jobListResponse {
-    const jobLocations = parseJsonLocation<locationJson>(job.locations)
-    const jobAge = getTimeAgo(job.createdAt, 'en')
+    const jobLocations = parseJsonLocation<locationJobJson>(job.locations)
+    const jobAge = getTimeAgo(job.createdAt, 'id')
     const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ')
 
     const response: jobListResponse = {
@@ -400,11 +400,14 @@ export function toJobListResponse(
         budgetType: job.budgetType ? JobFormatters.budgetType(job.budgetType) : null,
         status: JobFormatters.status(job.status),
         jobAge: jobAge,
-        distance: distance ?? null,
         categories: categories.map(c => ({
             id: c.id,
             name: c.name
         })),
+    }
+
+    if (!isProvider) {
+        response.distance = distance ?? null
     }
 
     return response

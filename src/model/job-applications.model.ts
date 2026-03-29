@@ -224,7 +224,7 @@ export type getListJobApplicationResponse = {
     job?: {
         id: string
         title: string
-        jobAge: string
+        jobAge?: string | null
     } | null
     id: string
     status: string

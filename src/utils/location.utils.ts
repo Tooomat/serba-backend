@@ -23,3 +23,15 @@ export function haversineDistance(
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
     return R * c // Jarak dalam km
 }
+
+export function formatDistance(
+    userLat: number,
+    userLng: number,
+    jobLat: number,
+    jobLng: number
+): string {
+    const km = haversineDistance(userLat, userLng, jobLat, jobLng)
+    return km < 1
+        ? `${Math.round(km * 1000)} m`
+        : `${km.toFixed(1)} km`
+}
