@@ -8,6 +8,7 @@ import {
     jobListPublicResponse, 
     jobListResponse, 
     jobResponse, 
+    locationJobJson, 
     queryListJob, 
     querySearchJob, 
     toJobDetailResponse, 
@@ -17,6 +18,7 @@ import {
     updateJobRequest
 } from "../model/jobs.model";
 import { getCyclePrimaryImage } from "../utils/image.utils";
+import { formatDistance, parseJsonLocation } from "../utils/location.utils";
 import { parseTimeToDate } from "../utils/time.utils";
 import { JobsValidation } from "../validation/jobs.validation";
 import { Validation } from "../validation/validation";
@@ -268,7 +270,7 @@ export class JobsService {
         )
     }
 
-    static async listMyCreatedJobs(userId: string, query: queryListJob): Promise<Pagable<jobListResponse>> {
+    static async listMyCreatedJobs(jobProviderId: string, query: queryListJob): Promise<Pagable<jobListResponse>> {
         const validate = Validation.validate(JobsValidation.LIST_JOB_SCHEMA, query)
         
         const skip = (validate.page - 1) * validate.size
@@ -276,7 +278,7 @@ export class JobsService {
         const [jobsProvider, totalData] = await prismaClient.$transaction([
             prismaClient.job.findMany({
                 where: {
-                    jobProviderId: userId
+                    jobProviderId: jobProviderId
                 },
                 include: {
                     jobProvider: {
@@ -310,14 +312,14 @@ export class JobsService {
             
             prismaClient.job.count({ 
                 where: {
-                    jobProviderId: userId
+                    jobProviderId: jobProviderId
                 }
             })
         ])
 
         const totalPage = Math.max(1, Math.ceil(totalData / validate.size))
         const datas: jobListResponse[] = jobsProvider.map((job) => {
-            const isProvider = job.jobProvider.id === userId
+            const isProvider = job.jobProvider.id === jobProviderId
         
             const categories = job.categoriesMapping.map(
                 (mapping) => mapping.jobCategory
@@ -342,7 +344,7 @@ export class JobsService {
         }
     }
     
-    static async searchJobs(userId: string, query: querySearchJob): Promise<Pagable<jobListResponse>> {
+    static async searchJobs(jobSeekerId: string, query: querySearchJob): Promise<Pagable<jobListResponse>> {
         const validate = Validation.validate(JobsValidation.SEARCH_JOB_SCHEMA, query)
 
         const skip = (validate.page - 1) * validate.size
@@ -439,7 +441,7 @@ export class JobsService {
             })
         }
 
-        const [jobs, totalData] = await prismaClient.$transaction([
+        const [jobs, totalData, jobSeekerAddress] = await prismaClient.$transaction([
             prismaClient.job.findMany({
                 where: {
                     AND: filters
@@ -463,22 +465,47 @@ export class JobsService {
                 where: {
                     AND: filters
                 }
+            }),
+
+            prismaClient.address.findFirst({
+                where: { 
+                    userId: jobSeekerId, 
+                    isPrimary: true 
+                },
+                select: { 
+                    lat: true, 
+                    lng: true 
+                }
             })
         ])
 
+        const userLat = jobSeekerAddress ? Number(jobSeekerAddress.lat) : null
+        const userLng = jobSeekerAddress ? Number(jobSeekerAddress.lng) : null
+
         const totalPage = Math.max(1, Math.ceil(totalData / validate.size))
         const datas: jobListResponse[] = jobs.map(job => {
-            const isProvider = job.jobProvider.id === userId
-        
-            const categories = job.categoriesMapping.map(
-                (mapping) => mapping.jobCategory
-            )
+            const isProvider = job.jobProvider.id === jobSeekerId
+            const categories = job.categoriesMapping.map((mapping) => mapping.jobCategory)
+
+            let distance: string | null = null
+            if (userLat && userLng) {
+                const jobLocations = parseJsonLocation<locationJobJson>(job.locations)
+                if (jobLocations.lat && jobLocations.lng) {
+                    distance = formatDistance(
+                        userLat,
+                        userLng,
+                        Number(jobLocations.lat),
+                        Number(jobLocations.lng)
+                    )
+                }
+            }
 
             return toJobListResponse(
                 job,
                 job.jobProvider,
                 categories,
-                isProvider
+                isProvider,
+                distance
             )
         })
 

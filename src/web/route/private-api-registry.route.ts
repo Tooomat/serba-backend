@@ -12,6 +12,7 @@ import { UsersController } from "../../controller/users.controller"
 import { JobApplicationController } from "../../controller/job-application.controller"
 import { NotificationsController } from "../../controller/notifications.controller"
 import { BookmarkController } from "../../controller/bookmarks.controller"
+import { ReviewsController } from "../../controller/reviews.controller"
 
 export const privateRouter = Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
@@ -73,7 +74,14 @@ privateRouter.get("/api/jobs/:jobId/jobApplications", JobApplicationController.g
 privateRouter.get("/api/jobApplications", JobApplicationController.getListForWorker)
 
 // reviews
-
+privateRouter.post("/api/jobApplications/:jobApplicationId/reviews", ReviewsController.create)
+privateRouter.post("/api/reviews/:reviewId/reply", ReviewsController.reply)
+privateRouter.get("/api/users/reviews", ReviewsController.getListSelf)
+privateRouter.get("/api/users/:userId/reviews", ReviewsController.getListVisitor)
+privateRouter.patch("/api/reviews/:reviewId", ReviewsController.update)
+privateRouter.patch("/api/reviews/:reviewId/reply", ReviewsController.updateReply)
+privateRouter.delete("/api/reviews/:reviewId", ReviewsController.delete)
+privateRouter.delete("/api/reviews/:reviewId/reply", ReviewsController.deleteReply)
 
 // notifications
 privateRouter.get("/api/notifications", NotificationsController.list)

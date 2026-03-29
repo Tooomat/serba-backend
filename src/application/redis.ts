@@ -10,7 +10,7 @@ export const redisConnection = {
 }
 
 export const redis = new Redis(redisConnection)
-
+ 
 redis.on("error", (err) => {
     if (config.NODE_ENV !== "test") {
         console.error("Redis Error:", err)

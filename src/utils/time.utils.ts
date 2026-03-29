@@ -79,7 +79,10 @@ export function countStartDateToEndDate(startDate: Date, endDate: Date): string 
 }
 
 type Locale = 'en' | 'id'
-export function getTimeAgo(date: Date, locale: Locale = 'en'): string {
+export function getTimeAgo(date: Date | null, locale: Locale = 'en'): string | null{
+    if (date === null) {
+        return null
+    }
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffSeconds = Math.floor(diffMs / 1000)
@@ -95,21 +98,21 @@ export function getTimeAgo(date: Date, locale: Locale = 'en'): string {
     const translations = {
         en: {
             justNow: "Just now",
-            minute: (n: number) => n === 1 ? "1 minute ago" : `${n} minutes ago`,
-            hour: (n: number) => n === 1 ? "1 hour ago" : `${n} hours ago`,
-            day: (n: number) => n === 1 ? "1 day ago" : `${n} days ago`,
-            week: (n: number) => n === 1 ? "1 week ago" : `${n} weeks ago`,
-            month: (n: number) => n === 1 ? "1 month ago" : `${n} months ago`,
-            year: (n: number) => n === 1 ? "1 year ago" : `${n} years ago`
+            minute: (n: number) => n === 1 ? "1 Minute ago" : `${n} Minutes ago`,
+            hour: (n: number) => n === 1 ? "1 Hour ago" : `${n} Hours ago`,
+            day: (n: number) => n === 1 ? "1 Day ago" : `${n} Days ago`,
+            week: (n: number) => n === 1 ? "1 Week ago" : `${n} Weeks ago`,
+            month: (n: number) => n === 1 ? "1 Month ago" : `${n} Months ago`,
+            year: (n: number) => n === 1 ? "1 Year ago" : `${n} Years ago`
         },
         id: {
             justNow: "Baru saja",
-            minute: (n: number) => n === 1 ? "1 menit yang lalu" : `${n} menit yang lalu`,
-            hour: (n: number) => n === 1 ? "1 jam yang lalu" : `${n} jam yang lalu`,
-            day: (n: number) => n === 1 ? "1 hari yang lalu" : `${n} hari yang lalu`,
-            week: (n: number) => n === 1 ? "1 minggu yang lalu" : `${n} minggu yang lalu`,
-            month: (n: number) => n === 1 ? "1 bulan yang lalu" : `${n} bulan yang lalu`,
-            year: (n: number) => n === 1 ? "1 tahun yang lalu" : `${n} tahun yang lalu`
+            minute: (n: number) => n === 1 ? "1 Menit yang lalu" : `${n} Menit yang lalu`,
+            hour: (n: number) => n === 1 ? "1 Jam yang lalu" : `${n} Jam yang lalu`,
+            day: (n: number) => n === 1 ? "1 Hari yang lalu" : `${n} Hari yang lalu`,
+            week: (n: number) => n === 1 ? "1 Minggu yang lalu" : `${n} Minggu yang lalu`,
+            month: (n: number) => n === 1 ? "1 Bulan yang lalu" : `${n} Bulan yang lalu`,
+            year: (n: number) => n === 1 ? "1 Tahun yang lalu" : `${n} Tahun yang lalu`
         }
     }
 
