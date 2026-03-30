@@ -17,6 +17,7 @@ export type refreshTokenPayload = {
 }
 
 export class JWT {
+    // OWASP A02 - Cryptographic Failures = access token using JWT
     static generateAccessToken(payload: accessTokenPayload) {
         const options: SignOptions = {
             algorithm: "HS256",
@@ -26,6 +27,7 @@ export class JWT {
         return jwt.sign(payload, config.JWT_ACCESS_SECRET, options)
     }
     
+    // OWASP A02 - Cryptographic Failures = refresh token using JWT
     static generateRefreshToken(payload: { sub: string }) { // only use sub and jti
         const jti = randomUUID()
 

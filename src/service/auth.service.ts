@@ -117,6 +117,7 @@ export class AuthService {
         
         return {
             accessToken: accessToken,
+            userId: user.id
         }
     }
 

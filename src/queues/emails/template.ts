@@ -40,9 +40,8 @@ export const emailTemplate = {
                     untuk melamar posisi <strong>${jobTitle}</strong>.
                 </p>
                 <p>
-                    Setelah pertimbangan yang matang, kami mohon maaf untuk menyampaikan 
-                    bahwa kami tidak dapat melanjutkan proses lamaran Anda saat ini. 
-                    Kami sangat menghargai usaha yang telah Anda curahkan.
+                    Setelah pertimbangan yang matang, <strong>${companyName}</strong> menyampaikan 
+                    bahwa lamaran anda tidak melanjutkan prosesnya. Kami sangat menghargai usaha yang telah Anda curahkan.
                 </p>
                 <p>
                     Kami mendorong Anda untuk terus memantau lowongan pekerjaan kami 

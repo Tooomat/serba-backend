@@ -239,7 +239,7 @@ model CategoriesMapping {
 
   @@map("categories_mapping")
 }
-
+ 
 model Job {
   id String @id @default(uuid())
 

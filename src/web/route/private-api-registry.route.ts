@@ -13,9 +13,11 @@ import { JobApplicationController } from "../../controller/job-application.contr
 import { NotificationsController } from "../../controller/notifications.controller"
 import { BookmarkController } from "../../controller/bookmarks.controller"
 import { ReviewsController } from "../../controller/reviews.controller"
+import { privateRateLimit } from "../middleware/security.middleware"
 
 export const privateRouter = Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
+privateRouter.use(privateRateLimit)
 
 // auth
 privateRouter.post("/api/auth/logout", AuthController.logout)

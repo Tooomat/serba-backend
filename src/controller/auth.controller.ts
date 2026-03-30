@@ -3,14 +3,14 @@ import { loginRequest, registerRequest } from "../model/auth.model";
 import { AuthService } from "../service/auth.service";
 import { success_handler } from "../web/http/web-response.http";
 import { AuthRequest } from "../web/middleware/auth.middleware";
+import { securityLogger } from "../application/logging";
 
 export class AuthController {
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
             const request: registerRequest = req.body as registerRequest
-
             const result = await AuthService.register(request)
-
+            securityLogger.loginSuccess(result.id, req.ip ?? 'unknown')
             success_handler(res, "Registration successful", result, 201)
         } catch (e) {
             next(e)
@@ -22,9 +22,14 @@ export class AuthController {
             const request: loginRequest = req.body as loginRequest
 
             const result = await AuthService.login(request, res)
-
-            success_handler(res, "login successful", result, 200)
+            securityLogger.loginSuccess(result.userId, req.ip ?? 'unknown')
+            success_handler(res, "login successful", result.accessToken, 200)
         } catch (e) {
+            securityLogger.loginFailed(
+                req.body.usernameOrEmail ?? 'unknown',
+                req.ip ?? 'unknown',
+                e instanceof Error ? e.message : 'unknown'
+            )
             next(e)
         }
     }
@@ -35,17 +40,22 @@ export class AuthController {
 
             success_handler(res, "Successful generate new token", result, 200)
         } catch (e) {
+            securityLogger.invalidToken(
+                req.ip ?? 'unknown',
+                req.originalUrl,
+                e instanceof Error ? e.message : 'unknown'
+            )
             next(e)
         }
     }
     
-    static async logout(req: AuthRequest, res: Response, next: NextFunction) {
+    static async logout(auth: AuthRequest, res: Response, next: NextFunction) {
         try {
-            const accessToken = req.token!.accessToken 
-            const exp = req.token!.exp
+            const accessToken = auth.token!.accessToken 
+            const exp = auth.token!.exp
             
-            const result = await AuthService.logout(req, res, accessToken, exp)
-
+            const result = await AuthService.logout(auth, res, accessToken, exp)
+            securityLogger.logout(auth.user!.id, auth.ip ?? 'unknown')
             success_handler(res, "Logout successful", result, 200)
         } catch (e) {
             next(e)

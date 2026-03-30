@@ -1,5 +1,6 @@
 import { config } from "../config/env";
 import { Redis } from "ioredis";
+import crypto from "crypto"
 
 export const redisConnection = {
     port: config.REDIS_PORT,
