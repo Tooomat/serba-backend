@@ -1,6 +1,6 @@
 # Node.js TypeScript REST API Template
 
-Template backend REST API berbasis **Node.js + TypeScript** dengan arsitektur clean (controller–service–model), siap untuk **development, testing, dan production** menggunakan **Docker**.
+Template backend REST API berbasis **Node.js + TypeScript** dengan **clean arsitektur layer-based Monolith**(controller–service–repository/model-database), siap untuk **development, testing, dan production** menggunakan **Docker**.
 
 ---
 
@@ -25,6 +25,98 @@ Pastikan tools berikut sudah terinstall:
 * Docker & Docker Compose
 * Postgres (jika tidak pakai Docker)
 * Redis (jika tidak pakai Docker)
+
+
+---
+
+
+## OWASP (Open Web Application Security Project)
+
+A01 - Broken Access Control (User bisa akses resource yang bukan haknya)
+- AuthMiddleware.checkAuthorization — cek token setiap request
+- user.status === 'BLOCKED' — cek status user
+- jobApplication.job.jobProviderId !== jobProviderId — cek owner di service
+- review.reviewerId !== userId — cek owner review
+- isWorker && isProvider — cek keterlibatan user di job
+- job.jobProviderId === workerId — cegah apply job sendiri
+
+
+A02 - Cryptographic Failures (Data sensitif tidak dienkripsi dengan benar)
+- bcrypt.hash(validation.password, 10) — hash password
+- JWT.generateAccessToken — access token pakai JWT
+- JWT.generateRefreshToken — refresh token pakai JWT
+- httpOnly: true cookie untuk refresh token — cegah XSS ambil token
+- blacklistAccessToken — invalidate token saat logout
+
+
+A03 - Injection (Attacker inject kode berbahaya ke query/command)
+- Prisma ORM — otomatis prevent SQL injection
+- Zod validation di setiap request — validasi input
+- xssProtection middleware — sanitasi input pakai library xss
+- hppMiddleware — prevent HTTP parameter pollution
+
+
+A04 - Insecure Design (Arsitektur aplikasi tidak aman dari awal)
+- publicRateLimit — 100 req/15 menit per IP
+- authRateLimit — 10 req/15 menit per IP untuk login/register
+- privateRateLimit — 200 req/15 menit per userId
+- blockDuration: 60 — block 60 detik setelah exceed
+- MAX_RESEND_ATTEMPTS — limit kirim ulang OTP/verification link
+- Business rules di setiap service — validasi logika bisnis
+
+
+A05 - Security Misconfiguration (Konfigurasi server/aplikasi tidak aman)
+- helmetGuard — security headers
+- corsGuard — whitelist origin
+- hidePoweredBy: true — sembunyikan X-Powered-By: Express
+- hsts — paksa HTTPS di production
+- frameguard: deny — cegah clickjacking
+- contentSecurityPolicy — batasi sumber konten
+- Error handler tidak expose stack trace di production
+
+
+A06 - Vulnerable Components (Pakai library yang sudah ada celah keamanan)
+- Belum ada — perlu tambahkan npm audit di CI/CD
+
+
+A07 - Identification and Authentication Failures (Sistem autentikasi lemah)
+- saveRefreshToken di Redis — simpan refresh token
+- deleteRefreshToken — hapus refresh token saat logout
+- blacklistAccessToken — blacklist access token saat logout
+- isBlacklisted — cek blacklist setiap request
+- JWT.verifyAccessToken — verifikasi token setiap request
+- authRateLimit — limit brute force login
+bcrypt.compare — verifikasi password
+- isEmailVerified — cek verifikasi email sebelum login
+- EmailVerificationsService — verifikasi email flow
+- Token expire — access token & refresh token punya TTL
+
+
+A08 - Software and Data Integrity Failures (Data atau update software tidak diverifikasi integritasnya)
+- Zod validation di semua endpoint — AuthValidation, JobsValidation, JobApplicationsValidation, ReviewsValidation, dll
+- Validation.validate() — wrapper validasi konsisten
+- Transaction di Prisma — atomic operation untuk data integrity
+- @@unique constraint di schema — prevent duplicate data
+
+
+A09 - Security Logging and Monitoring Failures (Tidak ada log untuk event keamanan)
+- requestLogger — log semua HTTP request/response
+- securityLogger.loginSuccess — log login berhasil
+- securityLogger.loginFailed — log login gagal
+- securityLogger.logout — log logout
+- securityLogger.accessDenied — log akses ditolak
+- securityLogger.invalidToken — log token tidak valid
+- securityLogger.rateLimitExceeded — log rate limit exceeded
+- securityLogger.emailVerified — log verifikasi email
+- ErrorHandlerMiddleware dengan logging — log semua error
+- Prisma logging — log query, error, warn di development
+- requestId — trace request dari masuk sampai error
+
+
+A10 - Server-Side Request Forgery (SSRF) (Server melakukan request ke URL yang dikontrol attacker)
+- Contoh: fitur upload dari URL, webhook URL tidak divalidasi.
+Yang perlu diperhatikan: kalau nanti ada fitur upload dari URL atau webhook, perlu validasi URL tujuan
+
 
 ---
 
@@ -279,10 +371,7 @@ npx prisma generate
 
 6. Buat controller di `/controller`
 
-7. Buat route:
-
-* `/route/public` → tanpa auth
-* `/route/private` → perlu auth
+7. Buat route di `/route`
 
 8. Register route ke:
 
@@ -290,6 +379,20 @@ npx prisma generate
 * `route/private-api-registry.route.ts`
 
 9. Create seeder di `prisma/seeds`
+
+10. Create security di `src/web/middleware`
+
+11. Create config di `src/config`
+
+12. Create Http response di `src/web/http/web-response.http.ts`
+
+13. Create Handling Response Error di `src/web/middleware/web-error-handler.middleware.ts` dan update service response error di `src/error/service.error.ts`
+
+14. Mengubah Postgre ke Mysql di `src/application/database.ts`
+
+15. Update logger di `src/application/logging.ts`
+
+16. 
 
 ---
 
@@ -305,7 +408,7 @@ npm run prisma:reset:dev
 
 ## Author
 
-**serba**
+**SERBA**
 
 ---
 

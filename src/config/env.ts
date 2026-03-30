@@ -17,6 +17,7 @@ dotenv.config({
 export interface EnvConfig {
   NODE_ENV: 'development' | 'production' | 'test'
   APP_PORT: number
+  APP_NAME: string
   APP_URL: string
 
   FRONTEND_URL: string
@@ -76,6 +77,7 @@ export const config: EnvConfig = {
   NODE_ENV: NODE_ENV as EnvConfig['NODE_ENV'],
   APP_PORT: Number(process.env.APP_PORT || 3000),
   APP_URL: required("APP_URL"),
+  APP_NAME: required("APP_NAME"),
 
   FRONTEND_URL: required("FRONTEND_URL"),
 
