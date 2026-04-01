@@ -16,6 +16,8 @@ build
 .env.test
 .env.production
 
+docs
+
 # Git
 .git
 .gitignore

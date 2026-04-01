@@ -27,17 +27,7 @@ const RETRY_AFTER_SEC = 300               // 5 menit
 const TOKEN_EXPIRES_MS = 1 * 60 * 60 * 1000 // 1 jam
 
 export class EmailVerificationsService {
-    static async sendOnRegister(userId: string): Promise<void> {
-        const user = await prismaClient.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                email: true,
-                username: true
-            }
-        })
-        if (!user) return
-
+    static async sendOnRegister(user: { id: string, email: string, username: string }): Promise<void> {
         const token = `token-${randomUUID()}`
         const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)
 
@@ -76,10 +66,10 @@ export class EmailVerificationsService {
         })
 
         if (!user) {
-            throw new ResponseError(404, "Email not found")
+            throw new ResponseError(404, "User not found")
         }
         if (user.emailVerifiedAt && user.isEmailVerified === true) {
-            throw new ResponseError(409, "Email already verified")
+            throw new ResponseError(409, "User already verified")
         }
 
         // Cek rate limit: max 1x kirim dalam 5 menit
@@ -175,7 +165,7 @@ export class EmailVerificationsService {
             throw new ResponseError(410, "Token expired")
         }
         if (verification.user.emailVerifiedAt && verification.user.isEmailVerified === true) {
-            throw new ResponseError(409, "Email already verified")
+            throw new ResponseError(409, "User already verified")
         }
 
         const [updatedUser] = await prismaClient.$transaction([

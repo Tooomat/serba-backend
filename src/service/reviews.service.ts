@@ -19,7 +19,7 @@ import {
 } from "../model/reviews.model";
 import { ReviewsValidation } from "../validation/reviews.validation";
 import { Validation } from "../validation/validation";
-import { buildPaging, Pagable } from "../model/helper/paging.helper";
+import { buildPaging, Pagable } from "../model/paging.model";
 import { Prisma } from "../generated/prisma/client";
 
 const EDIT_DEADLINE_HOURS = 24

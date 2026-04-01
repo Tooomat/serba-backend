@@ -2,6 +2,7 @@ import * as env from "../config/env"
 import winston from "winston";
 import { randomUUID } from "crypto";
 import { Request, Response, NextFunction } from "express";
+import { createHash } from "crypto";
 
 export const logger = winston.createLogger({
     level: (env.config.NODE_ENV === "development" || env.config.NODE_ENV === "test") ? "debug" : "info",
@@ -49,6 +50,10 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
     next()
 }
 
+const hashPII = (value: string): string => {
+    return createHash('sha256').update(value).digest('hex').substring(0, 16)
+}
+
 // OWASP A09 - Logging & Monitoring: Security event logging — log untuk event keamanan:
 export const securityLogger = {
     // Login berhasil
@@ -62,13 +67,39 @@ export const securityLogger = {
     },
 
     // Login gagal
-    loginFailed: (email: string, ip: string, reason: string) => {
+    loginFailed: (email: string, ip: string, reason: string, requestId?: string) => {
         logger.warn({
             type: 'security:login_failed',
-            email,
+            emailHash: hashPII(email),
             ip,
             reason,
+            ...(requestId && { requestId }),
             timestamp: new Date().toISOString()
+        })
+    },
+
+    registered: (userId: string, ip: string) => {
+        logger.info({
+            type: 'security:registered',
+            userId,
+            ip
+        })
+    },
+
+    accountLocked: (emailHash: string, ip: string, attempts: number) => {
+        logger.warn({
+            type: 'security:account_locked',
+            emailHash,
+            ip,
+            attempts
+        })
+    },
+
+    tokenRefreshed: (userId: string, ip: string) => {
+        logger.info({
+            type: 'security:token_refreshed',
+            userId,
+            ip
         })
     },
 
@@ -125,6 +156,15 @@ export const securityLogger = {
             timestamp: new Date().toISOString()
         })
     },
+    
+    emailVerificationSent: (userId: string, ip: string) => {
+        logger.info({
+            type: 'security:email_verification_sent',
+            userId,
+            ip
+        })
+    },
+
 
     // Password reset
     passwordReset: (userId: string, ip: string) => {

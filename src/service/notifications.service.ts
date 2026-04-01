@@ -1,7 +1,7 @@
 import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
 import { Prisma } from "../generated/prisma/client";
-import { buildPaging, Pagable } from "../model/helper/paging.helper";
+import { buildPaging, Pagable } from "../model/paging.model";
 import { 
     listNotificationsQuery, 
     notificationsResponse, 

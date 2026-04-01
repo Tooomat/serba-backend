@@ -15,23 +15,12 @@ export interface Pagable<T> {
     paging: Paging
 }
 
-export interface fillPaging {
-	currentPage: number,
-	totalPage: number,
-	totalElement: number,
-	size: number,
-	nextPage: boolean,
-	previousPage: boolean,
-	firstPage: boolean,
-	lastPage: boolean
-}
-
 export function buildPaging(
 	page: number, 
 	size: number, 
 	totalData: number,
 	totalPage: number
-): fillPaging  {
+): Paging  {
 	return {
 		currentPage: page,
 		totalPage: totalPage,

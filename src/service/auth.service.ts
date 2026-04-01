@@ -7,8 +7,9 @@ import { accessTokenPayload, JWT } from "../utils/jwt.utils";
 import { AuthValidation } from "../validation/auth.validation";
 import { Validation } from "../validation/validation";
 import bcrypt from "bcrypt";
-import { blacklistAccessToken, deleteRefreshToken, getRefreshToken, saveRefreshToken } from "../application/redis";
+import { blacklistAccessToken, deleteRefreshToken, getRefreshToken, redis, saveRefreshToken } from "../application/redis";
 import { EmailVerificationsService } from "./email-verifications.service";
+import { logger } from "../application/logging";
 
 export class AuthService {
     static async register(req: model.registerRequest): Promise<model.registerResponse> {
@@ -25,10 +26,10 @@ export class AuthService {
             }
         })
         if (totalUserWithSameUsername != 0) {
-            throw new ResponseError(400, "username already exists")
+            throw new ResponseError(400, "user already exists")
         }
         if (totalUserWithSameEmail != 0) {
-            throw new ResponseError(400, "email already exists")
+            throw new ResponseError(400, "user already exists")
         }
 
         validation.password = await bcrypt.hash(validation.password, 10)
@@ -53,13 +54,53 @@ export class AuthService {
         })
         
         // fire and forget, tidak perlu await agar tidak block response register
-        EmailVerificationsService.sendOnRegister(user.id)
+        EmailVerificationsService.sendOnRegister({
+            id: user.id,
+            email: user.email,
+            username: user.username
+        }).catch((error) => {
+            logger.error("Failed to send verification email on register", {
+                userId: user.id,
+                error: error.message
+            })
+        })
 
         return model.toRegisterResponse(user)
     }
 
     static async login(req: model.loginRequest,  res: Response): Promise<model.loginResponse>{
         const validation = Validation.validate(AuthValidation.LOGINSCHEMA, req)
+
+        const ATTEMPT_PREFIX = `${config.APP_NAME}:login:attempts`
+        const BLOCK_PREFIX   = `${config.APP_NAME}:login:block`
+        const MAX_ATTEMPTS   = 10
+        const ATTEMPT_WINDOW = 30 * 60  // 30 menit
+        const BLOCK_DURATION = 30 * 60  // 30 menit
+
+        const identifier = validation.usernameOrEmail.toLowerCase()
+
+        // Cek account lock SEBELUM query DB
+        // Ini juga mencegah attacker pakai login endpoint untuk spam query DB
+        const isBlocked = await redis.get(`${BLOCK_PREFIX}:${identifier}`)
+        if (isBlocked) {
+            const ttl = await redis.ttl(`${BLOCK_PREFIX}:${identifier}`)
+            throw new ResponseError(429, `Too many failed attempts. Try again in ${Math.ceil(ttl / 60)} minutes.`)
+        }
+
+        // Helper: increment failed attempt, return jumlah attempts saat ini
+        const recordFailedAttempt = async () => {
+            const key = `${ATTEMPT_PREFIX}:${identifier}`
+            const attempts = await redis.incr(key)
+            if (attempts === 1) await redis.expire(key, ATTEMPT_WINDOW)
+
+            if (attempts >= MAX_ATTEMPTS) {
+                await redis.setex(`${BLOCK_PREFIX}:${identifier}`, BLOCK_DURATION, "1")
+                await redis.del(key)
+                // Opsional: kirim email notifikasi ke user
+                // await EmailService.sendAccountLockedNotification(...)
+            }
+            return attempts
+        }
 
         const user = await prismaClient.user.findFirst({
             where: {
@@ -70,8 +111,13 @@ export class AuthService {
             }
         })
 
-        if (!user) {
-            throw new ResponseError(401, "Invalid credentials");
+        const isPasswordValid = user
+        ? await bcrypt.compare(validation.password, user.password)
+        : false
+
+        if (!isPasswordValid || !user) {
+            await recordFailedAttempt()
+            throw new ResponseError(401, "Invalid credentials")
         }
 
         // Check if user account is blocked
@@ -81,11 +127,6 @@ export class AuthService {
 
         if (!user.emailVerifiedAt  && user.isEmailVerified === false) {
             throw new ResponseError(404, "Verify your email first")
-        }
-
-        const isPasswordValid = await bcrypt.compare(validation.password, user.password)
-        if (!isPasswordValid) {
-            throw new ResponseError(401, "Invalid credentials")
         }
 
         const payload: accessTokenPayload = {

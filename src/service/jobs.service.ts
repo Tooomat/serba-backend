@@ -1,6 +1,6 @@
 import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
-import { buildPaging, Pagable } from "../model/helper/paging.helper";
+import { buildPaging, Pagable } from "../model/paging.model";
 import { 
     acceptedApplicantResponse,
     createJobRequest, 

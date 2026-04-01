@@ -54,7 +54,8 @@ export const corsGuard = cors({
 const createLimiter = (
     keyPrefix: string,
     points: { prod: number, dev: number },
-    duration: number
+    duration: number,
+    block: number
 ): RateLimiterAbstract => {
     const resolvedPoints = isTest ? 9999 : isDev ? points.dev : points.prod
 
@@ -71,29 +72,69 @@ const createLimiter = (
         keyPrefix,
         points: resolvedPoints,
         duration,
-        blockDuration: 60        // block 60 detik setelah exceed
+        blockDuration: 60 * block    // block 60 detik setelah exceed
     })
 }
 
-// Public: 100 req / 15 menit / IP
+// Public: 30 req / 1 menit / IP
 const publicLimiter = createLimiter(
     `${config.APP_NAME}:rl:public`,
-    { prod: 100, dev: 1000 },
-    15 * 60
+    { prod: 30, dev: 10 },
+    1 * 60,
+    1 // menit
 )
 
-// Auth: 10 req / 15 menit / IP 
-const authLimiter = createLimiter(
-    `${config.APP_NAME}:rl:auth`,
-    { prod: 10, dev: 100 },
-    15 * 60
+// AUTH:
+// 5 req / 15 menit / IP 
+const authLoginLimiter = createLimiter(
+    `${config.APP_NAME}:rl:login:auth`,
+    { prod: 5, dev: 10 },
+    15 * 60,
+    15 // menit
+)
+// 3 req / 60 menit / IP 
+const authRegisterLimiter = createLimiter(
+    `${config.APP_NAME}:rl:register:auth`,
+    { prod: 3, dev: 10 },
+    60 * 60,
+    30 // menit
+)
+// 10 req / 15 menit / IP
+const authRefreshLimiter = createLimiter(
+    `${config.APP_NAME}:rl:refresh:auth`,
+    { prod: 10, dev: 10 },
+    15 * 60,
+    5 // menit
+)
+// 3 req / 60 menit / IP
+const authEmailSendLimiter = createLimiter(
+    `${config.APP_NAME}:rl:Esend:auth`,
+    { prod: 3, dev: 10 },
+    60 * 60,
+    60 // menit
+)
+// 3 req / 60 menit / IP
+const authEmailVerifLimiter = createLimiter(
+    `${config.APP_NAME}:rl:Everif:auth`,
+    { prod: 10, dev: 10 },
+    10 * 60,
+    5 // menit
 )
 
-// Private: 200 req / 15 menit / userId
-const privateLimiter = createLimiter(
-    `${config.APP_NAME}:rl:private`,
-    { prod: 200, dev: 5000 },
-    15 * 60
+
+// Private GET: 100 req / 1 menit / userId
+const privateReadLimiter = createLimiter(
+    `${config.APP_NAME}:rl:r:private`,
+    { prod: 100, dev: 100 },
+    1 * 60,
+    1 // menit
+)
+// Private POST PUT PATCH DELETE: 30 req / 1 menit / userId
+const privateCUDLimiter = createLimiter(
+    `${config.APP_NAME}:rl:cud:private`,
+    { prod: 30, dev: 30 },
+    1 * 60,
+    1 // menit
 )
 
 const createMiddleware = (
@@ -140,28 +181,58 @@ const createMiddleware = (
 export const publicRateLimit = createMiddleware(
     publicLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Rate limit exceeded, please try again later"
+    "Rate limit exceeded, please try again in 1 minutes"
 )
 
 // OWASP A04 - Insecure Design
 // Untuk endpoint auth (by IP)
-export const authRateLimit = createMiddleware(
-    authLimiter,
+export const authLoginRateLimiter = createMiddleware(
+    authLoginLimiter,
     (req) => req.ip || 'ip:unknown',
     "Too many attempts, please try again in 15 minutes"
+)
+export const authRegisterRateLimiter = createMiddleware(
+    authRegisterLimiter,
+    (req) => req.ip || 'ip:unknown',
+    "Too many attempts, please try again in 30 minutes"
+)
+export const authRefreshRateLimiter = createMiddleware(
+    authRefreshLimiter,
+    (req) => req.ip || 'ip:unknown',
+    "Too many attempts, please try again in 5 minutes"
+)
+export const authEmailSendRateLimiter = createMiddleware(
+    authEmailSendLimiter,
+    (req) => req.ip || 'ip:unknown',
+    "Too many attempts, please try again in 60 minutes"
+)
+export const authEmailVerifRateLimiter = createMiddleware(
+    authEmailVerifLimiter,
+    (req) => req.ip || 'ip:unknown',
+    "Too many attempts, please try again in 5 minutes"
 )
 
 // OWASP A04 - Insecure Design
 // Untuk semua endpoint private (by userId)
-export const privateRateLimit = createMiddleware(
-    privateLimiter,
+export const privateReadRateLimit = createMiddleware(
+    privateReadLimiter,
     (req) => {
         const userId = (req as any).user?.id
         const ip = req.ip
         return userId ? `user:${userId}` : `ip:${ip}`
     },
-    "Rate limit exceeded, please try again later"
+    "Rate limit exceeded, please try again in 1 minutes"
 )
+export const privateCUDRateLimit = createMiddleware(
+    privateCUDLimiter,
+    (req) => {
+        const userId = (req as any).user?.id
+        const ip = req.ip
+        return userId ? `user:${userId}` : `ip:${ip}`
+    },
+    "Rate limit exceeded, please try again in 1 minutes"
+)
+
 
 // ================================
 // HELMET — HTTP Security Headers

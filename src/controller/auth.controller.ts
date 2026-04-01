@@ -9,8 +9,12 @@ export class AuthController {
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
             const request: registerRequest = req.body as registerRequest
+            
             const result = await AuthService.register(request)
-            securityLogger.loginSuccess(result.id, req.ip ?? 'unknown')
+            securityLogger.registered(
+                result.id,
+                req.ip ?? 'unknown'
+            )
             success_handler(res, "Registration successful", result, 201)
         } catch (e) {
             next(e)
@@ -28,7 +32,8 @@ export class AuthController {
             securityLogger.loginFailed(
                 req.body.usernameOrEmail ?? 'unknown',
                 req.ip ?? 'unknown',
-                e instanceof Error ? e.message : 'unknown'
+                e instanceof Error ? e.message : 'unknown',
+                (req as any).requestId
             )
             next(e)
         }
@@ -37,7 +42,7 @@ export class AuthController {
     static async renewToken(req: Request, res: Response, next: NextFunction) {
         try {
             const result = await AuthService.renewToken(req)
-
+            
             success_handler(res, "Successful generate new token", result, 200)
         } catch (e) {
             securityLogger.invalidToken(

@@ -392,7 +392,9 @@ npx prisma generate
 
 15. Update logger di `src/application/logging.ts`
 
-16. 
+16. create utils dimana pure function yang dipakai di banyak tempat di `src/utils`
+
+17. create helper dimana pure fucntion dipakai di tempat tertentu di `src/helper`
 
 ---
 
