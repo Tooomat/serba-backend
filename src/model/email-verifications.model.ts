@@ -1,5 +1,5 @@
 import { User } from "../generated/prisma/client"
-import { maskEmail } from "../utils/formater.utils"
+import { formater } from "../utils/formater.utils"
 
 export type sendEmailVerificationRequest = {
     email: string
@@ -15,7 +15,7 @@ export function toSendEmailVerificationResponse(
 ): sendEmailVerificationResponse {
     const expiresIn = Math.floor((expiresAt.getTime() - Date.now()) / 1000)
     return {
-        email: maskEmail(user.email),
+        email: formater.maskEmail(user.email),
         expiresIn: expiresIn
     }
 }
@@ -24,8 +24,14 @@ export type verifyEmailQuery = {
     token: string
 }
 export type verifyEmailResponse = {
-    emailVerifiedAt: Date
+    emailVerifiedAt?: Date | null
+    userId: string
 }
-export function toVerifyEmailResponse(emailVerifiedAt: Date): verifyEmailResponse {
-    return { emailVerifiedAt }
+export function toVerifyEmailResponse(
+    user: Pick<User, 'id' | 'emailVerifiedAt' >
+): verifyEmailResponse {
+    return { 
+        emailVerifiedAt: user.emailVerifiedAt,
+        userId: user.id
+    }
 }

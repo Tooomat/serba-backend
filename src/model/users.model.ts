@@ -1,5 +1,5 @@
 import { User } from "../generated/prisma/client";
-import { userFormatter } from "../utils/formater.utils";
+import { formater } from "../utils/formater.utils";
 
 export type userResponse = {
     id: string,
@@ -24,6 +24,6 @@ export function toUserResponse(
         name: name,
         isEmailVerified: user.isEmailVerified,
         isPhoneVerified: user.isPhoneVerified,
-        status: userFormatter.status(user.status)
+        status: formater.userFormatter.status(user.status)
     }
 }

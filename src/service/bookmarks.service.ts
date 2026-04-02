@@ -1,6 +1,5 @@
 import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
-import { Prisma } from "../generated/prisma/client";
 import { addBookmarksResponse, listBookmarksQuery, listBookmarksResponse, toListBookmarksResponse } from "../model/bookmarks.model";
 import { buildPaging, Pagable } from "../model/paging.model";
 import { BookmarksValidation } from "../validation/bookmarks.validation";

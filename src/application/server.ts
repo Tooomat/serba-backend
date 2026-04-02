@@ -12,7 +12,7 @@ import {
   xssProtection 
 } from "../web/middleware/security.middleware";
 import { config } from "../config/env";
-import { requestLogger } from "./logging";
+import { requestLogger } from "../web/middleware/logging.middleware";
 
 const isProd = config.NODE_ENV === 'production'
 

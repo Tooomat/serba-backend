@@ -5,11 +5,18 @@ export type  registerRequest = {
     username: string
     email: string
     password: string
-    profilePictUrl?: string
     firstName: string
     lastName?: string
     birthDate: string
     phone: string
+}
+export type UploadedFile = {
+  //fieldname: string
+  originalname: string
+  //encoding: string
+  mimetype: string
+  buffer: Buffer
+  //size: number
 }
 
 export type registerResponse = {
@@ -25,7 +32,10 @@ export type registerResponse = {
     createdAt: Date
 }
 
-export function toRegisterResponse(user: User) {
+export function toRegisterResponse(
+    user: Pick<User, 'id' | 'username' | 'email' | 'profilePictUrl' | 'firstName' | 'lastName'
+    | 'birthDate' | 'phone' | 'status' | 'isEmailVerified' | 'isPhoneVerified' | 'createdAt'>
+) {
     return {
         id: user.id,
         username: user.username,

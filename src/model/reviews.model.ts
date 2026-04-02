@@ -1,7 +1,7 @@
 import { Job, Reviews, User } from "../generated/prisma/client"
 import { TypeReview } from "../generated/prisma/enums"
-import { getFullName } from "../utils/formater.utils"
-import { getTimeAgo } from "../utils/time.utils"
+import { formater } from "../utils/formater.utils"
+import { timeUtils } from "../utils/time.utils"
 
 // ================================ CREATE ================================
 export type createReviewsRequest = {
@@ -46,12 +46,12 @@ export function toSubmitReviewsResponse(
         user: {
             reviewer: {
                 id: reviewer.id,
-                name: getFullName(reviewer.firstName, reviewer.lastName),
+                name: formater.getFullName(reviewer.firstName, reviewer.lastName),
                 profilePictUrl: reviewer.profilePictUrl 
             },
             reviewee: {
                 id: reviewee.id,
-                name: getFullName(reviewee.firstName, reviewee.lastName),
+                name: formater.getFullName(reviewee.firstName, reviewee.lastName),
                 profilePictUrl: reviewee.profilePictUrl
             }
         },
@@ -86,7 +86,7 @@ export function toReplyReviewResponse(
         repliedAt: review.repliedAt,
         reviewer: {
             id: reviewer.id,
-            name: getFullName(reviewer.firstName, reviewer.lastName),
+            name: formater.getFullName(reviewer.firstName, reviewer.lastName),
             profilePictUrl: reviewer.profilePictUrl
         }
     }
@@ -136,9 +136,9 @@ export function toGetListReviewsResponse(
     job: Pick<Job, 'id' | 'title'>,
     loggedInUserId?: string
 ): getListReviewsResponse {
-    const commentAge = getTimeAgo(review.createdAt, 'id')
-    const commentUpdate = getTimeAgo(review.updatedAt, 'id')
-    const replyCommentAge = getTimeAgo(review.repliedAt, 'id')
+    const commentAge = timeUtils.getTimeAgo(review.createdAt, 'id')
+    const commentUpdate = timeUtils.getTimeAgo(review.updatedAt, 'id')
+    const replyCommentAge = timeUtils.getTimeAgo(review.repliedAt, 'id')
 
     const response: getListReviewsResponse = {
         id: review.id,
@@ -153,7 +153,7 @@ export function toGetListReviewsResponse(
             isMyReview: loggedInUserId ? review.reviewerId === loggedInUserId : undefined,
             by: {
                 id: reviewer.id,
-                name: getFullName(reviewer.firstName, reviewer.lastName),
+                name: formater.getFullName(reviewer.firstName, reviewer.lastName),
                 profilePictUrl: reviewer.profilePictUrl
             },
             createdAt: commentAge,
@@ -169,7 +169,7 @@ export function toGetListReviewsResponse(
             isMyReply: loggedInUserId ? review.revieweeId === loggedInUserId : undefined,
             by: {
                 id: reviewee.id,
-                name: getFullName(reviewee.firstName, reviewee.lastName),
+                name: formater.getFullName(reviewee.firstName, reviewee.lastName),
                 profilePictUrl: reviewee.profilePictUrl
             },
             repliedAt: replyCommentAge

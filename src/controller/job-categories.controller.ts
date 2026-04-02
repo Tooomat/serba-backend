@@ -7,7 +7,7 @@ import { getJobCaregoryRequest } from "../model/job-categories.model";
 export class JobCategoriesController {
     static async getAll(req: AuthRequest, res: Response, next: NextFunction) {
         try {
-            const results = await JobCategoriesService.getAll(req)
+            const results = await JobCategoriesService.getAll()
             success_handler(res, "get job categories successful", results, 200)
         } catch (e) {
             next(e)
@@ -20,7 +20,7 @@ export class JobCategoriesController {
                 id: String(req.params.jobCategoryId)
             }
 
-            const result = await JobCategoriesService.get(req, request)
+            const result = await JobCategoriesService.get(request)
             success_handler(res, "get job category successful", result, 200)
         } catch (e) {
             next(e)

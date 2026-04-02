@@ -1,7 +1,7 @@
-import { Address, Job, JobApplication, User } from "../generated/prisma/client"
-import { jobApplicationFormater, JobFormatters } from "../utils/formater.utils"
-import { parseJsonLocation } from "../utils/location.utils"
-import { getTimeAgo, parseDateToDay } from "../utils/time.utils"
+import { Job, JobApplication, User } from "../generated/prisma/client"
+import { formater } from "../utils/formater.utils"
+import { locationUtils } from "../utils/location.utils"
+import { timeUtils } from "../utils/time.utils"
 
 type locationJson = {
     subdistrict: {
@@ -53,7 +53,7 @@ export function toJobApplicationsResponse(
             applicationCount: job.applicationCount
         },
         coverLetter: jobApp.coverLetter,
-        appliedAt: `Applied on ${parseDateToDay(jobApp.appliedAt)}`
+        appliedAt: `Applied on ${timeUtils.parseDateToDay(jobApp.appliedAt)}`
     }
 }
 
@@ -86,7 +86,7 @@ export function toUpdateJobApplicationResponse(
 ): updateJobApplicationResponse {
     return {
         id: jobApp.id,
-        status: jobApplicationFormater.status(jobApp.status),
+        status: formater.jobApplicationFormater.status(jobApp.status),
         acceptedAt: jobApp.acceptedAt ?? null,
         rejectedAt: jobApp.rejectedAt ?? null,
         user: {
@@ -96,7 +96,7 @@ export function toUpdateJobApplicationResponse(
         job: {
             id: job.id,
             title: job.title,
-            status: JobFormatters.status(job.status)
+            status: formater.JobFormatters.status(job.status)
         }
     }
 }
@@ -140,34 +140,34 @@ export function toGetDetailJobApplicationResponse(
     jobApp: Pick<JobApplication, 'id' | 'status' | 'coverLetter' | 'appliedAt' | 'acceptedAt' | 'rejectedAt' | 'reviewedAt'>, 
     isJobProvider: boolean
 ): getDetailJobApplicationResponse {
-    const locations = parseJsonLocation<locationJson>(job.locations)
+    const locations = locationUtils.parseJsonLocation<locationJson>(job.locations)
     const response: getDetailJobApplicationResponse = {
         job: {
             id: job.id,
             title: job.title,
-            status: JobFormatters.status(job.status),
+            status: formater.JobFormatters.status(job.status),
             jobSite: job.jobSite,
             level: job.level,
             isProvider: isJobProvider,
             locations: locations
         },
         id: jobApp.id,
-        status: jobApplicationFormater.status(jobApp.status),
+        status: formater.jobApplicationFormater.status(jobApp.status),
         coverLetter: jobApp.coverLetter
     }
 
     if (isJobProvider) {
         if (jobApp.appliedAt) {
-            response.appliedAt = `Applicant applied on ${parseDateToDay(jobApp.appliedAt)}`
+            response.appliedAt = `Applicant applied on ${timeUtils.parseDateToDay(jobApp.appliedAt)}`
         }
         if (jobApp.acceptedAt) {
-            response.acceptedAt = `Accepted by you on ${parseDateToDay(jobApp.acceptedAt)}`
+            response.acceptedAt = `Accepted by you on ${timeUtils.parseDateToDay(jobApp.acceptedAt)}`
         }
         if (jobApp.rejectedAt) {
-            response.rejectedAt = `Rejected by you on ${parseDateToDay(jobApp.rejectedAt)}`
+            response.rejectedAt = `Rejected by you on ${timeUtils.parseDateToDay(jobApp.rejectedAt)}`
         }
         if (jobApp.reviewedAt) {
-            response.reviewedAt = `Reviewed by you on ${parseDateToDay(jobApp.reviewedAt)}`
+            response.reviewedAt = `Reviewed by you on ${timeUtils.parseDateToDay(jobApp.reviewedAt)}`
         }
         response.worker = {
             id: user.id,
@@ -180,16 +180,16 @@ export function toGetDetailJobApplicationResponse(
 
     if (!isJobProvider) {
         if (jobApp.appliedAt) {
-            response.appliedAt = `Applied on ${parseDateToDay(jobApp.appliedAt)}`
+            response.appliedAt = `Applied on ${timeUtils.parseDateToDay(jobApp.appliedAt)}`
         }
         if (jobApp.acceptedAt) {
-            response.acceptedAt = `Accepted by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${parseDateToDay(jobApp.acceptedAt)}`
+            response.acceptedAt = `Accepted by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${timeUtils.parseDateToDay(jobApp.acceptedAt)}`
         }
         if (jobApp.rejectedAt) {
-            response.rejectedAt = `Rejected by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${parseDateToDay(jobApp.rejectedAt)}`
+            response.rejectedAt = `Rejected by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${timeUtils.parseDateToDay(jobApp.rejectedAt)}`
         }
         if (jobApp.reviewedAt) {
-            response.reviewedAt = `Reviewed by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${parseDateToDay(jobApp.reviewedAt)}`
+            response.reviewedAt = `Reviewed by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${timeUtils.parseDateToDay(jobApp.reviewedAt)}`
         }
         response.jobProvider = {
             id: user.id,
@@ -243,7 +243,7 @@ export function toGetListJobApplicationResponse(
 
     const response: getListJobApplicationResponse = {
         id: jobApp.id,
-        status: jobApplicationFormater.status(jobApp.status),
+        status: formater.jobApplicationFormater.status(jobApp.status),
     }
 
     if (isProvider) {
@@ -253,16 +253,16 @@ export function toGetListJobApplicationResponse(
             profilePictUrl: user.profilePictUrl
         }
         if (jobApp.appliedAt) {
-            response.appliedAt = `Applicant applied on ${parseDateToDay(jobApp.appliedAt)}`
+            response.appliedAt = `Applicant applied on ${timeUtils.parseDateToDay(jobApp.appliedAt)}`
         }
         if (jobApp.acceptedAt) {
-            response.acceptedAt = `Accepted by you on ${parseDateToDay(jobApp.acceptedAt)}`
+            response.acceptedAt = `Accepted by you on ${timeUtils.parseDateToDay(jobApp.acceptedAt)}`
         }
         if (jobApp.rejectedAt) {
-            response.rejectedAt = `Rejected by you on ${parseDateToDay(jobApp.rejectedAt)}`
+            response.rejectedAt = `Rejected by you on ${timeUtils.parseDateToDay(jobApp.rejectedAt)}`
         }
         if (jobApp.reviewedAt) {
-            response.reviewedAt = `Reviewed by you on ${parseDateToDay(jobApp.reviewedAt)}`
+            response.reviewedAt = `Reviewed by you on ${timeUtils.parseDateToDay(jobApp.reviewedAt)}`
         }
     }
 
@@ -270,7 +270,7 @@ export function toGetListJobApplicationResponse(
         response.job = {
             id: job.id,
             title: job.title,
-            jobAge: getTimeAgo(job.createdAt, 'en')
+            jobAge: timeUtils.getTimeAgo(job.createdAt, 'en')
         },
         response.jobProvider = {
             id: user.id,
@@ -278,16 +278,16 @@ export function toGetListJobApplicationResponse(
             profilePictUrl: user.profilePictUrl
         }
         if (jobApp.appliedAt) {
-            response.appliedAt = `Applied on ${parseDateToDay(jobApp.appliedAt)}`
+            response.appliedAt = `Applied on ${timeUtils.parseDateToDay(jobApp.appliedAt)}`
         }
         if (jobApp.acceptedAt) {
-            response.acceptedAt = `Accepted by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${parseDateToDay(jobApp.acceptedAt)}`
+            response.acceptedAt = `Accepted by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${timeUtils.parseDateToDay(jobApp.acceptedAt)}`
         }
         if (jobApp.rejectedAt) {
-            response.rejectedAt = `Rejected by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${parseDateToDay(jobApp.rejectedAt)}`
+            response.rejectedAt = `Rejected by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${timeUtils.parseDateToDay(jobApp.rejectedAt)}`
         }
         if (jobApp.reviewedAt) {
-            response.reviewedAt = `Reviewed by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${parseDateToDay(jobApp.reviewedAt)}`
+            response.reviewedAt = `Reviewed by ${user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName} on ${timeUtils.parseDateToDay(jobApp.reviewedAt)}`
         }
     }
     return response  

@@ -27,10 +27,6 @@ export class AuthValidation {
             .refine((val) => /[^a-zA-Z0-9]/.test(val), {
                 message: 'Password must contain at least one special character (!@#$% etc.)'
             }),
-        profilePictUrl: z
-            .string()
-            .max(255)
-            .optional(),
         firstName: z
             .string()
             .min(1, 'first name must contain at least 1 characters')

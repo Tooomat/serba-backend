@@ -18,10 +18,10 @@ import {
     updateJobRequest
 } from "../model/jobs.model";
 import { getCyclePrimaryImage } from "../utils/image.utils";
-import { formatDistance, parseJsonLocation } from "../utils/location.utils";
-import { parseTimeToDate } from "../utils/time.utils";
 import { JobsValidation } from "../validation/jobs.validation";
 import { Validation } from "../validation/validation";
+import { locationUtils } from "../utils/location.utils";
+import { timeUtils } from "../utils/time.utils";
 
 export class JobsService { 
     static async create(jobProviderId: string, req: createJobRequest): Promise<jobResponse> {
@@ -93,8 +93,8 @@ export class JobsService {
             if (validate.budgetMax !== undefined) jobData.budgetMax = validate.budgetMax
             if (validate.budgetType !== undefined) jobData.budgetType = validate.budgetType
 
-            if (validate.startTime !== undefined) jobData.startTime = parseTimeToDate(validate.startTime)
-            if (validate.endTime !== undefined) jobData.endTime = parseTimeToDate(validate.endTime)
+            if (validate.startTime !== undefined) jobData.startTime = timeUtils.parseTimeToDate(validate.startTime)
+            if (validate.endTime !== undefined) jobData.endTime = timeUtils.parseTimeToDate(validate.endTime)
             if (validate.startDate !== undefined) jobData.startDate = validate.startDate
             if (validate.endDate !== undefined) jobData.endDate = validate.endDate
 
@@ -489,9 +489,9 @@ export class JobsService {
 
             let distance: string | null = null
             if (userLat && userLng) {
-                const jobLocations = parseJsonLocation<locationJobJson>(job.locations)
+                const jobLocations = locationUtils.parseJsonLocation<locationJobJson>(job.locations)
                 if (jobLocations.lat && jobLocations.lng) {
-                    distance = formatDistance(
+                    distance = locationUtils.formatDistance(
                         userLat,
                         userLng,
                         Number(jobLocations.lat),
@@ -625,8 +625,8 @@ export class JobsService {
             if (validate.budgetMax !== undefined) jobData.budgetMax = validate.budgetMax
             if (validate.budgetType !== undefined) jobData.budgetType = validate.budgetType
             if (validate.status !== undefined) jobData.status = validate.status
-            if (validate.startTime !== undefined) jobData.startTime = parseTimeToDate(validate.startTime)
-            if (validate.endTime !== undefined) jobData.endTime = parseTimeToDate(validate.endTime)
+            if (validate.startTime !== undefined) jobData.startTime = timeUtils.parseTimeToDate(validate.startTime)
+            if (validate.endTime !== undefined) jobData.endTime = timeUtils.parseTimeToDate(validate.endTime)
             if (validate.startDate !== undefined) jobData.startDate = validate.startDate
             if (validate.endDate !== undefined) jobData.endDate = validate.endDate
 

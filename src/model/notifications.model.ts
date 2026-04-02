@@ -1,5 +1,5 @@
 import { Notifications } from "../generated/prisma/client"
-import { notificationsFormater } from "../utils/formater.utils"
+import { formater } from "../utils/formater.utils"
 
 export type listNotificationsQuery = {
     isRead?: boolean | undefined
@@ -20,7 +20,7 @@ export function toNotificationsResponse(
 ): notificationsResponse {
     return {
         id: notif.id,
-        type: notificationsFormater.type(notif.type),
+        type: formater.notificationsFormater.type(notif.type),
         title: notif.title,
         message: notif.message,
         isRead: notif.isRead,

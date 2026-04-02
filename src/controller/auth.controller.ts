@@ -1,16 +1,23 @@
 import { NextFunction, Request, Response } from "express";
-import { loginRequest, registerRequest } from "../model/auth.model";
+import { loginRequest, registerRequest, UploadedFile } from "../model/auth.model";
 import { AuthService } from "../service/auth.service";
 import { success_handler } from "../web/http/web-response.http";
 import { AuthRequest } from "../web/middleware/auth.middleware";
-import { securityLogger } from "../application/logging";
+import { securityLogger } from "../utils/logging.utils";
 
 export class AuthController {
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
             const request: registerRequest = req.body as registerRequest
-            
-            const result = await AuthService.register(request)
+            const file: UploadedFile | undefined = req.file 
+            ? ({ 
+                    buffer: req.file.buffer, 
+                    mimetype: req.file.mimetype, 
+                    originalname: req.file.originalname 
+                } as UploadedFile) 
+            : undefined 
+
+            const result = await AuthService.register(req, request, file)
             securityLogger.registered(
                 result.id,
                 req.ip ?? 'unknown'
@@ -25,7 +32,7 @@ export class AuthController {
         try {
             const request: loginRequest = req.body as loginRequest
 
-            const result = await AuthService.login(request, res)
+            const result = await AuthService.login(req, request, res)
             securityLogger.loginSuccess(result.userId, req.ip ?? 'unknown')
             success_handler(res, "login successful", result.accessToken, 200)
         } catch (e) {
@@ -48,7 +55,8 @@ export class AuthController {
             securityLogger.invalidToken(
                 req.ip ?? 'unknown',
                 req.originalUrl,
-                e instanceof Error ? e.message : 'unknown'
+                e instanceof Error ? e.message : 'unknown',
+                (req as any).requestId
             )
             next(e)
         }

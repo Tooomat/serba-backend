@@ -8,7 +8,7 @@ import {
 } from "../model/jobs.model";
 import { JobsService } from "../service/jobs.service";
 import { success_handler } from "../web/http/web-response.http";
-import { toArray } from "../utils/formater.utils";
+import { formater } from "../utils/formater.utils";
 
 export class JobsController {
     static async create(auth: AuthRequest, res: Response, next: NextFunction) {
@@ -86,13 +86,13 @@ export class JobsController {
             }
 
             if (auth.query.jobCategoriesId) {
-                request.jobCategoriesId = toArray(auth.query.jobCategoriesId) as string[]
+                request.jobCategoriesId = formater.toArray(auth.query.jobCategoriesId) as string[]
             }
             if (auth.query.title) {
                 request.title = String(auth.query.title)
             }
             if (auth.query.level) {
-                request.level = toArray(auth.query.level) as string[]
+                request.level = formater.toArray(auth.query.level) as string[]
             }
             if (auth.query.status) {
                 request.status = String(auth.query.status)
@@ -122,11 +122,11 @@ export class JobsController {
         try {
             const request: updateJobRequest = {
                 addressId: auth.body.addressId ? String(auth.body.addressId) : undefined,
-                jobCategoriesId: auth.query.jobCategoriesId ? toArray(auth.query.jobCategoriesId) as string[] : undefined,
+                jobCategoriesId: auth.query.jobCategoriesId ? formater.toArray(auth.query.jobCategoriesId) as string[] : undefined,
                 title: auth.body.title ? String(auth.body.title) : undefined,
                 introduction: auth.body.introduction ? String(auth.body.introduction) : undefined,
                 description: auth.body.description ? String(auth.body.description) : undefined,
-                level: auth.body.level ? toArray(auth.body.level) as string[] : undefined,
+                level: auth.body.level ? formater.toArray(auth.body.level) as string[] : undefined,
                 type: auth.body.type ? String(auth.body.type) : undefined,
                 required: auth.body.required ? Number(auth.body.required) : undefined,  
                 jobSite: auth.body.jobSite ? String(auth.body.jobSite) : undefined,

@@ -49,6 +49,10 @@ export interface EnvConfig {
   REDIS_PASSWORD: string
   REDIS_DB: number
 
+  CLOUDINARY_CLOUD_NAME: string
+  CLOUDINARY_API_KEY: string
+  CLOUDINARY_API_SECRET: string
+
   RESEND_API_KEY: string
 }
 
@@ -113,6 +117,10 @@ export const config: EnvConfig = {
   REDIS_PORT: Number(process.env.REDIS_PORT || 6379),
   REDIS_PASSWORD: required("REDIS_PASSWORD"),
   REDIS_DB: Number(process.env.REDIS_DB || 0),
+
+  CLOUDINARY_CLOUD_NAME: required("CLOUDINARY_CLOUD_NAME"),
+  CLOUDINARY_API_KEY: required("CLOUDINARY_API_KEY"),
+  CLOUDINARY_API_SECRET: required("CLOUDINARY_API_SECRET"),
 
   RESEND_API_KEY: required("RESEND_API_KEY")
 }

@@ -1,5 +1,5 @@
 import { MasterCity } from "../generated/prisma/client"
-import { parseJsonLocation } from "../utils/location.utils"
+import { locationUtils } from "../utils/location.utils"
 
 type locationJson = {
   id: string
@@ -15,7 +15,7 @@ export type cityResponse = {
     province: locationJson
 }
 export function toCityResponse(city: MasterCity): cityResponse {
-    const province = parseJsonLocation<locationJson>(city.province)
+    const province = locationUtils.parseJsonLocation<locationJson>(city.province)
     return {
         id: city.id,
         code: city.code,

@@ -11,7 +11,7 @@ import { Request , Response, NextFunction } from "express"
 import helmet from "helmet";
 import { filterXSS } from 'xss'
 import hpp from "hpp"
-import { securityLogger } from "../../application/logging"
+import { securityLogger } from "../../utils/logging.utils"
 
 const isDev = config.NODE_ENV === 'development'
 const isTest = config.NODE_ENV === 'test'
@@ -159,7 +159,8 @@ const createMiddleware = (
         securityLogger.rateLimitExceeded(
             req.ip ?? 'unknown',
             (req as any).user?.id ?? null,
-            req.originalUrl
+            req.originalUrl,
+            (req as any).requestId
         )
         
         res.set('Retry-After', String(retryAfter))
@@ -326,12 +327,28 @@ export const csrfProtection = (req: Request, res: Response, next: NextFunction) 
 //
 // Cara kerja sanitizer: strip atau escape karakter berbahaya
 // dari input sebelum disimpan ke DB.
+// export const xssProtection = (req: Request, res: Response, next: NextFunction) => {
+//     if (req.body) {
+//         req.body = sanitizeObject(req.body)
+//     }
+//     if (req.query) {
+//         req.query = sanitizeObject(req.query) as any
+//     }
+//     next()
+// }
+
 export const xssProtection = (req: Request, res: Response, next: NextFunction) => {
     if (req.body) {
         req.body = sanitizeObject(req.body)
     }
     if (req.query) {
-        req.query = sanitizeObject(req.query) as any
+        // Override via defineProperty kompatibel Express 4 & 5
+        Object.defineProperty(req, 'query', {
+            value: sanitizeObject(req.query),
+            writable: true,
+            configurable: true,
+            enumerable: true
+        })
     }
     next()
 }

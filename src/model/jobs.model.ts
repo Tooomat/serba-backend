@@ -1,10 +1,10 @@
 import { Job, JobCategory, User } from "../generated/prisma/client"
-import { parseJsonLocation } from "../utils/location.utils"
 import { priceUrgentJobProvider } from "../utils/price.utils"
-import { countStartDateToEndDate, getTimeAgo, parseDateToDay } from "../utils/time.utils"
 import { Decimal } from "@prisma/client/runtime/client"
-import { JobFormatters } from "../utils/formater.utils"
 import { config } from "../config/env"
+import { formater } from "../utils/formater.utils"
+import { locationUtils } from "../utils/location.utils"
+import { timeUtils } from "../utils/time.utils"
 
 export type locationJobJson = {
     lat: Decimal
@@ -57,8 +57,8 @@ export function toJobListPublicResponse(
     job: Job, 
     image: string
 ): jobListPublicResponse {
-    const locations = parseJsonLocation<locationJobJson>(job.locations)
-    const jobAge = getTimeAgo(job.createdAt, 'id')
+    const locations = locationUtils.parseJsonLocation<locationJobJson>(job.locations)
+    const jobAge = timeUtils.getTimeAgo(job.createdAt, 'id')
     
     const baseUrl = config.APP_URL.replace(/\/+$/, '')
     const pathImage = `${baseUrl}${image.startsWith('/') ? '' : '/'}${image}`
@@ -70,12 +70,12 @@ export function toJobListPublicResponse(
         isPublic: job.isPublic,
         locations: locations,
         title: job.title,
-        type: JobFormatters.type(job.type),
-        jobSite: JobFormatters.site(job.jobSite),
+        type: formater.JobFormatters.type(job.type),
+        jobSite: formater.JobFormatters.site(job.jobSite),
         budgetMin: job.budgetMin? priceUrgentJobProvider(job.type, job.budgetMin) : null,
         budgetMax: job.budgetMax? priceUrgentJobProvider(job.type, job.budgetMax) : null,
-        budgetType: job.budgetType ? JobFormatters.budgetType(job.budgetType) : null,
-        status: JobFormatters.status(job.status),
+        budgetType: job.budgetType ? formater.JobFormatters.budgetType(job.budgetType) : null,
+        status: formater.JobFormatters.status(job.status),
         jobAge: jobAge,
         primaryImage: pathImage
     }
@@ -150,7 +150,7 @@ export type jobResponse = {
 export function toJobResponse(
     job: Job
 ): jobResponse{
-    const locations = parseJsonLocation<locationJobJson>(job.locations)
+    const locations = locationUtils.parseJsonLocation<locationJobJson>(job.locations)
     
     const response: jobResponse = {
         id: job.id,
@@ -161,14 +161,14 @@ export function toJobResponse(
         title: job.title,
         introduction: job.introduction,
         description: job.description,
-        level: job.level.map(JobFormatters.level),
-        type: JobFormatters.type(job.type),
+        level: job.level.map(formater.JobFormatters.level),
+        type: formater.JobFormatters.type(job.type),
         required: job.required,
-        jobSite: JobFormatters.site(job.jobSite),
+        jobSite: formater.JobFormatters.site(job.jobSite),
         budgetMin: job.budgetMin? priceUrgentJobProvider(job.type, job.budgetMin) : null,
         budgetMax: job.budgetMax? priceUrgentJobProvider(job.type, job.budgetMax) : null,
-        budgetType: job.budgetType ? JobFormatters.budgetType(job.budgetType) : null,
-        status: JobFormatters.status(job.status), 
+        budgetType: job.budgetType ? formater.JobFormatters.budgetType(job.budgetType) : null,
+        status: formater.JobFormatters.status(job.status), 
         startTime: job.startTime
             ? job.startTime.toLocaleTimeString("en-US", {
                 hour: "2-digit",
@@ -247,11 +247,11 @@ export function toJobDetailResponse(
     isProvider: boolean,
     acceptedApplicants?: acceptedApplicantResponse[] | null
 ): jobDetailResponse {
-    const locations = parseJsonLocation<locationJobJson>(job.locations)
+    const locations = locationUtils.parseJsonLocation<locationJobJson>(job.locations)
 
     let estimatedDurationDays: string | null = null;
     if (job.startDate && job.endDate) {
-        estimatedDurationDays = countStartDateToEndDate(job.startDate, job.endDate);
+        estimatedDurationDays = timeUtils.countStartDateToEndDate(job.startDate, job.endDate);
     }
 
     const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ')
@@ -275,16 +275,16 @@ export function toJobDetailResponse(
         title: job.title,
         introduction: job.introduction,
         description: job.description,
-        level: job.level.map(JobFormatters.level),
+        level: job.level.map(formater.JobFormatters.level),
         required: job.required,
-        type: JobFormatters.type(job.type),
-        jobSite: JobFormatters.site(job.jobSite),
+        type: formater.JobFormatters.type(job.type),
+        jobSite: formater.JobFormatters.site(job.jobSite),
         budgetMin: job.budgetMin ? priceUrgentJobProvider(job.type, job.budgetMin) : null,
         budgetMax: job.budgetMax ? priceUrgentJobProvider(job.type, job.budgetMax) : null,
-        budgetType: job.budgetType ? JobFormatters.budgetType(job.budgetType) : null,
-        status: JobFormatters.status(job.status),
+        budgetType: job.budgetType ? formater.JobFormatters.budgetType(job.budgetType) : null,
+        status: formater.JobFormatters.status(job.status),
         applicationsCount: job.applicationCount,
-        dayOfWeekStart: job.startTime ? parseDateToDay(job.startTime) : null,
+        dayOfWeekStart: job.startTime ? timeUtils.parseDateToDay(job.startTime) : null,
         startTime: job.startTime
             ? job.startTime.toLocaleTimeString("en-US", {
                 hour: "2-digit",
@@ -372,8 +372,8 @@ export function toJobListResponse(
     isProvider: boolean, 
     distance?: string | null
 ): jobListResponse {
-    const jobLocations = parseJsonLocation<locationJobJson>(job.locations)
-    const jobAge = getTimeAgo(job.createdAt, 'id')
+    const jobLocations = locationUtils.parseJsonLocation<locationJobJson>(job.locations)
+    const jobAge = timeUtils.getTimeAgo(job.createdAt, 'id')
     const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ')
 
     const response: jobListResponse = {
@@ -393,12 +393,12 @@ export function toJobListResponse(
         isProvider: isProvider,
         isPublic: job.isPublic,
         locations: jobLocations,
-        type: JobFormatters.type(job.type),
-        jobSite: JobFormatters.site(job.jobSite),
+        type: formater.JobFormatters.type(job.type),
+        jobSite: formater.JobFormatters.site(job.jobSite),
         budgetMin: job.budgetMin ? priceUrgentJobProvider(job.type, job.budgetMin) : null,
         budgetMax: job.budgetMax ? priceUrgentJobProvider(job.type, job.budgetMax) : null,
-        budgetType: job.budgetType ? JobFormatters.budgetType(job.budgetType) : null,
-        status: JobFormatters.status(job.status),
+        budgetType: job.budgetType ? formater.JobFormatters.budgetType(job.budgetType) : null,
+        status: formater.JobFormatters.status(job.status),
         jobAge: jobAge,
         categories: categories.map(c => ({
             id: c.id,

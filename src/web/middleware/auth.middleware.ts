@@ -4,7 +4,7 @@ import { ResponseError } from "../../error/service-response.error";
 import { JWT } from "../../utils/jwt.utils";
 import { prismaClient } from "../../application/database";
 import { isBlacklisted } from "../../application/redis";
-import { securityLogger } from "../../application/logging";
+import { securityLogger } from "../../utils/logging.utils";
 
 export interface AuthRequest extends Request {
     token?: {
@@ -28,7 +28,8 @@ export class AuthMiddleware {
                     null,
                     req.ip ?? 'unknown',
                     req.originalUrl,
-                    'Missing authorization header'
+                    'Missing authorization header',
+                    (req as any).requestId
                 )
                 return next(new ResponseError(401, "Missing Authorization header"))
             }
@@ -38,7 +39,8 @@ export class AuthMiddleware {
                 securityLogger.invalidToken(
                     req.ip ?? 'unknown',
                     req.originalUrl,
-                    'Invalid authorization format'
+                    'Invalid authorization format',
+                    (req as any).requestId
                 )
                 return next(new ResponseError(401, "Invalid authorization format"))
             }
@@ -56,7 +58,8 @@ export class AuthMiddleware {
                 securityLogger.invalidToken(
                     req.ip ?? 'unknown',
                     req.originalUrl,
-                    error instanceof Error ? error.message : 'Invalid token'
+                    error instanceof Error ? error.message : 'Invalid token',
+                    (req as any).requestId
                 )
                 return next(new ResponseError(401, "Invalid or expired token"))
             }
@@ -67,7 +70,8 @@ export class AuthMiddleware {
                 securityLogger.invalidToken(
                     req.ip ?? 'unknown',
                     req.originalUrl,
-                    'Token blacklisted'
+                    'Token blacklisted',
+                    (req as any).requestId
                 )
                 return next(new ResponseError(401, "Token already blacklisted"))
             }
@@ -81,7 +85,8 @@ export class AuthMiddleware {
                     payload.sub,
                     req.ip ?? 'unknown',
                     req.originalUrl,
-                    'User not found'
+                    'User not found',
+                    (req as any).requestId
                 )
                 return next(new ResponseError(401, "Unauthorized"))
             }
@@ -90,7 +95,8 @@ export class AuthMiddleware {
                     user.id,
                     req.ip ?? 'unknown',
                     req.originalUrl,
-                    'Account blocked'
+                    'Account blocked',
+                    (req as any).requestId
                 )
                 return next(new ResponseError(403, "Account has been blocked"))
             }

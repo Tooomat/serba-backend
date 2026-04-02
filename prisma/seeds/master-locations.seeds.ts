@@ -1,5 +1,5 @@
-import { getParentCode, loadCsv, toTitleCase } from "../../src/utils/csv.utils"
 import { prismaClient } from "../../src/application/database";
+import { csvHelper } from "../../src/utils/csv.utils"
 
 type CsvRows = {
     code: string
@@ -8,7 +8,7 @@ type CsvRows = {
 
 export class MasterLocations {
     static async masterProvince(filePath: string) {
-        const rows = await loadCsv<CsvRows>(filePath)
+        const rows = await csvHelper.loadCsv<CsvRows>(filePath)
         let counter = 1
 
         const provinceMaps = new Map<string, CsvRows>()
@@ -17,7 +17,7 @@ export class MasterLocations {
             if (!row.code.includes(".")) {
                 provinceMaps.set(row.code, {
                     code: row.code,
-                    name: toTitleCase(row.name.trim())
+                    name: csvHelper.toTitleCase(row.name.trim())
                 })
             }
         })
@@ -48,7 +48,7 @@ export class MasterLocations {
     }
 
     static async masterCities(filePath: string) {
-        const rows = await loadCsv<CsvRows>(filePath)
+        const rows = await csvHelper.loadCsv<CsvRows>(filePath)
 
         let counter = 1
         const citiesMap = new Map<string, CsvRows>()
@@ -56,7 +56,7 @@ export class MasterLocations {
             if (row.code.split(".").length === 2) {
                 citiesMap.set(row.code, {
                     code: row.code,
-                    name: toTitleCase(row.name.trim())
+                    name: csvHelper.toTitleCase(row.name.trim())
                 })
             }
         })
@@ -71,7 +71,7 @@ export class MasterLocations {
         for(const city of cities) {
             const province = await prismaClient.masterProvince.findUnique({
                 where: {
-                    code: getParentCode(city.code)
+                    code: csvHelper.getParentCode(city.code)
                 }
             })
 
@@ -111,7 +111,7 @@ export class MasterLocations {
     }
 
     static async masterDistricts(filePath: string) {
-        const rows = await loadCsv<CsvRows>(filePath)
+        const rows = await csvHelper.loadCsv<CsvRows>(filePath)
         
         let counter = 1
         const districtMap = new Map<string, CsvRows>()
@@ -120,7 +120,7 @@ export class MasterLocations {
             if (row.code.split(".").length === 3) {
                 districtMap.set(row.code, {
                     code: row.code,
-                    name: toTitleCase(row.name.trim())
+                    name: csvHelper.toTitleCase(row.name.trim())
                 })
             }
         })
@@ -134,7 +134,7 @@ export class MasterLocations {
         for(const district of districts) {
             const city = await prismaClient.masterCity.findUnique({
                 where: {
-                    code: getParentCode(district.code)
+                    code: csvHelper.getParentCode(district.code)
                 }
             })
 
@@ -175,7 +175,7 @@ export class MasterLocations {
     }
 
     static async masterSubDistricts(filePath: string) {
-        const rows = await loadCsv<CsvRows>(filePath)
+        const rows = await csvHelper.loadCsv<CsvRows>(filePath)
         
         let counter = 1
         const subDistrictMap = new Map<string, CsvRows>()
@@ -184,7 +184,7 @@ export class MasterLocations {
             if (row.code.split(".").length === 4) {
                 subDistrictMap.set(row.code, {
                     code: row.code,
-                    name: toTitleCase(row.name.trim())
+                    name: csvHelper.toTitleCase(row.name.trim())
                 })
             }
         })
@@ -198,7 +198,7 @@ export class MasterLocations {
         for (const subDistrict of subDistricts) {
             const district = await prismaClient.masterDistrict.findUnique({
                 where: {
-                    code: getParentCode(subDistrict.code)
+                    code: csvHelper.getParentCode(subDistrict.code)
                 }
             })
 

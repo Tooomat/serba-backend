@@ -1,6 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/client"
-import { Address, Mark } from "../generated/prisma/client"
-import { parseJsonLocation } from "../utils/location.utils"
+import { Address } from "../generated/prisma/client"
+import { locationUtils } from "../utils/location.utils"
 
 type locationJson = {
     subdistrict: {
@@ -51,7 +51,7 @@ export type addressesResponse = {
 }
 
 export function toAddressesResponse(address: Address): addressesResponse {
-    const locations = parseJsonLocation<locationJson>(address.locations)
+    const locations = locationUtils.parseJsonLocation<locationJson>(address.locations)
 
     return {
         id: address.id,

@@ -189,6 +189,6 @@ export class EmailVerificationsService {
             })
         ])
 
-        return toVerifyEmailResponse(updatedUser.emailVerifiedAt!)
+        return toVerifyEmailResponse(updatedUser)
     }
 }

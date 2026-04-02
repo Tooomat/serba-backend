@@ -9,11 +9,13 @@ import { Validation } from "../validation/validation";
 import bcrypt from "bcrypt";
 import { blacklistAccessToken, deleteRefreshToken, getRefreshToken, redis, saveRefreshToken } from "../application/redis";
 import { EmailVerificationsService } from "./email-verifications.service";
-import { logger } from "../application/logging";
+import { uploadToCloudinary } from "../helper/cloudinary.helper";
+import { Prisma, StatusUser } from "../generated/prisma/client";
+import { securityLogger } from "../utils/logging.utils";
 
 export class AuthService {
-    static async register(req: model.registerRequest): Promise<model.registerResponse> {
-        const validation = Validation.validate(AuthValidation.REGISTERSCHEMA, req)
+    static async register(req: Request, reqBody: model.registerRequest, file?: model.UploadedFile): Promise<model.registerResponse> {
+        const validation = Validation.validate(AuthValidation.REGISTERSCHEMA, reqBody)
 
         const totalUserWithSameUsername = await prismaClient.user.count({
             where: {
@@ -34,23 +36,48 @@ export class AuthService {
 
         validation.password = await bcrypt.hash(validation.password, 10)
 
-        const userData: any = {
+        let profilePictUrl: string | undefined
+        if (file) {
+            await uploadToCloudinary(file, {
+                folder: "serba/profile-pictures",
+                transformation: [
+                    { width: 400, height: 400, crop: "fill", gravity: "face" }
+                ]
+            })
+        }
+        
+        const userData: Prisma.UserCreateInput = {
             username: validation.username,
             email: validation.email,
             password: validation.password,
             firstName: validation.firstName,
             birthDate: validation.birthDate,
             phone: validation.phone,
+            status: StatusUser.PENDING_VERIFICATION
         }
         if (validation.lastName !== undefined) {
             userData.lastName = validation.lastName
         }
-        if (validation.profilePictUrl !== undefined) {
-            userData.profilePictUrl = validation.profilePictUrl
+        if (profilePictUrl !== undefined) {
+            userData.profilePictUrl = profilePictUrl
         }
 
         const user = await prismaClient.user.create({
-            data: userData
+            data: userData,
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                profilePictUrl: true,
+                firstName: true,
+                lastName: true,
+                birthDate: true,
+                phone: true,
+                isEmailVerified: true,
+                isPhoneVerified: true,
+                status: true,
+                createdAt: true
+            }
         })
         
         // fire and forget, tidak perlu await agar tidak block response register
@@ -58,18 +85,20 @@ export class AuthService {
             id: user.id,
             email: user.email,
             username: user.username
-        }).catch((error) => {
-            logger.error("Failed to send verification email on register", {
-                userId: user.id,
-                error: error.message
-            })
+        }).catch((e) => {
+            securityLogger.emailVerificationSentFailed(
+                user.email,
+                req.ip ?? 'unknown',
+                `Failed to send verification email on register: ${e.Error}`,
+                (req as any).requestId
+            )
         })
 
         return model.toRegisterResponse(user)
     }
 
-    static async login(req: model.loginRequest,  res: Response): Promise<model.loginResponse>{
-        const validation = Validation.validate(AuthValidation.LOGINSCHEMA, req)
+    static async login(req: Request, reqBody: model.loginRequest,  res: Response): Promise<model.loginResponse>{
+        const validation = Validation.validate(AuthValidation.LOGINSCHEMA, reqBody)
 
         const ATTEMPT_PREFIX = `${config.APP_NAME}:login:attempts`
         const BLOCK_PREFIX   = `${config.APP_NAME}:login:block`
@@ -98,6 +127,14 @@ export class AuthService {
                 await redis.del(key)
                 // Opsional: kirim email notifikasi ke user
                 // await EmailService.sendAccountLockedNotification(...)
+
+                securityLogger.accountLocked(
+                    identifier,       
+                    req.ip ?? 'unknown', 
+                    attempts       
+                )
+                
+                throw new ResponseError(429, "Too many failed attempts. Account locked for 30 minutes.")
             }
             return attempts
         }

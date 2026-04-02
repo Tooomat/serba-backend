@@ -18,11 +18,11 @@ import {
 import { JobApplicationsValidation } from "../validation/job-applications.validation";
 import { Validation } from "../validation/validation";
 import { Prisma } from "../generated/prisma/client";
-import { getFullName } from "../utils/formater.utils";
 import { enqueueManyNotifications, enqueueNotification } from "../queues/notifications/notification.helper";
 import { enqueueEmail, enqueueManyEmails } from "../queues/emails/email.helper";
 import { TypeEmail } from "../queues/emails/email.job";
 import { emailTemplate } from "../queues/emails/template";
+import { formater } from "../utils/formater.utils";
 
 export class JobApplicationsService {
     static async create(workerId: string, jobId: string, req: createJobApplicationsRequest): Promise<jobApplicationResponse> {
@@ -158,7 +158,7 @@ export class JobApplicationsService {
                 id: `W-notif-JOB_APPLIED-${randomUUID()}`,
                 type: 'JOB_APPLIED',
                 title: 'Status job application',
-                message: `${workerUsername!.toUpperCase()}, your application was sent to ${getFullName(job.jobProvider.firstName, job.jobProvider.lastName)}`,
+                message: `${workerUsername!.toUpperCase()}, your application was sent to ${formater.getFullName(job.jobProvider.firstName, job.jobProvider.lastName)}`,
                 userId: workerId,
                 jobApplicationId: createdJobApplicationId!
             }
@@ -368,7 +368,7 @@ export class JobApplicationsService {
                 candidateRejectedApps.map(app => ({
                     id: `W-notif-JOB_REJECTED-${randomUUID()}`,
                     type: 'JOB_REJECTED',
-                    title: `Application update from ${getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
+                    title: `Application update from ${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
                     message: (validate.rejectedGlobalMessage ?? 'default').toLowerCase() === 'default'
                         ? `${ app.worker.username.toUpperCase() }, your application for ${jobApplication.job.title} has been rejected`
                         : validate.rejectedGlobalMessage,
@@ -380,7 +380,7 @@ export class JobApplicationsService {
             await enqueueNotification({
                 id: `W-notif-JOB_ACCEPTED-${randomUUID()}`,
                 type: 'JOB_ACCEPTED',
-                title: `Application update from ${getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
+                title: `Application update from ${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
                 message: (validate.jobMessage ?? 'default').toLowerCase() === 'default' 
                     ? `${ jobApplication.worker.username.toUpperCase() }, Your application for ${jobApplication.job.title} has been accepted` 
                     : validate.jobMessage,
@@ -391,11 +391,11 @@ export class JobApplicationsService {
             await enqueueManyEmails(
                 candidateRejectedApps.map(app => ({
                     to: app.worker.email,
-                    subject: `${app.worker.username.toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
+                    subject: `${app.worker.username.toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
                     html: emailTemplate.jobRejected(
                         app.worker.username.toUpperCase(), 
                         jobApplication.job.title, 
-                        getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
+                        formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
                     ),
                     type: TypeEmail.JOB_REJECTED
                 }))
@@ -403,11 +403,11 @@ export class JobApplicationsService {
 
             await enqueueEmail({
                 to: jobApplication.worker.email,
-                subject: `${getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
+                subject: `${formater.getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
                 html: emailTemplate.jobAccepted(
                     jobApplication.worker.username.toUpperCase(), 
                     jobApplication.job.title, 
-                    getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName),
+                    formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName),
                     jobApplication.job.jobProvider.email,
                     jobApplication.job.jobProvider.phone
                 ),
@@ -419,7 +419,7 @@ export class JobApplicationsService {
             await enqueueNotification({
                 id: `W-notif-JOB_REJECTED-${randomUUID()}`,
                 type: 'JOB_REJECTED',
-                title: `Application update from "${getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
+                title: `Application update from "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
                 message: (validate.jobMessage ?? 'default').toLowerCase() === 'default' 
                     ? `${ jobApplication.worker.username.toUpperCase() }, Your application for ${jobApplication.job.title} has been rejected` 
                     : validate.jobMessage,
@@ -429,11 +429,11 @@ export class JobApplicationsService {
 
             await enqueueEmail({
                 to: jobApplication.worker.email,
-                subject: `${getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
+                subject: `${formater.getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
                 html: emailTemplate.jobRejected(
                     jobApplication.worker.username.toUpperCase(), 
                     jobApplication.job.title, 
-                    getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
+                    formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
                 ),
                 type: TypeEmail.JOB_REJECTED
             })
@@ -511,7 +511,7 @@ export class JobApplicationsService {
             await enqueueNotification({
                 id: `W-notif-JOB_REVIEWED-${randomUUID()}`,
                 type: 'JOB_REVIEWED',
-                title: `Application update from ${getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
+                title: `Application update from ${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
                 message: `${jobApplication.worker.username.toUpperCase()}, Your application for ${jobApplication.job.title} has been reviewed by owner`,
                 userId: jobApplication.workerId,
                 jobApplicationId: jobApplication.id

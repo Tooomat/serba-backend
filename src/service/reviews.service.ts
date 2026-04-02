@@ -1,4 +1,3 @@
-import { validate } from "uuid";
 import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/service-response.error";
 import { TypeReview } from "../generated/prisma/enums";
