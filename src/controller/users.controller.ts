@@ -60,9 +60,19 @@ export class UsersController {
 
     static async otherProfile(auth: AuthRequest, res: Response, next: NextFunction) {
         try {
-            const { id: userId } = auth.user!
-            const result = UsersService.profile(userId, false)
+            const visitedUserId: string = String(auth.params.userId)
+            const result = UsersService.profile(visitedUserId, false)
             success_handler(res, "Get other profile successfully", result, 200)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    static async deleteProfilePict(auth: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const { id: userId } = auth.user!
+            const result = UsersService.deleteProfilePict(userId)
+            success_handler(res, "Delete profile picture successful", result, 200)
         } catch (e) {
             next(e)
         }

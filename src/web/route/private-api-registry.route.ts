@@ -14,6 +14,7 @@ import { NotificationsController } from "../../controller/notifications.controll
 import { BookmarkController } from "../../controller/bookmarks.controller"
 import { ReviewsController } from "../../controller/reviews.controller"
 import { privateReadRateLimit, privateCUDRateLimit } from "../middleware/security.middleware"
+import { uploadProfilePict } from "../middleware/upload.middleware"
 
 export const privateRouter = Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
@@ -23,6 +24,11 @@ privateRouter.post("/api/auth/logout", privateCUDRateLimit, AuthController.logou
 
 //user
 privateRouter.get("/api/users/current", privateReadRateLimit, UsersController.current)
+privateRouter.patch("/api/users", privateCUDRateLimit, UsersController.update)
+privateRouter.patch("/api/users/profilePicture", uploadProfilePict.single("profilePict"), privateCUDRateLimit, UsersController.updateProfilePict)
+privateRouter.get("/api/users/profile", privateReadRateLimit, UsersController.ownProfile)
+privateRouter.get("/api/users/:userId/profile", privateReadRateLimit, UsersController.otherProfile)
+privateRouter.delete("/api/users/profilePicture", privateCUDRateLimit, UsersController.deleteProfilePict)
 
 // job categories
 privateRouter.get("/api/jobCategories/:jobCategoryId", privateReadRateLimit, JobCategoriesController.get)

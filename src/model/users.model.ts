@@ -95,15 +95,18 @@ export type UploadUpdateProfilePict = {
 export type updateProfilePictResponse = {
     id: string
     profilePict?: string | null
-    updatedAt?: Date | null
+    updatedAt?: Date | null,
+    warning?: string | undefined
 }
 export function toUpdateProfilePictResponse(
-    user: Pick<User, 'id' | 'profilePictUrl' | 'updatedAt'>
+    user: Pick<User, 'id' | 'profilePictUrl' | 'updatedAt'>,
+    warning?: string | undefined
 ): updateProfilePictResponse {
     return {
         id: user.id,
         profilePict: user.profilePictUrl,
-        updatedAt: user.updatedAt
+        updatedAt: user.updatedAt,
+        warning: warning
     }
 }
 
@@ -166,6 +169,7 @@ export type getProfileResponse = {
     username: string
     name: string
     profilePictUrl?: string | null
+    isOwnProfile: boolean
     createdAt: Date
     // hanya muncul kalau own profile
     email?: string | undefined
@@ -201,6 +205,7 @@ export function toGetProfileResponse(
         name: formater.getFullName(user.firstName, user.lastName),
         profilePictUrl: user.profilePictUrl,
         createdAt: user.createdAt,
+        isOwnProfile: isOwnProfile,
         asWorker: workerStats,
         asProvider: providerStats,
     }
@@ -225,4 +230,21 @@ export function toGetProfileResponse(
     }
 
     return response
+}
+
+// ================================== DELETE PICTURE PROFILE ==================================
+export type deleteProfilePictResponse = {
+    id: string
+    updatedAt?: Date | null
+    warning?: string | undefined
+}
+export function toDeleteProfilePictResponse(
+    user: Pick<User, 'id' | 'updatedAt'>,
+    warning?: string | undefined
+): deleteProfilePictResponse {
+    return {
+        id: user.id,
+        updatedAt: user.updatedAt,
+        warning: warning
+    }
 }

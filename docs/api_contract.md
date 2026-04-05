@@ -520,7 +520,7 @@ Mendapatkan info akun pengguna saat ini.
 ### 2.2 Update user (Belum)
 
 Membuat akun pengguna baru.  
-**Endpoint:** `PATCH /users/current`  
+**Endpoint:** `PATCH /users`  
 **Request Header:**
   - **Authorization: Bearer <token> (accessToken)**
 
@@ -569,7 +569,7 @@ Membuat akun pengguna baru.
 }
 ```
 
-### 2.2 Update profile picture (Belum)
+### 2.3 Update profile picture (Belum)
 
 Membuat akun pengguna baru.  
 **Endpoint:** `PATCH /users/profilePicture`  
@@ -590,7 +590,8 @@ Membuat akun pengguna baru.
   "data": {
     "id": "uuid",
     "profilePict": "https://...",
-    "updatedAt": DD-MM-YY
+    "updatedAt": DD-MM-YY,
+    "warning": "Profile picture updated, but old picture could not be removed"
   }
 }
 ```
@@ -605,7 +606,7 @@ Membuat akun pengguna baru.
 }
 ```
 
-### 2.2 Profile owner (BELUM)
+### 2.4 Profile owner (BELUM)
 
 Mendapatkan profile user sendiri  
 **Endpoint:** `GET /users/profile`  
@@ -631,6 +632,7 @@ Mendapatkan profile user sendiri
     "isEmailVerified": true,
     "isPhoneVerified": false,
     "createdAt": "2026-01-01T10:00:00Z",
+    "isOwnProfile": true,
     "locations": {
       "subdistrict": {
         "id": "SD1",
@@ -746,7 +748,7 @@ Mendapatkan profile user sendiri
 }
 ```
 
-### 2.2 Profile other people (BELUM)
+### 2.5 Profile other people (BELUM)
 
 Mendapatkan profil orang lain  
 **Endpoint:** `GET /users/:userId/profile`  
@@ -765,6 +767,7 @@ Mendapatkan profil orang lain
     "name": "Budi Santoso",
     "profilePictUrl": "https://example.url",
     "createdAt": "2026-01-01T10:00:00Z",
+    "isOwnProfile": false,
     "asWorker": {
       "totalApplied": 20,
       "totalAccepted": 15,
@@ -854,6 +857,27 @@ Mendapatkan profil orang lain
   "errors": "User not found"
 }
 ```
+
+### 2.6 Delete profile picture (BELUM)
+
+Mendapatkan profil orang lain  
+**Endpoint:** `DELETE /users/profilePicture`  
+**Request Header:**
+  - **Authorization: Bearer <token> (accessToken)**
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Delete profile picture successful",
+  "data": {
+    "id": "uuid",
+    "updatedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "warning": "Profile picture deleted from profile, but failed to remove from storage"
+  }
+}
+```
+
 
 ---
 

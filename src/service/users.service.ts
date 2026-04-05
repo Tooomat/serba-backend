@@ -4,7 +4,9 @@ import { ResponseError } from "../error/service-response.error";
 import { Prisma } from "../generated/prisma/client";
 import { extractCloudinaryPublicId, uploadToCloudinary } from "../helper/cloudinary.helper";
 import { 
+    deleteProfilePictResponse,
     getProfileResponse, 
+    toDeleteProfilePictResponse, 
     toGetProfileResponse, 
     toUpdateProfilePictResponse, 
     toUpdateUserResponse, 
@@ -118,11 +120,16 @@ export class UsersService {
                 "user not found"
             )
         }
-        
+
+        let deleteOldFailed = false
         if (user.profilePictUrl) {
             const publicId = extractCloudinaryPublicId(user.profilePictUrl)
             if (publicId) {
-                await cloudinary.uploader.destroy(publicId)
+                try {
+                    await cloudinary.uploader.destroy(publicId)
+                } catch (e) {
+                    deleteOldFailed = true
+                }
             }
         }
 
@@ -147,7 +154,10 @@ export class UsersService {
             }
         })
 
-        return toUpdateProfilePictResponse(newPicture)
+        return toUpdateProfilePictResponse(
+            newPicture,
+            deleteOldFailed === true ? "Profile picture updated, but old picture could not be removed" : undefined
+        )
     }
 
     static async profile(userId: string, isOwnProfile: boolean): Promise<getProfileResponse> {
@@ -177,7 +187,7 @@ export class UsersService {
             )
         }
 
-        const [address, workerStats, providerStats] = await Promise.all([
+        const [address, workerStats, providerStats, totalBookmark] = await Promise.all([
             prismaClient.address.findFirst({
                 where: { 
                     userId: userId, 
@@ -190,17 +200,12 @@ export class UsersService {
 
             getWorkerStats(userId),
 
-            getProviderStats(userId)
-        ])
+            getProviderStats(userId),
 
-        let totalBookmark: number | undefined
-        if (isOwnProfile) {
-            totalBookmark = await prismaClient.bookmarks.count({ 
-                where: { 
-                    userId: userId 
-                } 
-            })
-        }
+            isOwnProfile
+                ? prismaClient.bookmarks.count({ where: { userId } })
+                : Promise.resolve(0)
+        ])
         
         return toGetProfileResponse(
             user, 
@@ -209,6 +214,47 @@ export class UsersService {
             providerStats, 
             isOwnProfile,
             totalBookmark
+        )
+    }
+
+    static async deleteProfilePict(userId: string): Promise<deleteProfilePictResponse> {
+        const user = await prismaClient.user.findUnique({
+            where: { id: userId }
+        })
+        if (!user) {
+            throw new ResponseError(404, "User not found")
+        }
+
+        if (!user.profilePictUrl) {
+            throw new ResponseError(400, "Profile picture not found")
+        }
+
+        let deleteCloudinaryFailed = false
+        const publicId = extractCloudinaryPublicId(user.profilePictUrl)
+        if (publicId) {
+            try {
+                await cloudinary.uploader.destroy(publicId)
+            } catch (e) {
+                deleteCloudinaryFailed = true
+            }
+        }
+
+        const updated = await prismaClient.user.update({
+            where: { 
+                id: userId 
+            },
+            data: { 
+                profilePictUrl: null 
+            },
+            select: {
+                id: true,
+                updatedAt: true
+            }
+        })
+
+        return toDeleteProfilePictResponse(
+            updated,
+            deleteCloudinaryFailed === true ? "Profile picture deleted from profile, but failed to remove from storage" : undefined
         )
     }
 }
