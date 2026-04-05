@@ -4,10 +4,12 @@ import type { StringValue } from "ms"
 
 const NODE_ENV = process.env.NODE_ENV || ""
 
+const isDocker = process.env.DOCKER === 'true'
+
 const envFileMap: Record<string, string> = {
-  development: '.env.development',
-  production: '.env.production',
-  test: '.env.test',
+  development: isDocker ? '.env.development.docker' : '.env.development.local',
+  production: '.env',
+  test: isDocker ? '.env.test.docker' : '.env.test.local',
 }
 
 dotenv.config({

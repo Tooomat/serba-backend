@@ -38,7 +38,7 @@ export class AuthService {
 
         let profilePictUrl: string | undefined
         if (file) {
-            await uploadToCloudinary(file, {
+            profilePictUrl = await uploadToCloudinary(file, {
                 folder: "serba/profile-pictures",
                 transformation: [
                     { width: 400, height: 400, crop: "fill", gravity: "face" }

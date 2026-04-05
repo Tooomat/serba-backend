@@ -11,7 +11,7 @@ services:
       context: .
       target: prod
     env_file:
-      - .env.production
+      - .env
     ports: 
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
@@ -42,3 +42,8 @@ services:
       - redis-data-prod:/data
       - ./src/config/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
