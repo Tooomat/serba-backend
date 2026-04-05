@@ -13,7 +13,7 @@ services:
       target: dev
     command: npm run dev
     env_file:
-      - .env.development
+      - .env.development.docker
     ports: 
       - "${APP_PORT}:${APP_PORT}"
     volumes:
@@ -23,7 +23,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
 
   postgres:
@@ -55,3 +55,8 @@ services:
       - ./src/config/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

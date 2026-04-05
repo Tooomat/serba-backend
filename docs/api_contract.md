@@ -522,27 +522,23 @@ Mendapatkan info akun pengguna saat ini.
 Membuat akun pengguna baru.  
 **Endpoint:** `PATCH /users/current`  
 **Request Header:**
+  - **Authorization: Bearer <token> (accessToken)**
 
-- **Authorization: Bearer <token> (accessToken)**
-
-- **Request Body (multipart/form-data):**
+**Request Body (multipart/form-data):**
 
 | Key           | Type | Required | Description                    |
 | ------------- | ---- | -------- | ------------------------------ |
-| `profilePict` | File | No       | JPEG, JPG, PNG, WEBP — max 2MB |
 | `username`    | Text | No       |                                |
 | `firstName`   | Text | No       |                                |
 | `lastName`    | Text | No       |                                |
 | `birthDate`   | Text | No       | Format: YYYY-MM-DD             |
-| `phone`       | Text | No       | Format: +62xxxxx               |
 
 ```json
 {
   "username": "newUsername", // PUT if only want to update username
   "birtDate": "YYYY-MM-DD", // PUT if only want to update bio
   "firstName": "newFirstName", // PUT if only want to update firstName
-  "lastName": "newLastName", // PUT if only want to update lastName
-  "phone": "NewPhone" // PUT if only want to update phone
+  "lastName": "newLastName" // PUT if only want to update lastName
 }
 ```
 
@@ -551,15 +547,49 @@ Membuat akun pengguna baru.
 ```json
 {
   "success": true,
-  "message": "Registration successful",
+  "message": "Update user successful",
   "data": {
     "id": "uuid",
     "username": "skywalk",
-    "profilePict": "https://...",
     "firstName": "John",
     "lastName": "Doe",
     "birtDate": "YYYY-MM-DD",
-    "phone": "+6281234567890",
+    "updatedAt": DD-MM-YY
+  }
+}
+```
+
+**Response:** `401 failed`
+
+```json
+{
+  "success": false,
+  "message": "unauthorized",
+  "errors": "....."
+}
+```
+
+### 2.2 Update profile picture (Belum)
+
+Membuat akun pengguna baru.  
+**Endpoint:** `PATCH /users/profilePicture`  
+**Request Header:**
+  - **Authorization: Bearer <token> (accessToken)**
+**Request Body (multipart/form-data):**
+
+| Key           | Type | Required | Description                    |
+| ------------- | ---- | -------- | ------------------------------ |
+| `profilePict` | File | No       | JPEG, JPG, PNG, WEBP — max 2MB |
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Update profile picture successful",
+  "data": {
+    "id": "uuid",
+    "profilePict": "https://...",
     "updatedAt": DD-MM-YY
   }
 }
@@ -588,7 +618,7 @@ Mendapatkan profile user sendiri
 ```json
 {
   "success": true,
-  "message": "Get profile successfully",
+  "message": "Get own profile successfully",
   "data": {
     "id": "uuid",
     "username": "budisantoso",
@@ -597,7 +627,7 @@ Mendapatkan profile user sendiri
     "phone": "08111234567",
     "profilePictUrl": "https://example.url",
     "birthDate": "1995-01-01",
-    "status": "ACTIVE",
+    "status": "Active",
     "isEmailVerified": true,
     "isPhoneVerified": false,
     "createdAt": "2026-01-01T10:00:00Z",
@@ -638,7 +668,27 @@ Mendapatkan profile user sendiri
           "1": 0,
           "0": 0
         },
-        "latest": []
+        "latest": [
+          {
+            "id": "uuid",
+            "rating": 5,
+            "type": "PROVIDER_TO_WORKER",
+            "review": {
+              "comment": "Owner sangat baik",
+              "by": {
+                "id": "uuid",
+                "name": "Siti Aminah",
+                "profilePictUrl": "https://example.url"
+              },
+              "createdAt": "2026-01-01T10:00:00Z",
+              "updatedAt": "2026-01-01T10:00:00Z"
+            },
+            "job": {
+              "id": "uuid",
+              "title": "Bersih-bersih Rumah"
+            }
+          }
+        ]
       }
     },
     "asProvider": {
@@ -656,7 +706,27 @@ Mendapatkan profile user sendiri
           "1": 0,
           "0": 0
         },
-        "latest": []
+        "latest": [
+          {
+            "id": "uuid",
+            "rating": 5,
+            "type": "WORKER_TO_PROVIDER",
+            "review": {
+              "comment": "Pekerja sangat profesional",
+              "by": {
+                "id": "uuid",
+                "name": "Siti Aminah",
+                "profilePictUrl": "https://example.url"
+              },
+              "createdAt": "2026-01-01T10:00:00Z",
+              "updatedAt": "2026-01-01T10:00:00Z"
+            },
+            "job": {
+              "id": "uuid",
+              "title": "Bersih-bersih Rumah"
+            }
+          }
+        ]
       }
     },
     "bookmark": {
@@ -689,7 +759,7 @@ Mendapatkan profil orang lain
 ```json
 {
   "success": true,
-  "message": "Get profile successfully",
+  "message": "Get other profile successfully",
   "data": {
     "id": "uuid",
     "name": "Budi Santoso",
@@ -710,7 +780,27 @@ Mendapatkan profil orang lain
           "1": 0,
           "0": 0
         },
-        "latest": []
+        "latest": [
+          {
+            "id": "uuid",
+            "rating": 5,
+            "type": "PROVIDER_TO_WORKER",
+            "review": {
+              "comment": "Good job",
+              "by": {
+                "id": "uuid",
+                "name": "Siti Aminah",
+                "profilePictUrl": "https://example.url"
+              },
+              "createdAt": "2026-01-01T10:00:00Z",
+              "updatedAt": "2026-01-01T10:00:00Z"
+            },
+            "job": {
+              "id": "uuid",
+              "title": "Bersih-bersih Rumah"
+            }
+          }
+        ]
       }
     },
     "asProvider": {
@@ -728,7 +818,27 @@ Mendapatkan profil orang lain
           "1": 0,
           "0": 0
         },
-        "latest": []
+        "latest": [
+          {
+            "id": "uuid",
+            "rating": 5,
+            "type": "WORKER_TO_PROVIDER",
+            "review": {
+              "comment": "Atasan baik",
+              "by": {
+                "id": "uuid",
+                "name": "Siti Aminah",
+                "profilePictUrl": "https://example.url"
+              },
+              "createdAt": "2026-01-01T10:00:00Z",
+              "updatedAt": "2026-01-01T10:00:00Z"
+            },
+            "job": {
+              "id": "uuid",
+              "title": "Bersih-bersih Rumah"
+            }
+          }
+        ]
       }
     }
   }

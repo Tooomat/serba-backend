@@ -96,13 +96,13 @@ const emailFooter = `
             <tr>
                 <td>
                     <p style="color:#fff;font-weight:bold;font-size:16px;margin:0 0 4px 0;">SERBA</p>
-                    <p style="color:#fff;font-size:11px;margin:0 0 12px 0;letter-spacing:1px;">Work anywhere, anytime, any time</p>
-                    // <p style="color:#aaa;font-size:12px;margin:0;line-height:1.6;">
-                    //     Serba<br/>
-                    //     Address: Jl. Contoh No.1, RT.1/RW.1,<br/>
-                    //     Sidoarjo, Kec. Sidoarjo, Kota Sidoarjo,<br/>
-                    //     Jawa Timur 61200
-                    // </p>
+                    <p style="color:#fff;font-size:11px;margin:0 0 12px 0;letter-spacing:1px;">Work anything, anywhere, and anytime</p>
+                    <p style="color:#aaa;font-size:12px;margin:0;line-height:1.6;">
+                        Serba<br/>
+                        Address: Jl. Contoh No.1, RT.1/RW.1,<br/>
+                        Sidoarjo, Kec. Sidoarjo, Kota Sidoarjo,<br/>
+                        Jawa Timur 61200
+                    </p>
                 </td>
                 <td style="vertical-align:bottom;text-align:right;">
                     <a href=" " style="display:inline-block;margin-left:8px;">

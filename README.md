@@ -144,9 +144,9 @@ npm install
 Salin file environment contoh:
 
 ```bash
-cp .env.example .env.development
-cp .env.example .env.test
-cp .env.example .env.production
+cp .env.example .env.development.local
+cp .env.example .env.test.local
+cp .env.example .env
 ```
 
 Lalu sesuaikan isi `.env` terutama:
