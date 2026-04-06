@@ -121,43 +121,47 @@ export class UsersService {
             )
         }
 
-        let deleteOldFailed = false
-        if (user.profilePictUrl) {
-            const publicId = extractCloudinaryPublicId(user.profilePictUrl)
-            if (publicId) {
-                try {
-                    await cloudinary.uploader.destroy(publicId)
-                } catch (e) {
-                    deleteOldFailed = true
+        return await prismaClient.$transaction(async (tx) => {
+
+            let deleteOldFailed = false
+            if (user.profilePictUrl) {
+                const publicId = extractCloudinaryPublicId(user.profilePictUrl)
+                if (publicId) {
+                    try {
+                        await cloudinary.uploader.destroy(publicId)
+                    } catch (e) {
+                        deleteOldFailed = true
+                        // logger.error("Failed to delete old profile picture", { publicId, error: e.message })
+                    }
                 }
             }
-        }
+            
+            let newProfilePictUrl: string = await uploadToCloudinary(file, {
+                folder: "serba/profile-pictures",
+                transformation: [
+                    { width: 400, height: 400, crop: "fill", gravity: "face" }
+                ]
+            })
 
-        let profilePictUrl: string = await uploadToCloudinary(file, {
-            folder: "serba/profile-pictures",
-            transformation: [
-                { width: 400, height: 400, crop: "fill", gravity: "face" }
-            ]
-        })
-
-        const newPicture = await prismaClient.user.update({
-            where: {
-                id: user.id
-            },
-            data: {
-                profilePictUrl: profilePictUrl
-            },
-            select: {
-                id: true,
-                profilePictUrl: true,
-                updatedAt: true
-            }
-        })
-
-        return toUpdateProfilePictResponse(
-            newPicture,
-            deleteOldFailed === true ? "Profile picture updated, but old picture could not be removed" : undefined
-        )
+            const newPicture = await tx.user.update({
+                where: {
+                    id: user.id
+                },
+                data: {
+                    profilePictUrl: newProfilePictUrl
+                },
+                select: {
+                    id: true,
+                    profilePictUrl: true,
+                    updatedAt: true
+                }
+            })
+            
+            return toUpdateProfilePictResponse(
+                newPicture,
+                deleteOldFailed === true ? "Profile picture updated, but old picture could not be removed" : undefined
+            )
+        }) 
     }
 
     static async profile(userId: string, isOwnProfile: boolean): Promise<getProfileResponse> {

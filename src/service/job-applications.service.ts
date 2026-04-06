@@ -226,7 +226,7 @@ export class JobApplicationsService {
         }
         if (jobApplication.job.jobProviderId !== jobProviderId) {
             throw new ResponseError(
-                401,
+                403,
                 "Not the owner of job"
             )
         }
@@ -500,22 +500,27 @@ export class JobApplicationsService {
         }
 
         if (isProvider && jobApplication.status === 'APPLIED') {
-            await prismaClient.jobApplication.update({
-                where: { id: jobApplicationId },
+            const updated = await prismaClient.jobApplication.updateMany({
+                where: { 
+                    id: jobApplicationId,
+                    status: 'APPLIED'
+                },
                 data: {
                     status: 'REVIEWED',
                     reviewedAt: new Date()
                 }
             })
 
-            await enqueueNotification({
-                id: `W-notif-JOB_REVIEWED-${randomUUID()}`,
-                type: 'JOB_REVIEWED',
-                title: `Application update from ${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
-                message: `${jobApplication.worker.username.toUpperCase()}, Your application for ${jobApplication.job.title} has been reviewed by owner`,
-                userId: jobApplication.workerId,
-                jobApplicationId: jobApplication.id
-            })
+            if (updated.count > 0) {
+                await enqueueNotification({
+                    id: `W-notif-JOB_REVIEWED-${randomUUID()}`,
+                    type: 'JOB_REVIEWED',
+                    title: `Application update from ${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
+                    message: `${jobApplication.worker.username.toUpperCase()}, Your application for ${jobApplication.job.title} has been reviewed by owner`,
+                    userId: jobApplication.workerId,
+                    jobApplicationId: jobApplication.id
+                })
+            }
         }
 
         return toGetDetailJobApplicationResponse(

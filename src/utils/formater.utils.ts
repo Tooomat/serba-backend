@@ -1,5 +1,6 @@
 import { createHash } from "crypto"
 import { BudgetTypeJob, JobSite, LevelJob, NotificationType, StatusJob, statusJobApplication, StatusUser, TypeJob } from "../generated/prisma/enums"
+import crypto from "crypto"
 
 export const formater = {
     userFormatter: {

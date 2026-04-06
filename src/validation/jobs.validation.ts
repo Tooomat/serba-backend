@@ -38,14 +38,14 @@ export class JobsValidation {
                 }, {
                     message: "Level must be one of: Beginner, Intermediate, Advanced, Expert"
                 })
-                .transform((val) => {
+                .transform((val): LevelJob => {
                     const levelMap: Record<string, LevelJob> = {
                         "beginner": LevelJob.BEGINNER,  
                         "intermediate": LevelJob.INTERMEDIATE,
                         "advanced": LevelJob.ADVANCED,
                         "expert": LevelJob.EXPERT
                     }
-                    return levelMap[val]
+                    return levelMap[val]!
                 })
             )
             .min(1, { message: "Minimum 1 level must be selected" }),
@@ -385,14 +385,14 @@ export class JobsValidation {
                 }, {
                     message: "Level must be one of: Beginner, Intermediate, Advanced, Expert"
                 })
-                .transform((val) => {
+                .transform((val): LevelJob => {
                     const levelMap: Record<string, LevelJob> = {
                         "beginner": LevelJob.BEGINNER,  
                         "intermediate": LevelJob.INTERMEDIATE,
                         "advanced": LevelJob.ADVANCED,
                         "expert": LevelJob.EXPERT
                     }
-                    return levelMap[val]
+                    return levelMap[val]!
                 })
             )
             .min(1, { message: "Minimum 1 level must be selected" })

@@ -87,58 +87,61 @@ export class NotificationService {
 
     static async update(userId: string, notificationId: string): Promise<updateNotificationResponse> {
         
-        const notif = await prismaClient.notifications.findUnique({
-            where: {
-                id: notificationId,
-                userId: userId
-            },
-            select: {
-                id:true,
-                isRead: true
-            }
-        })
+        return await prismaClient.$transaction(async (tx) => {
+            const notif = await tx.notifications.findUnique({
+                where: {
+                    id: notificationId,
+                    userId: userId
+                },
+                select: {
+                    id:true,
+                    isRead: true
+                }
+            })
 
-        if (!notif) {
-            throw new ResponseError(
-                404,
-                "Notification not found"
+            if (!notif) {
+                throw new ResponseError(
+                    404,
+                    "Notification not found"
+                )
+            }
+
+            const newNotif = await tx.notifications.update({
+                where: {
+                    id: notificationId,
+                    userId: userId
+                },
+                data: {
+                    isRead: true
+                },
+                select: {
+                    isRead: true,
+                    id: true
+                }
+            })
+
+            return toUpdateNotificationResponse(
+                newNotif
             )
-        }
-
-        const newNotif = await prismaClient.notifications.update({
-            where: {
-                id: notificationId,
-                userId: userId
-            },
-            data: {
-                isRead: true
-            },
-            select: {
-                isRead: true,
-                id: true
-            }
         })
-
-        return toUpdateNotificationResponse(
-            newNotif
-        )
-    
     }
 
     static async markAllAsRead(userId: string): Promise<{ count: number }> {
-        const result = await prismaClient.notifications.updateMany({
-            where: { 
-                userId: userId, 
-                isRead: false 
-            },
-            data: { 
-                isRead: true 
+        return await prismaClient.$transaction(async (tx) => {
+            const result = await tx.notifications.updateMany({
+                where: { 
+                    userId: userId, 
+                    isRead: false 
+                },
+                data: { 
+                    isRead: true 
+                }
+            })
+    
+            return { 
+                count: result.count 
             }
         })
-
-        return { 
-            count: result.count 
-        }
     }
 
     static async delete(userId: string, notificationId: string): Promise<void> {

@@ -22,6 +22,8 @@ import { JobsValidation } from "../validation/jobs.validation";
 import { Validation } from "../validation/validation";
 import { locationUtils } from "../utils/location.utils";
 import { timeUtils } from "../utils/time.utils";
+import { Prisma } from "../generated/prisma/client";
+import { formater } from "../utils/formater.utils";
 
 export class JobsService { 
     static async create(jobProviderId: string, req: createJobRequest): Promise<jobResponse> {
@@ -53,7 +55,8 @@ export class JobsService {
             
             const address = await tx.address.findUnique({
                 where: {
-                    id: validate.addressId
+                    id: validate.addressId,
+                    userId: jobProviderId
                 },
                 select: {
                     id: true,
@@ -70,9 +73,9 @@ export class JobsService {
                 )
             }
 
-            const jobData: any = {
-                jobProviderId: jobProviderId,
-                addressId: validate.addressId,
+            const jobData: Prisma.JobCreateInput = {
+                jobProvider: { connect: { id: jobProviderId } },
+                address: { connect: { id: validate.addressId } },
                 title: validate.title,
                 description: validate.description,
                 level: validate.level,
@@ -205,7 +208,17 @@ export class JobsService {
                 id: jobId
             },
             include: {
-                jobProvider: true,
+                jobProvider: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        username: true,
+                        profilePictUrl: true,
+                        isEmailVerified: true,
+                        isPhoneVerified: true,
+                    }
+                },
                 categoriesMapping: { 
                     include: {
                         jobCategory: {
@@ -543,10 +556,10 @@ export class JobsService {
                 throw new ResponseError(400, "Status job closed, cannot be to update")
             }
             if (job.jobProvider.id !== userId) {
-                throw new ResponseError(401, "Not the owner job")
+                throw new ResponseError(403, "Not the owner job")
             }
 
-            const jobData: any = {}
+            const jobData: Prisma.JobUpdateInput = {}
             if (validate.addressId !== undefined) {
                 const address = await tx.address.findUnique({
                     where: {
@@ -569,7 +582,7 @@ export class JobsService {
                     street: address.street,
                     masterLocations: address.locations
                 }
-                jobData.addressId = validate.addressId
+                jobData.address = { connect: { id: validate.addressId } }
             }
 
             if (validate.jobCategoriesId !== undefined) {
@@ -659,10 +672,18 @@ export class JobsService {
                 throw new ResponseError(404, "Job not found")
             }
             if (job.jobProvider.id !== userId) {
-                throw new ResponseError(401, "Not the owner job")
+                throw new ResponseError(403, "Not the owner job")
             }
             if (job.status === 'CLOSED') {
                 throw new ResponseError(400, "Job status closed, cannot delete job")
+            }
+
+            const acceptedCount = await tx.jobApplication.count({
+                where: { jobId: jobId, status: 'ACCEPTED' }
+            })
+
+            if (acceptedCount > 0) {
+                throw new ResponseError(400, "Cannot delete job with accepted applicants")
             }
 
             await tx.job.delete({

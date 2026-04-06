@@ -65,11 +65,12 @@ export class EmailVerificationsService {
             }
         })
 
-        if (!user) {
-            throw new ResponseError(404, "User not found")
-        }
-        if (user.emailVerifiedAt && user.isEmailVerified === true) {
-            throw new ResponseError(409, "User already verified")
+        if (!user || (user.isEmailVerified && user.emailVerifiedAt)) {
+            return toSendEmailVerificationResponse(
+                null, 
+                new Date(Date.now() + TOKEN_EXPIRES_MS)
+            )
+            // Balas seolah-olah sukses — "Email sent if account exists"
         }
 
         // Cek rate limit: max 1x kirim dalam 5 menit

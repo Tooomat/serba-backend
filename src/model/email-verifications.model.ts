@@ -10,12 +10,12 @@ export type sendEmailVerificationResponse = {
 }
 
 export function toSendEmailVerificationResponse(
-    user: Pick<User, 'email'>,
+    user: Pick<User, 'email'> | null,
     expiresAt: Date,
 ): sendEmailVerificationResponse {
     const expiresIn = Math.floor((expiresAt.getTime() - Date.now()) / 1000)
     return {
-        email: formater.maskEmail(user.email),
+        email: user?.email ? formater.maskEmail(user.email) : 'hidden',
         expiresIn: expiresIn
     }
 }

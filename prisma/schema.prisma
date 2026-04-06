@@ -296,7 +296,7 @@ model Bookmarks {
   jobId String @map("job_id")
   job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, jobId])
+  @@unique([userId, jobId]) // menghindari idempotent user saat add bookmark
   @@map("bookmarks")
 }
 
@@ -319,7 +319,7 @@ model JobApplication {
   notifications Notifications[]
   reviews Reviews[]
 
-  @@unique([workerId, jobId]) // worker tidak bisa apply job yang sama dua kali
+  @@unique([workerId, jobId]) // worker tidak bisa apply job yang sama dua kali (idempotent)
   @@map("job_applications")
 }
 
