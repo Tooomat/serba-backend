@@ -145,8 +145,9 @@ Membuat akun pengguna baru.
 ### 1.2 Login (public)
 
 Login untuk mendapatkan JWT token.  
-**Endpoint:** `POST /auth/login`  
-**Request Body:**
+**Endpoint:** `POST /auth/login`
+
+**Request Body (application/json):**
 
 ```json
 {
@@ -230,7 +231,7 @@ Logout untuk keluar aplikasi.
 ### 1.1.1 OTP phone
 
 **Endpoint:** `POST /otp/phone/send`  
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -286,9 +287,9 @@ Logout untuk keluar aplikasi.
 **Endpoint:** `GET /otp/phone/verify`  
 **Query params:**
 | Key | Type | Required | Description |
-|----------------|--------|----------|------------------------------------|
+|---------|--------|----------|-------------|
 | `phone` | string | Yes | |
-| `otp` | number | Yes | |
+| `otp` | string | Yes | |
 
 **Response:** `200 OK`
 
@@ -416,12 +417,9 @@ Logout untuk keluar aplikasi.
 
 **Endpoint:** `GET /emailVerifications/verify`  
 **Query param:**
-
-- **token: string (mandatory)**
-
-| Key     | Type   | Required | Description |
+| Key | Type | Required | Description |
 | ------- | ------ | -------- | ----------- |
-| `token` | string | Yes      |             |
+| `token` | string | Yes | |
 
 **Response:** `200 OK`
 
@@ -517,21 +515,15 @@ Mendapatkan info akun pengguna saat ini.
 }
 ```
 
-### 2.2 Update user (Belum)
+### 2.2 Update user
 
 Membuat akun pengguna baru.  
 **Endpoint:** `PATCH /users`  
 **Request Header:**
-  - **Authorization: Bearer <token> (accessToken)**
 
-**Request Body (multipart/form-data):**
+- **Authorization: Bearer <token> (accessToken)**
 
-| Key           | Type | Required | Description                    |
-| ------------- | ---- | -------- | ------------------------------ |
-| `username`    | Text | No       |                                |
-| `firstName`   | Text | No       |                                |
-| `lastName`    | Text | No       |                                |
-| `birthDate`   | Text | No       | Format: YYYY-MM-DD             |
+**Request Body (application/json):**
 
 ```json
 {
@@ -574,8 +566,9 @@ Membuat akun pengguna baru.
 Membuat akun pengguna baru.  
 **Endpoint:** `PATCH /users/profilePicture`  
 **Request Header:**
-  - **Authorization: Bearer <token> (accessToken)**
-**Request Body (multipart/form-data):**
+
+- **Authorization: Bearer <token> (accessToken)**
+  **Request Body (multipart/form-data):**
 
 | Key           | Type | Required | Description                    |
 | ------------- | ---- | -------- | ------------------------------ |
@@ -863,9 +856,11 @@ Mendapatkan profil orang lain
 Mendapatkan profil orang lain  
 **Endpoint:** `DELETE /users/profilePicture`  
 **Request Header:**
-  - **Authorization: Bearer <token> (accessToken)**
+
+- **Authorization: Bearer <token> (accessToken)**
 
 **Response:** `200 OK`
+
 ```json
 {
   "success": true,
@@ -877,7 +872,6 @@ Mendapatkan profil orang lain
   }
 }
 ```
-
 
 ---
 
@@ -1449,7 +1443,7 @@ Membuat alamat pengguna.
 
 - **Authorization: Bearer <token> (accessToken)**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -1667,7 +1661,7 @@ Update alamat pengguna berdasarkan id address tertentu.
 
 - **Authorization: Bearer <token> (accessToken)**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -2027,7 +2021,7 @@ Membuat skill keahlian user
 
 - **Authorization: Bearer <token> (accessToken)**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -2120,7 +2114,7 @@ Membuat level keahlian user [beginner, intermediate, expert, master]
 
 - **Authorization: Bearer <token> (accessToken)**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -2265,7 +2259,7 @@ Update level keahlian user [beginner, intermediate, expert, master]
 
 - **Authorization: Bearer <token> (accessToken)**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ````json
 {
@@ -2359,7 +2353,7 @@ User membuat/posting job baru.
 
 - **Authorization: Bearer {token}**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -2472,12 +2466,12 @@ User membuat/posting job baru.
 ### 12.2 List Jobs card (FOR LANDING PAGE) (public)
 
 **Endpoint:** `GET /jobs`  
-Query param:
+**Query param:**
 
-| Parameter | Type   | Required | Default | Description                         |
-| :-------- | :----- | :------- | :------ | :---------------------------------- |
-| `page`    | number | No       | 1       | Halaman pagination                  |
-| `size`    | number | No       | 10      | maksimal jumlah data pada 1 halaman |
+| Parameter | Type    | Required | Default | Description                         |
+| :-------- | :------ | :------- | :------ | :---------------------------------- |
+| `page`    | integer | No       | 1       | Halaman pagination                  |
+| `size`    | integer | No       | 10      | maksimal jumlah data pada 1 halaman |
 
 **Response:** `200 OK`
 
@@ -2551,10 +2545,10 @@ Menampilkan daftar job yang dibuat oleh provider.
 
 **Query param:**
 
-| Parameter | Type   | Required | Default | Description                         |
-| :-------- | :----- | :------- | :------ | :---------------------------------- |
-| `page`    | number | No       | 1       | Halaman pagination                  |
-| `size`    | number | No       | 10      | maksimal jumlah data pada 1 halaman |
+| Parameter | Type    | Required | Default | Description                         |
+| :-------- | :------ | :------- | :------ | :---------------------------------- |
+| `page`    | integer | No       | 1       | Halaman pagination                  |
+| `size`    | integer | No       | 10      | maksimal jumlah data pada 1 halaman |
 
 **Response:** `200 OK`
 
@@ -2562,88 +2556,87 @@ Menampilkan daftar job yang dibuat oleh provider.
 {
   "success": true,
   "message": "get jobs successfully",
-  "data":
-   [
-   {
-	"id": "uuid-job",
-	"user": {
-		"jobProvider": {
-		"providerId": "uuid-fk-user",
-		"name":"lion lionardo"
-		"username": ….,
-		"profilePictureUrl": …,
-		"emailIsVerified": ….,
-		"phoneIsVerified": ….
-		}
-	},
-	"title": "kitchen staff coffee",
-	"introduction": "......",
-	"isProvider": true, // jika provider job
-	"isPublic": true,
-	"location": {
-		"street": "Jln. semangka",
-			"postalCode": "xxxxx",
-			"lat": -6.00000,
-		"lng": 5.33333,
-		"subdistrict": {
- 	"id": "subdistrict-id",
-	"name": "Keude Bakongan",
-	"code": "11.01.01.2001",
-   },
-   "district": {
- 	"id": "district-id",
-	"name": "Bakongan",
-	"code": "11.01.01",
-   },
-   "city": {
- 	"id": "city-id",
-	"name": "Kab. Aceh Selatan",
-	"code": "11.01",
-   },
-   "province": {
- 	"id": "province-id",
-	"name": "Aceh",
-	"code": "11",
-   }
-	},
-"type": "Urgent",
-"jobSite": "On site",
-"budgetMin": 150000 + biaya urgent, //opsional
-"budgetMax": 200000 + biaya urgent, //opsional
-"budgetType": "Fixed",
-"status": "Open",
-"jobAge": "2 days ago",
-"jobcategories": [
-	{
-		"jobCategoryId": "jc1",
-		"name": "ELECTRICTS",
-	},
-	{
-		"jobCategoryId": "jc2",
-		"name": "IT",
-	},
-	{
-		"jobCategoryId": "jc3",
-		"name": "HOUSE",
-	}
-],
-"createdAt": YYYY-MM-DD HH:MI:SS,
-"updatedAt": YYYY-MM-DD HH:MI:SS,
-    },
-    …,
-    …
+  "data": [
+    {
+      "id": "uuid-job",
+      "user": {
+        "jobProvider": {
+        "providerId": "uuid-fk-user",
+        "name":"lion lionardo"
+        "username": ….,
+        "profilePictureUrl": …,
+        "emailIsVerified": ….,
+        "phoneIsVerified": ….
+        }
+      },
+      "title": "kitchen staff coffee",
+      "introduction": "......",
+      "isProvider": true, // jika provider job
+      "isPublic": true,
+      "location": {
+        "street": "Jln. semangka",
+        "postalCode": "xxxxx",
+        "lat": -6.00000,
+        "lng": 5.33333,
+        "subdistrict": {
+          "id": "subdistrict-id",
+          "name": "Keude Bakongan",
+          "code": "11.01.01.2001",
+        },
+        "district": {
+          "id": "district-id",
+          "name": "Bakongan",
+          "code": "11.01.01",
+        },
+        "city": {
+          "id": "city-id",
+          "name": "Kab. Aceh Selatan",
+          "code": "11.01",
+        },
+        "province": {
+          "id": "province-id",
+          "name": "Aceh",
+          "code": "11",
+        }
+      },
+      "type": "Urgent",
+      "jobSite": "On site",
+      "budgetMin": 150000 + biaya urgent, //opsional
+      "budgetMax": 200000 + biaya urgent, //opsional
+      "budgetType": "Fixed",
+      "status": "Open",
+      "jobAge": "2 days ago",
+      "jobcategories": [
+        {
+          "jobCategoryId": "jc1",
+          "name": "ELECTRICTS",
+        },
+        {
+          "jobCategoryId": "jc2",
+          "name": "IT",
+        },
+        {
+          "jobCategoryId": "jc3",
+          "name": "HOUSE",
+        }
       ],
-      "paging": {
-	"currentPage": 1,
-	"totalPage": 10,
-	"totalElement": 100,
-	"size": 10,
-	"nextPage": true,
-	"previousPage": false,
-	"firstPage": true,
-	"lastPage": false
-       }
- }
+      "createdAt": YYYY-MM-DD HH:MI:SS,
+      "updatedAt": YYYY-MM-DD HH:MI:SS,
+    },
+    ...,
+    ...
+  ],
+  "paging": {
+    "currentPage": 1,
+    "totalPage": 10,
+    "totalElement": 100,
+    "size": 10,
+    "nextPage": true,
+    "previousPage": false,
+    "firstPage": true,
+    "lastPage": false
+  }
+}
 ```
 
 ### 12.3 List Jobs/search job (Marketplace)
@@ -2652,7 +2645,7 @@ Menampilkan daftar job dengan filter dan pagination.
 **Endpoint:** `GET /jobs/search`  
 **Headers:**
 
-- Authorization: Bearer {token}
+- **Authorization: Bearer {token}**
 
 **Query Parameters:**
 
@@ -2907,7 +2900,7 @@ provider update job yang diposting.
 
 - **Authorization: Bearer {token}**
 
-**Request Body :**
+**Request Body (application/json):**
 
 ```json
 {
@@ -3108,8 +3101,10 @@ Menghapus job.
 
 **Query Params:**
 
-- **page: integer, default 1 (optional)**
-- **size: integer, default 10 (opsional)**
+| Parameter | Type    | Required | Default | Description                         |
+| :-------- | :------ | :------- | :------ | :---------------------------------- |
+| `page`    | integer | No       | 1       | halaman                             |
+| `size`    | integer | No       | 10      | banyak data yang ada pada 1 halaman |
 
 **Response:** `200 Success`
 
@@ -3186,7 +3181,7 @@ Worker membuat surat lamaran untuk job.
 
 - **Authorization: Bearer {token}**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -3302,7 +3297,7 @@ note:
 
 - **Authorization: Bearer {token}**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -3774,7 +3769,7 @@ melihat list surat lamaran job
 **Endpoint:** `PUT /notifications`  
 **Headers:**
 
-- Authorization: Bearer {token}
+- **Authorization: Bearer {token}**
 
 **Response:** `200 Success`
 
@@ -3825,7 +3820,7 @@ create review setelah job closed.
 
 - **Authorization: Bearer {token}**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -3910,7 +3905,7 @@ ONLY PROVIDER.
 
 - **Authorization: Bearer {token}**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -4108,7 +4103,7 @@ hanya bisa dilakukan oleh **reviewer** (yang kasih review)
 
 - **Authorization: Bearer {token}**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {
@@ -4124,10 +4119,11 @@ hanya bisa dilakukan oleh **reviewer** (yang kasih review)
   "success": true,
   "message": "Update reviews successfully",
   "data": {
-	"id": "uuid",
-	"rating": 3,
-	"comment": "look like lazy person",
-	"updatedAt": "2026-01-01T10:00:00Z",
+    "id": "uuid",
+    "rating": 3,
+    "comment": "look like lazy person",
+    "updatedAt": "2026-01-01T10:00:00Z"
+  }
 }
 ```
 
@@ -4170,7 +4166,7 @@ hanya bisa dilakukan oleh **reviewee** (yang direview):
 
 - **Authorization: Bearer {token}**
 
-**Request Body:**
+**Request Body (application/json):**
 
 ```json
 {

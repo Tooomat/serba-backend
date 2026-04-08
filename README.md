@@ -10,10 +10,11 @@ Template backend REST API berbasis **Node.js + TypeScript** dengan **clean arsit
 * **HTTP Framework**: Express
 * **ORM**: Prisma
 * **Database**: Postgres
-* **Cache**: Redis
+* **Cache & Queue**: Redis
 * **Validation**: Zod
 * **Logging**: Winston
 * **Testing**: Jest, Babel, Supertest
+* **Cloud storage**: Cloudinary
 
 ---
 
@@ -206,7 +207,7 @@ npm run test -- test/auth.login.test.ts
 
 ## Running with DOCKER
 
-- DEVELOPMENT
+- **DEVELOPMENT**
 
 #### Build Services
 
@@ -222,11 +223,6 @@ docker compose -f docker-compose.dev.yml up -d --build
 Atau via npm:
 ```bash
 npm run dev:docker:up
-```
-
-#### Run Srvices
-```bash
-npm run dev:docker:start
 ```
 
 #### Prisma migrate (DEV Docker)
@@ -257,14 +253,21 @@ npm run dev:docker:down
 ```bash
 npm run dev:docker:down:volume
 ```
+
+#### Run Srvices
+```bash
+npm run dev:docker:start
+```
+
 #### Stop container
 
 ```bash
 npm run dev:docker:stop
 ```
+
 ---
 
-- TESTING (Jest + Prisma + Docker)
+- **TESTING (Jest + Prisma + Docker)**
 
 ```bash
 docker compose --env-file .env.test -f docker-compose.test.yml up --abort-on-container-exit
@@ -289,7 +292,7 @@ npm run test:docker:down:volume
 ```
 ---
 
-- PRODUCTION (Docker)
+- **PRODUCTION (Docker)**
 
 1. Build Image
 

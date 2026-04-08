@@ -122,19 +122,6 @@ export class UsersService {
         }
 
         return await prismaClient.$transaction(async (tx) => {
-
-            let deleteOldFailed = false
-            if (user.profilePictUrl) {
-                const publicId = extractCloudinaryPublicId(user.profilePictUrl)
-                if (publicId) {
-                    try {
-                        await cloudinary.uploader.destroy(publicId)
-                    } catch (e) {
-                        deleteOldFailed = true
-                        // logger.error("Failed to delete old profile picture", { publicId, error: e.message })
-                    }
-                }
-            }
             
             let newProfilePictUrl: string = await uploadToCloudinary(file, {
                 folder: "serba/profile-pictures",
@@ -156,6 +143,19 @@ export class UsersService {
                     updatedAt: true
                 }
             })
+
+            let deleteOldFailed = false
+            if (user.profilePictUrl) {
+                const publicId = extractCloudinaryPublicId(user.profilePictUrl)
+                if (publicId) {
+                    try {
+                        await cloudinary.uploader.destroy(publicId)
+                    } catch (e) {
+                        deleteOldFailed = true
+                        // logger.error("Failed to delete old profile picture", { publicId, error: e.message })
+                    }
+                }
+            }
             
             return toUpdateProfilePictResponse(
                 newPicture,
