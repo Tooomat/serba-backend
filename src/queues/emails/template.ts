@@ -245,7 +245,7 @@ export const emailTemplate = {
 }
 
 const emailFooter = `
-    <div style="background:#0a3d22;padding:20px 24px;border-radius:0 0 10px 10px;margin-top:0;">
+    <div style="background:#0a3d22;padding:20px;border-radius:10px;margin-top:16px;">
         <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
                 <td style="vertical-align:middle;">
@@ -261,7 +261,6 @@ const emailFooter = `
                         </tr>
                     </table>
                 </td>
-                
 
                 <td style="vertical-align:bottom;text-align:right;">
                     <a href=" " style="display:inline-block;margin-left:8px;">
@@ -271,7 +270,6 @@ const emailFooter = `
                         <img src="https://cdn-icons-png.flaticon.com/24/145/145807.png" width="24" height="24" alt="LinkedIn"/>
                     </a>
                 </td>
-
             </tr>
         </table>
 
