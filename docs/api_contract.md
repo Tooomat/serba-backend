@@ -151,7 +151,7 @@ Login untuk mendapatkan JWT token.
 
 ```json
 {
-  "usernamOrEmail": "...",
+  "usernameOrEmail": "...",
   "password": "securepassword"
 }
 ```
