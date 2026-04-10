@@ -293,6 +293,7 @@ export const helmetGuard = isProd
 // - Browser tidak otomatis kirim Authorization header
 // - Cookie tidak dipakai untuk auth
 // Tapi kalau pakai cookie untuk refresh token, perlu CSRF token.
+// - jika memakai cookies = lax | strict csrf tidak perlu
 export const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
     if (isDev || isTest) return next()
     // Skip untuk GET, HEAD, OPTIONS (safe methods)
@@ -302,7 +303,10 @@ export const csrfProtection = (req: Request, res: Response, next: NextFunction) 
     // Kalau sameSite strict/lax, skip CSRF karena sudah aman
     if (config.SAMESITE_COOKIES === 'strict' || config.SAMESITE_COOKIES === 'lax') return next()
 
-    const csrfToken = req.headers['x-csrf-token']
+    const csrfToken = Array.isArray(req.headers['x-csrf-token'])
+        ? req.headers['x-csrf-token'][0]
+        : req.headers['x-csrf-token']
+
     const sessionCsrf = (req as any).session?.csrfToken
 
     if (!csrfToken || csrfToken !== sessionCsrf) {

@@ -68,7 +68,7 @@ export const emailTemplate = {
 
                     <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;">
                         <p style="font-size:13px;color:#92400e;line-height:1.6;margin:0;">
-                            &#9432; Tautan ini hanya berlaku selama <strong>30 menit</strong>. Jangan bagikan tautan ini kepada siapapun.
+                            &#9432; Tautan ini hanya berlaku selama <strong>1 jam</strong>. Jangan bagikan tautan ini kepada siapapun.
                         </p>
                     </div>
 

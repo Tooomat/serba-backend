@@ -162,8 +162,14 @@ export class AuthService {
             throw new ResponseError(403, "Account has been blocked");
         }
 
+        // TODO: problem A -> Ketika user tidak close tab send verification dan email verification sudah exp
+        // maka user tidak bisa login
+        // solusi 1 -> user tetap bisa bisa login tetapi, login yang sebelumnya mereturn hanya access token ditambah isEmailVerification
+        // jika false maka user bisa diarakan oleh FE ke halaman verifikasi
+        // soliusi 2 -> user tetap bisa melakukan login tetapi di BE akan menambahkan middleware: blokir akses kalau belum verifikasi
+        // jadi saat error karena belum verifikasi FE akan mengarakan ke halaman verification
         if (!user.emailVerifiedAt  && user.isEmailVerified === false) {
-            throw new ResponseError(404, "Verify your email first")
+            throw new ResponseError(403, "Verify your email first")
         }
 
         const payload: accessTokenPayload = {
@@ -195,6 +201,7 @@ export class AuthService {
         
         return {
             accessToken: accessToken,
+            isEmailVerified: user.isEmailVerified === false ? false : undefined,
             userId: user.id
         }
     }

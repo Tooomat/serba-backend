@@ -60,6 +60,7 @@ export type loginRequest = {
 
 export type loginResponse = {
     accessToken: string,
+    isEmailVerified?: boolean | undefined
     userId: string
 }
 

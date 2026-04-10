@@ -15,7 +15,7 @@ import { BookmarkController } from "../../controller/bookmarks.controller"
 import { ReviewsController } from "../../controller/reviews.controller"
 import { privateReadRateLimit, privateCUDRateLimit } from "../middleware/security.middleware"
 import { uploadProfilePict } from "../middleware/upload.middleware"
-
+import { Verification } from "../middleware/verification.middleware"
 export const privateRouter = Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
 
@@ -24,11 +24,11 @@ privateRouter.post("/api/auth/logout", privateCUDRateLimit, AuthController.logou
 
 //user
 privateRouter.get("/api/users/current", privateReadRateLimit, UsersController.current)
-privateRouter.patch("/api/users", privateCUDRateLimit, UsersController.update)
-privateRouter.patch("/api/users/profilePicture", uploadProfilePict.single("profilePict"), privateCUDRateLimit, UsersController.updateProfilePict)
+privateRouter.patch("/api/users", privateCUDRateLimit, Verification.requireEmailVerified, UsersController.update)
+privateRouter.patch("/api/users/profilePicture", uploadProfilePict.single("profilePict"), privateCUDRateLimit, Verification.requireEmailVerified, UsersController.updateProfilePict)
 privateRouter.get("/api/users/profile", privateReadRateLimit, UsersController.ownProfile)
 privateRouter.get("/api/users/:userId/profile", privateReadRateLimit, UsersController.otherProfile)
-privateRouter.delete("/api/users/profilePicture", privateCUDRateLimit, UsersController.deleteProfilePict)
+privateRouter.delete("/api/users/profilePicture", privateCUDRateLimit, Verification.requireEmailVerified, UsersController.deleteProfilePict)
 
 // job categories
 privateRouter.get("/api/jobCategories/:jobCategoryId", privateReadRateLimit, JobCategoriesController.get)
@@ -55,40 +55,40 @@ privateRouter.get("/api/districts/:districtId/subDistricts", privateReadRateLimi
 
 // addresses
 privateRouter.get("/api/addresses", privateReadRateLimit, AddressesController.getAll)
-privateRouter.post("/api/addresses", privateCUDRateLimit, AddressesController.create)
+privateRouter.post("/api/addresses", privateCUDRateLimit, Verification.requireEmailVerified, AddressesController.create)
 privateRouter.get("/api/addresses/:addressId", privateReadRateLimit, AddressesController.get)
-privateRouter.patch("/api/addresses/:addressId", privateCUDRateLimit, AddressesController.update)
-privateRouter.delete("/api/addresses/:addressId", privateCUDRateLimit, AddressesController.delete)
+privateRouter.patch("/api/addresses/:addressId", privateCUDRateLimit, Verification.requireEmailVerified, AddressesController.update)
+privateRouter.delete("/api/addresses/:addressId", privateCUDRateLimit, Verification.requireEmailVerified, AddressesController.delete)
 
 // jobs
-privateRouter.post("/api/jobs", privateCUDRateLimit, JobsController.create)
+privateRouter.post("/api/jobs", privateCUDRateLimit, Verification.requireEmailVerified, JobsController.create)
 privateRouter.get("/api/jobs/provider", privateReadRateLimit, JobsController.listMyCreatedJobs)
 privateRouter.get("/api/jobs/search", privateReadRateLimit, JobsController.searchJobs)
 privateRouter.get("/api/jobs/:jobId", privateReadRateLimit, JobsController.get)
-privateRouter.patch("/api/jobs/:jobId", privateCUDRateLimit, JobsController.update)
-privateRouter.delete("/api/jobs/:jobId", privateCUDRateLimit, JobsController.delete)
+privateRouter.patch("/api/jobs/:jobId", privateCUDRateLimit, Verification.requireEmailVerified, JobsController.update)
+privateRouter.delete("/api/jobs/:jobId", privateCUDRateLimit, Verification.requireEmailVerified, JobsController.delete)
 
 // boorkmarks
-privateRouter.post("/api/jobs/:jobId/bookmarks", privateCUDRateLimit, BookmarkController.add)
+privateRouter.post("/api/jobs/:jobId/bookmarks", privateCUDRateLimit, Verification.requireEmailVerified, BookmarkController.add)
 privateRouter.get("/api/bookmarks", privateReadRateLimit, BookmarkController.list)
-privateRouter.delete("/api/bookmarks/:bookmarkId", privateCUDRateLimit, BookmarkController.delete)
+privateRouter.delete("/api/bookmarks/:bookmarkId", privateCUDRateLimit, Verification.requireEmailVerified, BookmarkController.delete)
 
 // job application
-privateRouter.post("/api/jobs/:jobId/jobApplications", privateCUDRateLimit, JobApplicationController.create)
-privateRouter.patch("/api/jobApplications/:jobApplicationId/status", privateCUDRateLimit, JobApplicationController.updateStatus)
+privateRouter.post("/api/jobs/:jobId/jobApplications", Verification.requireEmailVerified, privateCUDRateLimit, JobApplicationController.create)
+privateRouter.patch("/api/jobApplications/:jobApplicationId/status", Verification.requireEmailVerified, privateCUDRateLimit, JobApplicationController.updateStatus)
 privateRouter.get("/api/jobApplications/:jobApplicationId", privateReadRateLimit, JobApplicationController.getDetail)
 privateRouter.get("/api/jobs/:jobId/jobApplications", privateReadRateLimit, JobApplicationController.getListForJobProvider)
 privateRouter.get("/api/jobApplications", privateReadRateLimit, JobApplicationController.getListForWorker)
 
 // reviews
-privateRouter.post("/api/jobApplications/:jobApplicationId/reviews", privateCUDRateLimit, ReviewsController.create)
-privateRouter.post("/api/reviews/:reviewId/reply", privateCUDRateLimit, ReviewsController.reply)
+privateRouter.post("/api/jobApplications/:jobApplicationId/reviews", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.create)
+privateRouter.post("/api/reviews/:reviewId/reply", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.reply)
 privateRouter.get("/api/users/reviews", privateReadRateLimit, ReviewsController.getListSelf)
 privateRouter.get("/api/users/:userId/reviews", privateReadRateLimit, ReviewsController.getListVisitor)
-privateRouter.patch("/api/reviews/:reviewId", privateCUDRateLimit, ReviewsController.update)
-privateRouter.patch("/api/reviews/:reviewId/reply", privateCUDRateLimit, ReviewsController.updateReply)
-privateRouter.delete("/api/reviews/:reviewId", privateCUDRateLimit, ReviewsController.delete)
-privateRouter.delete("/api/reviews/:reviewId/reply", privateCUDRateLimit, ReviewsController.deleteReply)
+privateRouter.patch("/api/reviews/:reviewId", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.update)
+privateRouter.patch("/api/reviews/:reviewId/reply", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.updateReply)
+privateRouter.delete("/api/reviews/:reviewId", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.delete)
+privateRouter.delete("/api/reviews/:reviewId/reply", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.deleteReply)
 
 // notifications
 privateRouter.get("/api/notifications", privateReadRateLimit, NotificationsController.list)

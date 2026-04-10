@@ -163,7 +163,8 @@ Login untuk mendapatkan JWT token.
   "success": true,
   "message": "Login successful",
   "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "isEmailVerified": false // optional, hanya keluar saat email belum terverifikasi
   }
 }
 ```
@@ -348,8 +349,8 @@ Logout untuk keluar aplikasi.
 
 # Email Verification
 
-### 1.1.1 LINK to email
-
+### 1.1.1 LINK to email (public)
+send email verification ke email user saat setelah register
 **Endpoint:** `POST /emailVerifications/send-verification`  
 **Request body:**
 
@@ -413,8 +414,8 @@ Logout untuk keluar aplikasi.
 }
 ```
 
-### 1.1.2 Verify email
-
+### 1.1.2 Verify email (public)
+verifikasi email user menggunakan token dari send email
 **Endpoint:** `GET /emailVerifications/verify`  
 **Query param:**
 | Key | Type | Required | Description |
@@ -472,6 +473,11 @@ Logout untuk keluar aplikasi.
   "errors": "OTP already used"
 }
 ```
+
+problem [User error]: semisal user saat ingin validasi email tetapi tidak sengaja keluar dari halaman verification dan verifikasi di email sudah kadaluwarsa
+
+solusi: user bisa login, dan untuk response di login yang sebelumnya hanya access token ditambah isEmailVerified, jadi saat  isEmailVerified = false maka FE akan direct ke halaman verifikasi email
+
 
 // JIKA PHONE DAN EMAIL USER SUDAH VERIFIED UBAH user status = ACTIVE
 

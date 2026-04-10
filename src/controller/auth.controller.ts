@@ -34,7 +34,10 @@ export class AuthController {
 
             const result = await AuthService.login(req, request, res)
             securityLogger.loginSuccess(result.userId, req.ip ?? 'unknown')
-            success_handler(res, "login successful", result.accessToken, 200)
+            success_handler(res, "login successful", {
+                accessToken: result.accessToken,
+                isEmailVerified: result.isEmailVerified === undefined ? undefined : result.isEmailVerified
+            }, 200)
         } catch (e) {
             securityLogger.loginFailed(
                 req.body.usernameOrEmail ?? 'unknown',
