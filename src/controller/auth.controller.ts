@@ -4,6 +4,7 @@ import { AuthService } from "../service/auth.service";
 import { success_handler } from "../web/http/web-response.http";
 import { AuthRequest } from "../web/middleware/auth.middleware";
 import { securityLogger } from "../utils/logging.utils";
+import { errorUtils } from "../utils/error.utils";
 
 export class AuthController {
     static async register(req: Request, res: Response, next: NextFunction) {
@@ -43,6 +44,7 @@ export class AuthController {
                 req.body.usernameOrEmail ?? 'unknown',
                 req.ip ?? 'unknown',
                 e instanceof Error ? e.message : 'unknown',
+                errorUtils.parseErrorOrigin(e),
                 (req as any).requestId
             )
             next(e)

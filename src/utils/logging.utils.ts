@@ -14,13 +14,14 @@ export const securityLogger = {
     },
 
     //  MANDATORY
-    loginFailed: (email: string, ip: string, reason: string, requestId?: string) => {
+    loginFailed: (email: string, ip: string, reason: string, origin?: string, requestId?: string) => {
         logger.warn({
             type: 'security:login_failed',
-            emailHash: formater.hashPII(email),   // untuk compliance & korelasi antar event
+            emailHash: formater.hashPII(email), // untuk compliance & korelasi antar event
             emailMask: formater.maskEmail(email), // "h**i@gmail.com" — untuk debugging
             ip,
             reason,
+            ...(origin    && { origin }),
             ...(requestId && { requestId }),
             timestamp: new Date().toISOString()
         })
@@ -36,13 +37,15 @@ export const securityLogger = {
     },
 
     //  MANDATORY
-    accountLocked: (email: string, ip: string, attempts: number) => {
+    accountLocked: (email: string, ip: string, attempts: number, origin?: string) => {
         logger.warn({
             type: 'security:account_locked',
-            emailHash: formater.hashPII(email),   
+            emailHash: formater.hashPII(email),
             emailMask: formater.maskEmail(email),
             ip,
-            attempts
+            attempts,
+            ...(origin && { origin }),
+            timestamp: new Date().toISOString()
         })
     },
 
@@ -57,25 +60,28 @@ export const securityLogger = {
     },
 
     //  MANDATORY: Akses ditolak (401/403)
-    accessDenied: (userId: string | null, ip: string, url: string, reason: string, requestId?: string) => {
+    accessDenied: (userId: string | null, ip: string, url: string, reason: string, origin?: string, requestId?: string) => {
         logger.warn({
             type: 'security:access_denied',
             userId: userId ?? 'anonymous',
             ip,
             url,
             reason,
+            ...(origin    && { origin }),
             ...(requestId && { requestId }),
             timestamp: new Date().toISOString()
         })
     },
 
     //  MANDATORY
-    rateLimitExceeded: (ip: string, userId: string | null, url: string, requestId?: string) => {
+    rateLimitExceeded: (ip: string, userId: string | null, url: string, statusCode: number, origin?: string, requestId?: string) => {
         logger.warn({
             type: 'security:rate_limit_exceeded',
             ip,
             userId: userId ?? 'anonymous',
             url,
+            statusCode,
+            ...(origin    && { origin }),
             ...(requestId && { requestId }),
             timestamp: new Date().toISOString()
         })
