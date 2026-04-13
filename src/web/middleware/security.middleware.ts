@@ -76,12 +76,12 @@ const createLimiter = (
     })
 }
 
-// Public: 30 req / 1 menit / IP
+// Public: 60 req / 60 menit / IP
 const publicLimiter = createLimiter(
     `${config.APP_NAME}:rl:public`,
-    { prod: 30, dev: 10 },
-    1 * 60,
-    1 // menit
+    { prod: 60, dev: 10 },
+    60 * 60, // 60 menit
+    0.5 // menit block
 )
 
 // AUTH:
@@ -89,36 +89,36 @@ const publicLimiter = createLimiter(
 const authLoginLimiter = createLimiter(
     `${config.APP_NAME}:rl:login:auth`,
     { prod: 5, dev: 10 },
-    15 * 60,
-    15 // menit
+    15 * 60, // 15 menit
+    2 // menit block
 )
-// 3 req / 60 menit / IP 
+// 3 req / 15 menit / IP 
 const authRegisterLimiter = createLimiter(
     `${config.APP_NAME}:rl:register:auth`,
     { prod: 3, dev: 10 },
-    60 * 60,
-    30 // menit
+    15 * 60, // 1 jam
+    3 // menit block
 )
-// 10 req / 15 menit / IP
+// 1 req / 15 menit / IP
 const authRefreshLimiter = createLimiter(
     `${config.APP_NAME}:rl:refresh:auth`,
-    { prod: 10, dev: 10 },
-    15 * 60,
-    5 // menit
+    { prod: 1, dev: 10 },
+    15 * 60, // menit
+    5 // menit block
 )
-// 3 req / 60 menit / IP
+// 1 req / 2 menit / IP
 const authEmailSendLimiter = createLimiter(
-    `${config.APP_NAME}:rl:Esend:auth`,
-    { prod: 3, dev: 10 },
-    60 * 60,
-    60 // menit
+    `${config.APP_NAME}:rl:email:send:auth`,
+    { prod: 1, dev: 10 },
+    2 * 60, // menit
+    1 // menit block
 )
-// 3 req / 60 menit / IP
+// 1 req / 2 menit / IP
 const authEmailVerifLimiter = createLimiter(
-    `${config.APP_NAME}:rl:Everif:auth`,
+    `${config.APP_NAME}:rl:email:verif:auth`,
     { prod: 10, dev: 10 },
-    10 * 60,
-    5 // menit
+    2 * 60, // mwnit
+    1 // menit
 )
 
 
@@ -127,7 +127,7 @@ const privateReadLimiter = createLimiter(
     `${config.APP_NAME}:rl:r:private`,
     { prod: 100, dev: 100 },
     1 * 60,
-    1 // menit
+    1 // menit block
 )
 // Private POST PUT PATCH DELETE: 30 req / 1 menit / userId
 const privateCUDLimiter = createLimiter(
@@ -182,7 +182,7 @@ const createMiddleware = (
 export const publicRateLimit = createMiddleware(
     publicLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Rate limit exceeded, please try again in 1 minutes"
+    "Rate limit exceeded, please try again in  30 seconds"
 )
 
 // OWASP A04 - Insecure Design
@@ -190,12 +190,12 @@ export const publicRateLimit = createMiddleware(
 export const authLoginRateLimiter = createMiddleware(
     authLoginLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Too many attempts, please try again in 15 minutes"
+    "Too many attempts, please try again in 2 minutes"
 )
 export const authRegisterRateLimiter = createMiddleware(
     authRegisterLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Too many attempts, please try again in 30 minutes"
+    "Too many attempts, please try again in 3 minutes"
 )
 export const authRefreshRateLimiter = createMiddleware(
     authRefreshLimiter,
@@ -205,12 +205,12 @@ export const authRefreshRateLimiter = createMiddleware(
 export const authEmailSendRateLimiter = createMiddleware(
     authEmailSendLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Too many attempts, please try again in 60 minutes"
+    "Too many attempts, please try again in 1 minutes"
 )
 export const authEmailVerifRateLimiter = createMiddleware(
     authEmailVerifLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Too many attempts, please try again in 5 minutes"
+    "Too many attempts, please try again in 1 minutes"
 )
 
 // OWASP A04 - Insecure Design
