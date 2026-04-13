@@ -284,13 +284,35 @@ npm run prisma:migrate:dev
 npm run prisma:seed:dev
 ```
 
-### 6. Jalankan Aplikasi
+### 6. Jalankan Aplikasi (Local)
 
 ```bash
 npm run dev
 ```
 
 Server berjalan di `http://localhost:3000`
+
+### Testing (Local)
+- migrate and generate
+```bash
+npm run prisma:migrate:test
+npm run prisma:generate:test
+```
+
+- seed to test
+```bash
+npm run prisma:seed:test
+```
+
+- run
+```bash
+npm run test
+```
+
+- Test file tertentu:
+```bash
+npm run test -- test/auth.login.test.ts
+```
 
 ---
 
@@ -328,7 +350,7 @@ docker exec -it app-dev npx prisma generate
 docker exec app-dev npm run prisma:seed:dev
 ```
 
-**Stop & remove container:**
+**Remove container:**
 
 ```bash
 npm run dev:docker:down
@@ -338,6 +360,16 @@ npm run dev:docker:down
 
 ```bash
 npm run dev:docker:down:volume
+```
+
+**Run Services:**
+```bash
+npm run dev:docker:start
+```
+
+**Stop container**
+```bash
+npm run dev:docker:stop
 ```
 
 ---
