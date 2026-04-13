@@ -732,13 +732,13 @@ Template ini mengimplementasikan OWASP Top 10 guidelines:
 
 ### Rate Limit Strategy
 
-| Endpoint | Limit | Per |
-|---|---|---|
-| Public | 100 req / 15 menit | IP |
-| Auth (login/register) | 10 req / 15 menit | IP |
-| Private (authenticated) | 200 req / 15 menit | userId |
+| Endpoint | Limit | Per | pattern prefix key |
+|---|---|---|---|
+| Public | 100 req / 15 menit | IP | ${APP_NAME}:rl:public |
+| Auth (login/register) | 10 req / 15 menit | IP | ${APP_NAME}:rl:[action]:auth |
+| Private (authenticated) | 200 req / 15 menit | userId | ${APP_NAME}:rl:[action]:private |
 
-> Di `development` dan `test`, rate limit lebih longgar secara otomatis.
+> Rate limiter bisa antur sendiri di `src/web/middleware/security.middleware.ts`.
 
 ---
 

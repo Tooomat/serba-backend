@@ -2,10 +2,11 @@ import { Queue } from "bullmq";
 import { redisConnection } from "../../application/redis";
 
 // queue PRODUCERS
-export const queueName = 'notifications'
+export const queueName = 'notification'
 
 export const notificationQueue = new Queue(queueName, {
     connection: redisConnection,
+    prefix: 'bull:queue',
     defaultJobOptions: {
         attempts: 3,
         backoff: {
