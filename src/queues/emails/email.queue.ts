@@ -13,7 +13,7 @@ export const emailQueue = new Queue(emailQueueName, {
         },
         removeOnComplete: true,
         removeOnFail: {
-            age: 7 * 24 * 3600 // simpan 7 hari kalau gagal
+            age: 1 * 24 * 3600 // simpan 1 hari kalau gagal
         }
     }
 })

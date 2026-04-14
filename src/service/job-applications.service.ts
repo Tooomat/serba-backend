@@ -366,18 +366,18 @@ export class JobApplicationsService {
             // ======================== ENQUEUE NOTIFICATIONS ========================
         // CASE 1: Last slot accepted → (broadcast reject ke semua kandidat == tidak jadi)
         if (isLastSlot && validate.status === 'ACCEPTED') {
-            await enqueueManyNotifications(
-                candidateRejectedApps.map(app => ({
-                    id: `W-notif-JOB_REJECTED-${randomUUID()}`,
-                    type: 'JOB_REJECTED',
-                    title: `Application update from ${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
-                    message: (validate.rejectedGlobalMessage ?? 'default').toLowerCase() === 'default'
-                        ? `${ app.worker.username.toUpperCase() }, your application for ${jobApplication.job.title} has been rejected`
-                        : validate.rejectedGlobalMessage,
-                    userId: app.workerId,
-                    jobApplicationId: app.id
-                }))
-            )
+            // await enqueueManyNotifications(
+            //     candidateRejectedApps.map(app => ({
+            //         id: `W-notif-JOB_REJECTED-${randomUUID()}`,
+            //         type: 'JOB_REJECTED',
+            //         title: `Application update from ${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}`,
+            //         message: (validate.rejectedGlobalMessage ?? 'default').toLowerCase() === 'default'
+            //             ? `${ app.worker.username.toUpperCase() }, your application for ${jobApplication.job.title} has been rejected`
+            //             : validate.rejectedGlobalMessage,
+            //         userId: app.workerId,
+            //         jobApplicationId: app.id
+            //     }))
+            // )
 
             await enqueueNotification({
                 id: `W-notif-JOB_ACCEPTED-${randomUUID()}`,
