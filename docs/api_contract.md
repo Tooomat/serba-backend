@@ -96,19 +96,6 @@ Membuat akun pengguna baru.
 | `birthDate`   | Text | Yes      | Format: YYYY-MM-DD                                                                                                             |
 | `phone`       | Text | Yes      | Format: +62xxxxxxxxx                                                                                                           |
 
-**Request Body:**
-
-```json
-{
-  "username": "skywalk",
-  "email": "user@example.com",
-  "password": "securepassword",
-  "firstName": "John",
-  "lastName": "Doe",
-  "birthDate": "YYYY-MM-DD",
-  "phone": "0812345678"
-}
-```
 
 **Response:** `201 Created`
 
@@ -183,6 +170,7 @@ Login untuk mendapatkan JWT token.
 
 Renew access token yang sudah EXP untuk generate token baru, selama refresh token masih berlaku  
 **Endpoint:** `POST /auth/refresh`  
+
 **Response:** `200 OK`
 
 ```json
@@ -574,7 +562,8 @@ Membuat akun pengguna baru.
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
-  **Request Body (multipart/form-data):**
+
+**Request Body (multipart/form-data):**
 
 | Key           | Type | Required | Description                    |
 | ------------- | ---- | -------- | ------------------------------ |
