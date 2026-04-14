@@ -3,6 +3,7 @@ import { EmailJobData } from "./email.job";
 import { emailQueueName } from "./email.queue";
 import { resend } from "./mailer";
 import { redisConnection } from "../../application/redis";
+import { logger } from "../../application/logging";
 
 const from = process.env.EMAIL_FROM || "Acme <onboarding@resend.dev>"
 
@@ -35,4 +36,13 @@ emailWorker.on('completed', (job) => {
 
 emailWorker.on('failed', (job, err) => {
     console.error(`Email failed to ${job?.data.to}:`, err.message)
+    
+    logger.error({
+        type: 'email:failed',
+        jobEmailId: job?.id,
+        to: job?.data.to,
+        emailType: job?.data.type,
+        attempts: job?.attemptsMade,
+        error: err.message
+    })
 })
