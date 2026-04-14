@@ -19,7 +19,7 @@ import { JobApplicationsValidation } from "../validation/job-applications.valida
 import { Validation } from "../validation/validation";
 import { Prisma } from "../generated/prisma/client";
 import { enqueueManyNotifications, enqueueNotification } from "../queues/notifications/notification.helper";
-import { enqueueEmail, enqueueManyEmails } from "../queues/emails/email.helper";
+import { enqueueEmail } from "../queues/emails/email.helper";
 import { TypeEmail } from "../queues/emails/email.job";
 import { emailTemplate } from "../queues/emails/template";
 import { formater } from "../utils/formater.utils";
@@ -255,6 +255,7 @@ export class JobApplicationsService {
             workerId: string, 
             id: string, 
             worker: { 
+                id: string
                 username: string
                 email: string 
             } 
@@ -299,6 +300,7 @@ export class JobApplicationsService {
                     include: {
                         worker: {
                             select: {
+                                id: true,
                                 username: true,
                                 email: true
                             }
@@ -362,7 +364,7 @@ export class JobApplicationsService {
         })
 
             // ======================== ENQUEUE NOTIFICATIONS ========================
-        // CASE 1: Last slot accepted → broadcast reject ke semua kandidat
+        // CASE 1: Last slot accepted → (broadcast reject ke semua kandidat == tidak jadi)
         if (isLastSlot && validate.status === 'ACCEPTED') {
             await enqueueManyNotifications(
                 candidateRejectedApps.map(app => ({
@@ -388,31 +390,35 @@ export class JobApplicationsService {
                 jobApplicationId: jobApplication.id
             })
 
-            await enqueueManyEmails(
-                candidateRejectedApps.map(app => ({
-                    to: app.worker.email,
-                    subject: `${app.worker.username.toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
-                    html: emailTemplate.jobRejected(
-                        app.worker.username.toUpperCase(), 
-                        jobApplication.job.title, 
-                        formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
-                    ),
-                    type: TypeEmail.JOB_REJECTED
-                }))
-            )
+            // await enqueueManyEmails(
+            //     candidateRejectedApps.map(app => ({
+            //         id: app.worker.id,
+            //         to: app.worker.email,
+            //         subject: `${app.worker.username.toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
+            //         html: emailTemplate.jobRejected(
+            //             app.worker.username.toUpperCase(), 
+            //             jobApplication.job.title, 
+            //             formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
+            //         ),
+            //         type: TypeEmail.JOB_REJECTED
+            //     })),
+            // )
 
-            await enqueueEmail({
-                to: jobApplication.worker.email,
-                subject: `${formater.getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
-                html: emailTemplate.jobAccepted(
-                    jobApplication.worker.username.toUpperCase(), 
-                    jobApplication.job.title, 
-                    formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName),
-                    jobApplication.job.jobProvider.email,
-                    jobApplication.job.jobProvider.phone
-                ),
-                type: TypeEmail.JOB_ACCEPTED
-            })
+            await enqueueEmail(
+                {
+                    id: jobApplication.id,
+                    to: jobApplication.worker.email,
+                    subject: `${formater.getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
+                    html: emailTemplate.jobAccepted(
+                        jobApplication.worker.username.toUpperCase(), 
+                        jobApplication.job.title, 
+                        formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName),
+                        jobApplication.job.jobProvider.email,
+                        jobApplication.job.jobProvider.phone
+                    ),
+                    type: TypeEmail.JOB_ACCEPTED
+                }
+            )
         }
 
         if (validate.status === 'REJECTED') {
@@ -427,16 +433,19 @@ export class JobApplicationsService {
                 jobApplicationId: jobApplication.id
             })
 
-            await enqueueEmail({
-                to: jobApplication.worker.email,
-                subject: `${formater.getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
-                html: emailTemplate.jobRejected(
-                    jobApplication.worker.username.toUpperCase(), 
-                    jobApplication.job.title, 
-                    formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
-                ),
-                type: TypeEmail.JOB_REJECTED
-            })
+            await enqueueEmail(
+                {
+                    id: jobApplication.id,
+                    to: jobApplication.worker.email,
+                    subject: `${formater.getFullName(jobApplication.worker.firstName, jobApplication.worker.lastName).toUpperCase()}, Informasi terbaru untuk lamaran anda dari "${formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)}"`,
+                    html: emailTemplate.jobRejected(
+                        jobApplication.worker.username.toUpperCase(), 
+                        jobApplication.job.title, 
+                        formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName)
+                    ),
+                    type: TypeEmail.JOB_REJECTED
+                }
+            )
         }
 
         return toUpdateJobApplicationResponse(

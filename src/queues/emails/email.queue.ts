@@ -12,6 +12,8 @@ export const emailQueue = new Queue(emailQueueName, {
             delay: 2000
         },
         removeOnComplete: true,
-        removeOnFail: false
+        removeOnFail: {
+            age: 7 * 24 * 3600 // simpan 7 hari kalau gagal
+        }
     }
 })

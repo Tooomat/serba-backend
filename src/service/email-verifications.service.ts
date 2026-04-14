@@ -31,23 +31,29 @@ export class EmailVerificationsService {
         const token = `token-${randomUUID()}`
         const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)
 
-        await prismaClient.emailVerification.create({
+        const emailVerif = await prismaClient.emailVerification.create({
             data: {
                 id: randomUUID(),
                 token,
                 expiresAt,
                 userId: user.id
+            },
+            select: {
+                id: true
             }
         })
 
         const link = `${config.FRONTEND_URL}/login/verify-email?token=${token}`
 
-        await enqueueEmail({
-            to: user.email,
-            subject: 'Verifikasi Email Kamu',
-            html: emailTemplate.verification(user.username, link),
-            type: TypeEmail.VERIFICATION_ACCOUNT
-        })
+        await enqueueEmail(
+            {
+                id: emailVerif.id,
+                to: user.email,
+                subject: 'Verifikasi Email Kamu',
+                html: emailTemplate.verification(user.username, link),
+                type: TypeEmail.VERIFICATION_ACCOUNT
+            }
+        )
     }
 
     static async send(req: sendEmailVerificationRequest): Promise<sendEmailVerificationResponse> {
@@ -115,24 +121,30 @@ export class EmailVerificationsService {
 
         const token = `token-${randomUUID()}`
         const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)   
-        await prismaClient.emailVerification.create({
+        const emailVerif = await prismaClient.emailVerification.create({
             data: {
                 id: randomUUID(),
                 token: token,
                 expiresAt: expiresAt,
                 userId: user.id
+            },
+            select: {
+                id: true
             }
         })
 
         // link direct halaman login khusus verify email
         const link = `${config.FRONTEND_URL}/login/verify-email?token=${token}`
 
-        await enqueueEmail({
-            to: user.email,
-            subject: 'Verifikasi Email Kamu',
-            html: emailTemplate.verification(user.username, link),
-            type: TypeEmail.VERIFICATION_ACCOUNT
-        })
+        await enqueueEmail(
+            {
+                id: emailVerif.id,
+                to: user.email,
+                subject: 'Verifikasi Email Kamu',
+                html: emailTemplate.verification(user.username, link),
+                type: TypeEmail.VERIFICATION_ACCOUNT
+            }
+        )
         return toSendEmailVerificationResponse(user, expiresAt)
     }
 

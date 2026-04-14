@@ -3,6 +3,7 @@ import { queueName } from "./notification.queue"
 import { redisConnection } from "../../application/redis"
 import { NotificationJobData } from "./notification.job"
 import { prismaClient } from "../../application/database"
+import { logger } from "../../application/logging"
 
 // worker CONSUMERS
 export const notificationWorker = new Worker<NotificationJobData>(
@@ -28,8 +29,23 @@ export const notificationWorker = new Worker<NotificationJobData>(
 
 notificationWorker.on('completed', (job) => {
     console.log(`Notification job ${job.id} completed`)
+
+    logger.info({
+        type: 'notification:completed',
+        jobId: job.id,
+        userId: job.data.userId,
+        notifType: job.data.type
+    })
 })
 
 notificationWorker.on('failed', (job, err) => {
     console.error(`Notification job ${job?.id} failed:`, err.message)
+    logger.error({
+        type: 'notification:failed',
+        jobId: job?.id,
+        userId: job?.data.userId,
+        notifType: job?.data.type,
+        attempts: job?.attemptsMade,
+        error: err.message
+    })
 })

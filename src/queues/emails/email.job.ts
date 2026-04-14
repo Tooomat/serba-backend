@@ -6,6 +6,7 @@ export enum TypeEmail {
 }
 
 export type EmailJobData = {
+    id: string
     to: string
     subject: string
     html: string
