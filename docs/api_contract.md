@@ -7,6 +7,7 @@ API Documentation untuk platform marketplace jasa harian dengan sistem dual-role
 - [Overview](#overview)
 - [Base URL](#base-url)
 - [Authentication](#authentication)
+- [Continue With Google](#continue-with-google-public)
 - [Phone Verification](#phone-verification-belum)
 - [Email Verification](#email-verification)
 - [User](#user)
