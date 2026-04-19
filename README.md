@@ -1,6 +1,6 @@
 # Node.js TypeScript REST API Template
 
-Template backend REST API berbasis **Node.js + TypeScript** dengan **clean arsitektur layer-based Monolith** (controller–service–model–database), siap untuk **development, testing, dan production** menggunakan **Docker**.
+Template backend REST API berbasis **Node.js + TypeScript** dengan **layer-based Monolith** (controller–service–model–database), siap untuk **development, testing, dan production** menggunakan **Docker**.
 
 ---
 
