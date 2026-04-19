@@ -35,10 +35,11 @@ export type userResponse = {
     isEmailVerified: boolean,
     isPhoneVerified: boolean,
     status: string
+    isProfileComplete: boolean
 }
 
 export function toUserResponse(
-    user: Pick<User, 'id' | 'username' | 'email' | 'profilePictUrl' | 'firstName' | 'lastName' | 'isEmailVerified' | 'isPhoneVerified' | 'status'>
+    user: Pick<User, 'id' | 'username' | 'email' | 'profilePictUrl' | 'firstName' | 'lastName' | 'isEmailVerified' | 'isPhoneVerified' | 'status' |'isProfileComplete'>
 ): userResponse {
     const name = user.firstName.concat(" ", user.lastName ? user.lastName : "")
     return {
@@ -49,7 +50,8 @@ export function toUserResponse(
         name: name,
         isEmailVerified: user.isEmailVerified,
         isPhoneVerified: user.isPhoneVerified,
-        status: formater.userFormatter.status(user.status)
+        status: formater.userFormatter.status(user.status),
+        isProfileComplete: user.isProfileComplete
     }
 }
 
@@ -66,12 +68,13 @@ export type updateUserResponse = {
     username: string
     firstName: string
     lastName?: string | null
-    birthDate: Date
-    updatedAt: Date
+    birthDate?: Date | null
+    updatedAt: Date | null,
+    isProfileComplete: boolean
 }
 
 export function toUpdateUserResponse(
-    user: Pick<User, 'id' | 'username' | 'firstName' | 'lastName' | 'birthDate' | 'updatedAt'>
+    user: Pick<User, 'id' | 'username' | 'firstName' | 'lastName' | 'birthDate' | 'updatedAt' | 'isProfileComplete'>
 ): updateUserResponse {
     return {
         id: user.id,
@@ -79,7 +82,8 @@ export function toUpdateUserResponse(
         firstName: user.firstName,
         lastName: user.lastName,
         birthDate: user.birthDate,
-        updatedAt: user.updatedAt!
+        updatedAt: user.updatedAt,
+        isProfileComplete: user.isProfileComplete
     }
 }
 
@@ -173,11 +177,12 @@ export type getProfileResponse = {
     createdAt: Date
     // hanya muncul kalau own profile
     email?: string | undefined
-    phone?: string | undefined
-    birthDate?: Date | undefined
+    phone?: string | undefined | null
+    birthDate?: Date | undefined | null
     status?: string | undefined
     isEmailVerified?: boolean | undefined
     isPhoneVerified?: boolean | undefined
+    isProfileComplete?: boolean | undefined
     locations?: locationJson | undefined
     // statistik
     asWorker: workerStats
@@ -190,7 +195,7 @@ export function toGetProfileResponse(
     user: Pick<User, 
         'id' | 'username' | 'firstName' | 'lastName' | 'email' | 'phone' | 
         'profilePictUrl' | 'birthDate' | 'status' | 'isEmailVerified' | 
-        'isPhoneVerified' | 'createdAt'
+        'isPhoneVerified' | 'createdAt' | 'isProfileComplete'
     >,
     address: Pick<Address, 'locations'> | null,
     workerStats: workerStats,
@@ -212,12 +217,12 @@ export function toGetProfileResponse(
 
     if (isOwnProfile) {
         response.email = user.email
-        response.phone = user.phone
-        response.birthDate = user.birthDate
+        response.phone = user.phone ? user.phone : null
+        response.birthDate = user.birthDate ? user.birthDate : null
         response.status = user.status
         response.isEmailVerified = user.isEmailVerified
         response.isPhoneVerified = user.isPhoneVerified
-
+        response.isProfileComplete = user.isProfileComplete
         if (address) {
             response.locations = locationUtils.parseJsonLocation<locationJson>(address.locations)
         }

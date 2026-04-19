@@ -14,7 +14,8 @@ export interface AuthRequest extends Request {
     user?: {
         id: string,
         username: string,
-        role: Role
+        role: Role,
+        isProfileComplete: boolean
     }
 }
 
@@ -108,7 +109,8 @@ export class AuthMiddleware {
             req.user = {
                 id: payload.sub,
                 username: payload.username,
-                role: payload.role
+                role: payload.role,
+                isProfileComplete: user.isProfileComplete
             }
 
             next()

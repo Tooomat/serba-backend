@@ -108,7 +108,7 @@ export type getDetailJobApplicationResponse = {
         name: string
         profilePictUrl?: string | null,
         email: string
-        phone: string
+        phone?: string | null
     } | null
     jobProvider?: {
         id: string
@@ -174,7 +174,7 @@ export function toGetDetailJobApplicationResponse(
             name: user.lastName ? user.firstName.concat(" ", user.lastName) : user.firstName,
             profilePictUrl: user.profilePictUrl,
             email: user.email,
-            phone: user.phone
+            phone: user.phone ? user.phone : null
         }
     }
 

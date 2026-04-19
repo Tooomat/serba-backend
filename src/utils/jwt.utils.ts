@@ -5,6 +5,14 @@ import { Role } from "../generated/prisma/enums"
 import { ResponseError } from "../error/service-response.error"
 import { randomUUID } from "crypto"
 
+export type OAuthStatePayload = {
+    intent: string // "google-auth", "github-auth", dll
+    redirect: string // kemana redirect setelah login (e.g., "/dashboard")
+    jti: string
+    iat: number
+    exp: number
+}
+
 export type accessTokenPayload = {
     sub: string
     username: string
@@ -17,6 +25,23 @@ export type refreshTokenPayload = {
 }
 
 export class JWT {
+    static generateOAuth2StateToken(payload: { intent: string, redirect: string }) {
+        const jti = randomUUID()
+
+        const options: SignOptions = {
+            algorithm: "HS256",
+            expiresIn: config.JWT_OAUTH_STATE_EXPIRE as StringValue,
+        }
+
+        const token = jwt.sign(
+            { intent: payload.intent, redirect: payload.redirect, jti },
+            config.JWT_OAUTH_STATE_SECRET, 
+            options
+        )
+
+        return { token, jti }
+    }
+
     // OWASP A02 - Cryptographic Failures = access token using JWT
     static generateAccessToken(payload: accessTokenPayload) {
         const options: SignOptions = {
@@ -45,6 +70,25 @@ export class JWT {
         return { token, jti }
     }
 
+    static verifyOAuth2StateToken(stateToken: string): OAuthStatePayload {
+        try {
+            const decoded = jwt.verify(
+                stateToken,
+                config.JWT_OAUTH_STATE_SECRET
+            ) as OAuthStatePayload;
+
+            return decoded
+        } catch (e) {
+            if (e instanceof jwt.TokenExpiredError) {
+                throw new ResponseError(401, 'State token has expired');
+            }
+            if (e instanceof jwt.JsonWebTokenError) {
+                throw new ResponseError(401, 'Invalid state token');
+            }
+            throw e
+        }
+    }
+
     static verifyAccessToken(token: string): accessTokenPayload {
         try {
             const decode = jwt.verify(token, config.JWT_ACCESS_SECRET, {
@@ -59,7 +103,7 @@ export class JWT {
             if (e instanceof jwt.JsonWebTokenError) {
                 throw new ResponseError(401, 'Invalid access token');
             }
-            throw e;
+            throw e
         }
     }
 

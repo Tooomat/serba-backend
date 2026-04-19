@@ -27,6 +27,7 @@ export type registerResponse = {
     firstName: string
     lastName?: string | null 
     birthDate: Date
+    isProfileComplete: boolean
     phone: string
     status: StatusUser
     createdAt: Date
@@ -34,7 +35,7 @@ export type registerResponse = {
 
 export function toRegisterResponse(
     user: Pick<User, 'id' | 'username' | 'email' | 'profilePictUrl' | 'firstName' | 'lastName'
-    | 'birthDate' | 'phone' | 'status' | 'isEmailVerified' | 'isPhoneVerified' | 'createdAt'>
+    | 'birthDate' | 'phone' | 'status' | 'isEmailVerified' | 'isPhoneVerified' | 'createdAt' | 'isProfileComplete'>
 ) {
     return {
         id: user.id,
@@ -43,8 +44,9 @@ export function toRegisterResponse(
         profilePictUrl: user.profilePictUrl,
         firstName: user.firstName,
         lastName: user.lastName,
-        birthDate: user.birthDate,
-        phone: user.phone,
+        birthDate: user.birthDate!,
+        isProfileComplete: user.isProfileComplete,
+        phone: user.phone!,
         status: user.status,
         isEmailVerified: user.isEmailVerified,
         isPhoneVerified: user.isPhoneVerified,
@@ -59,8 +61,8 @@ export type loginRequest = {
 }
 
 export type loginResponse = {
-    accessToken: string,
-    isEmailVerified?: boolean | undefined
+    accessToken: string
+    isProfileComplete: boolean
     userId: string
 }
 

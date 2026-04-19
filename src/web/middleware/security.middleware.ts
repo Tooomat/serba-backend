@@ -76,49 +76,49 @@ const createLimiter = (
     })
 }
 
-// Public: 60 req / 60 menit / IP
+// Public: 100 req / 1 menit / IP
 const publicLimiter = createLimiter(
     `${config.APP_NAME}:rl:public`,
     { prod: 60, dev: 10 },
-    60 * 60, // 60 menit
-    0.5 // menit block
+    1 * 60, // 60 menit
+    1 // menit block
 )
 
 // AUTH:
-// 5 req / 15 menit / IP 
+// 5 req / 5 menit / IP 
 const authLoginLimiter = createLimiter(
     `${config.APP_NAME}:rl:login:auth`,
     { prod: 5, dev: 10 },
-    15 * 60, // 15 menit
+    5 * 60, // 15 menit
     2 // menit block
 )
-// 3 req / 15 menit / IP 
+// 3 req / 10 menit / IP 
 const authRegisterLimiter = createLimiter(
     `${config.APP_NAME}:rl:register:auth`,
     { prod: 3, dev: 10 },
-    15 * 60, // 1 jam
-    3 // menit block
-)
-// 1 req / 15 menit / IP
-const authRefreshLimiter = createLimiter(
-    `${config.APP_NAME}:rl:refresh:auth`,
-    { prod: 1, dev: 10 },
-    15 * 60, // menit
-    5 // menit block
-)
-// 1 req / 2 menit / IP
-const authEmailSendLimiter = createLimiter(
-    `${config.APP_NAME}:rl:email:send:auth`,
-    { prod: 1, dev: 10 },
-    2 * 60, // menit
+    10 * 60, // menit
     1 // menit block
 )
-// 1 req / 2 menit / IP
+// 15 req / 1 menit / IP
+const authRefreshLimiter = createLimiter(
+    `${config.APP_NAME}:rl:refresh:auth`,
+    { prod: 15, dev: 10 },
+    1 * 60, // menit
+    2 // menit block
+)
+// 5 req / 1 menit / IP
+const authEmailSendLimiter = createLimiter(
+    `${config.APP_NAME}:rl:email:send:auth`,
+    { prod: 5, dev: 10 },
+    1 * 60, // menit
+    1 // menit block
+)
+// 10 req / 1 menit / IP
 const authEmailVerifLimiter = createLimiter(
     `${config.APP_NAME}:rl:email:verif:auth`,
     { prod: 10, dev: 10 },
-    2 * 60, // mwnit
-    1 // menit
+    1 * 60, // mwnit
+    1 // menit block
 )
 
 

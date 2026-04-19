@@ -1,6 +1,7 @@
 import { User } from "../generated/prisma/client"
 import { formater } from "../utils/formater.utils"
 
+// ==================== SEND EMAIL VERIFICATION =====================
 export type sendEmailVerificationRequest = {
     email: string
 }
@@ -20,6 +21,7 @@ export function toSendEmailVerificationResponse(
     }
 }
 
+// ==================== VERIFY EMAIL ===================
 export type verifyEmailQuery = {
     token: string
 }

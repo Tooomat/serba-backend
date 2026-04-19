@@ -36,7 +36,8 @@ export class UsersService {
                 firstName: true,
                 isEmailVerified: true,
                 isPhoneVerified: true,
-                status: true
+                status: true,
+                isProfileComplete: true,
             }
         })
         if (!user) {
@@ -90,6 +91,11 @@ export class UsersService {
         if (validation.lastName !== undefined) updateData.lastName = validation.lastName
         if (validation.birthDate !== undefined) updateData.birthDate = validation.birthDate
 
+        const mergedBirthDate = validation.birthDate ?? user.birthDate
+        // isProfileComplete = phone sudah verified DAN birthDate sudah ada
+        const isProfileComplete = !!(user.phone && user.isPhoneVerified && mergedBirthDate)
+        updateData.isProfileComplete = isProfileComplete
+
         const updatedUser = await prismaClient.user.update({
             where: { id: userId },
             data: updateData,
@@ -99,7 +105,8 @@ export class UsersService {
                 firstName: true,
                 lastName: true,
                 birthDate: true,
-                updatedAt: true
+                updatedAt: true,
+                isProfileComplete: true
             }
         })
 
@@ -181,6 +188,7 @@ export class UsersService {
                 status: true,
                 isEmailVerified: true,
                 isPhoneVerified: true,
+                isProfileComplete: true,
                 createdAt: true
             }
         })
@@ -232,17 +240,7 @@ export class UsersService {
         if (!user.profilePictUrl) {
             throw new ResponseError(400, "Profile picture not found")
         }
-
-        let deleteCloudinaryFailed = false
-        const publicId = extractCloudinaryPublicId(user.profilePictUrl)
-        if (publicId) {
-            try {
-                await cloudinary.uploader.destroy(publicId)
-            } catch (e) {
-                deleteCloudinaryFailed = true
-            }
-        }
-
+        
         const updated = await prismaClient.user.update({
             where: { 
                 id: userId 
@@ -255,6 +253,16 @@ export class UsersService {
                 updatedAt: true
             }
         })
+        
+        let deleteCloudinaryFailed = false
+        const publicId = extractCloudinaryPublicId(user.profilePictUrl)
+        if (publicId) {
+            try {
+                await cloudinary.uploader.destroy(publicId)
+            } catch (e) {
+                deleteCloudinaryFailed = true
+            }
+        }
 
         return toDeleteProfilePictResponse(
             updated,

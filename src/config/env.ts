@@ -56,6 +56,13 @@ export interface EnvConfig {
   CLOUDINARY_API_SECRET: string
 
   RESEND_API_KEY: string
+
+  GOOGLE_CLIENT_ID: string
+  GOOGLE_CLIENT_SECRET: string
+  GOOGLE_REDIRECT_URL: string
+
+  JWT_OAUTH_STATE_SECRET: string
+  JWT_OAUTH_STATE_EXPIRE: string
 }
 
 function required(key: string): string {
@@ -124,5 +131,12 @@ export const config: EnvConfig = {
   CLOUDINARY_API_KEY: required("CLOUDINARY_API_KEY"),
   CLOUDINARY_API_SECRET: required("CLOUDINARY_API_SECRET"),
 
-  RESEND_API_KEY: required("RESEND_API_KEY")
+  RESEND_API_KEY: required("RESEND_API_KEY"),
+
+  GOOGLE_CLIENT_ID: required("GOOGLE_CLIENT_ID"),
+  GOOGLE_CLIENT_SECRET: required("GOOGLE_CLIENT_SECRET"),
+  GOOGLE_REDIRECT_URL: required("GOOGLE_REDIRECT_URL"),
+
+  JWT_OAUTH_STATE_SECRET: required("JWT_OAUTH_STATE_SECRET"),
+  JWT_OAUTH_STATE_EXPIRE: required("JWT_OAUTH_STATE_EXPIRE"),
 }
