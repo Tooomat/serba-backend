@@ -22,8 +22,8 @@ import { EmailVerificationValidation } from "../validation/email-verification.va
 // User klik → Masuk halaman login → Input password → Masuk app
 
 const MAX_RESEND_ATTEMPTS = 1
-const RESEND_WINDOW_MS = 5 * 60 * 1000   // 5 menit
-const RETRY_AFTER_SEC = 300               // 5 menit
+const RESEND_WINDOW_MS = 2 * 60 * 1000   // 5 menit
+const RETRY_AFTER_SEC = 120               // 5 menit
 const TOKEN_EXPIRES_MS = 1 * 60 * 60 * 1000 // 1 jam
 
 export class EmailVerificationsService {
@@ -79,36 +79,29 @@ export class EmailVerificationsService {
             // Balas seolah-olah sukses — "Email sent if account exists"
         }
 
-        // Cek rate limit: max 1x kirim dalam 5 menit
-        const recentCount = await prismaClient.emailVerification.count({
+        // AMBIL TOKEN TERAKHIR
+        // 1 request dalam 2 menit
+        const lastVerification = await prismaClient.emailVerification.findFirst({
             where: {
-                userId: user.id,
-                createdAt: {
-                    gte: new Date(Date.now() - RESEND_WINDOW_MS)
-                }
+                userId: user.id
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         })
-        if (recentCount >= MAX_RESEND_ATTEMPTS) {
-            const lastToken = await prismaClient.emailVerification.findFirst({
-                where: {
-                    userId: user.id,
-                    createdAt: {
-                        gte: new Date(Date.now() - RESEND_WINDOW_MS)
-                    }
-                },
-                orderBy: { createdAt: 'desc' },
-                select: { createdAt: true }
-            })
 
-            const retryAfter = lastToken
-                ? Math.ceil((lastToken.createdAt.getTime() + RESEND_WINDOW_MS - Date.now()) / 1000)
-                : RETRY_AFTER_SEC
+        if (lastVerification) {
+            const nextAllowedTime = lastVerification.createdAt.getTime() + RESEND_WINDOW_MS
 
-            throw new ResponseError(
-                429,
-                "OTP request limit exceeded",
-                retryAfter
-            )
+            if (Date.now() < nextAllowedTime) {
+                const retryAfter = Math.ceil((nextAllowedTime - Date.now()) / 1000)
+
+                throw new ResponseError(
+                    429,
+                    "Please wait before requesting again",
+                    retryAfter
+                )
+            }
         }
 
         // Invalidate token lama yang belum dipakai
@@ -121,6 +114,7 @@ export class EmailVerificationsService {
 
         const token = `token-${randomUUID()}`
         const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)   
+        
         const emailVerif = await prismaClient.emailVerification.create({
             data: {
                 id: randomUUID(),

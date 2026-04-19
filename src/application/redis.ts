@@ -44,3 +44,19 @@ export async function isBlacklisted(token: string): Promise<boolean> {
     const result = await redis.exists(`blacklist:${token}`)
     return result === 1
 }
+
+export async function blacklistStateToken(jti: string, expInSeconds: number) {
+    const currentTime = Math.floor(Date.now() / 1000)
+    const ttl = expInSeconds - currentTime
+    
+    if (ttl > 0) {
+        return redis.set(`blacklist:state:${jti}`, "1", "EX", ttl)
+    }
+    
+    return null
+}
+
+export async function isStateTokenBlacklisted(jti: string): Promise<boolean> {
+    const result = await redis.exists(`blacklist:state:${jti}`)
+    return result === 1
+}

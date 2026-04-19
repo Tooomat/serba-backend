@@ -23,8 +23,6 @@ API Documentation untuk platform marketplace jasa harian dengan sistem dual-role
 - [Job Applications](#job-applications)
 - [Notifications](#notifications)
 - [Reviews](#reviews)
-- [](#)
-- [](#)
 
 ---
 
@@ -59,19 +57,19 @@ API Documentation untuk platform marketplace jasa harian dengan sistem dual-role
 # Base URL
 
 ```https
-[https://api.jasaharian.com](https://api.jasaharian.com/v1)
+[https://api.jasaharian.com](https://api.jasaharian.com)
 ```
 
 private
 
 ```https
-[https://api.jasaharian.com](https://api.jasaharian.com/v1)/api
+[https://api.jasaharian.com](https://api.jasaharian.com)/api
 ```
 
 public
 
 ```https
-[https://api.jasaharian.com](https://api.jasaharian.com/v1)/public/api
+[https://api.jasaharian.com](https://api.jasaharian.com)/public/api
 ```
 
 ---
@@ -82,7 +80,7 @@ public
 
 Membuat akun pengguna baru.
 
-- **Endpoint:** `POST /auth/register`
+- **Endpoint:** `POST /public/api/auth/register`
 - **Request Body (multipart/form-data):**
 
 | Key           | Type | Required | Description                                                                                                                    |
@@ -111,6 +109,7 @@ Membuat akun pengguna baru.
     "firstName": "John",
     "lastName": "Doe",
     "birthDate": "YYYY-MM-DD",
+    "isProfileComplete": true,
     "isEmailVerified": false,
     "isPhoneVerfied": false,
     "status": "PENDING_VERIFICATION",
@@ -132,7 +131,7 @@ Membuat akun pengguna baru.
 ### 1.2 Login (public)
 
 Login untuk mendapatkan JWT token.  
-**Endpoint:** `POST /auth/login`
+**Endpoint:** `POST /public/api/auth/login`
 
 **Request Body (application/json):**
 
@@ -151,7 +150,7 @@ Login untuk mendapatkan JWT token.
   "message": "Login successful",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "isEmailVerified": false // optional, hanya keluar saat email belum terverifikasi
+    "isProfileComplete": true or false
   }
 }
 ```
@@ -169,7 +168,7 @@ Login untuk mendapatkan JWT token.
 ### 1.3 Renew access token (public)
 
 Renew access token yang sudah EXP untuk generate token baru, selama refresh token masih berlaku  
-**Endpoint:** `POST /auth/refresh`  
+**Endpoint:** `POST /public/api/auth/refresh`  
 
 **Response:** `200 OK`
 
@@ -197,7 +196,7 @@ Renew access token yang sudah EXP untuk generate token baru, selama refresh toke
 
 Logout untuk keluar aplikasi.
 
-**Endpoint:** `POST /auth/logout`
+**Endpoint:** `POST /api/auth/logout`
 
 **Request Header:**
 
@@ -215,11 +214,74 @@ Logout untuk keluar aplikasi.
 
 ---
 
+# Continue With Google (Public)
+### 1.2.1 URL Authorize
+
+**Endpoint:** `GET /public/api/auth/google`
+
+**Query params:**
+| Key     | Type   | Required | Description |
+|---------|--------|----------|-------------|
+| `redirectPath` | string | Yes | redirect setelah login, ex: `/auth/profile`|
+
+**Response:** `302 Redirect`  
+User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.google.com/oauth2/v2/auth?
+      client_id=xxx
+      redirect_uri=http://localhost:3000/public/api/auth/google/callback
+      scope=openid profile email
+      state=eyJhbGc... ← STATE TOKEN KIRIM KE GOOGLE
+      access_type=offline`
+
+**Response:** `400 Bad Request`  
+```json
+{
+  "success": false,
+  "message": "bad request",
+  "errors": "redirectPath is missing"
+}
+```
+
+### 1.2.2 Google callback
+
+**Endpoint:** `GET /public/api/auth/google/callback`  
+
+**Query params:**
+| Key     | Type   | Required | Description |
+|---------|--------|----------|-------------|
+| `code`  | string | Yes      | Authorization code dari Google |
+| `state` | string | Yes      | State untuk validasi dan redirectPath |
+
+**Response:** `302 Redirect`  
+- Sukses — user diarahkan ke url frontend: `${config.FRONTEND_URL}${redirectPath}?accessToken=${accessToken}&isProfileComplete=${user.isProfileComplete ?? false}`
+
+- Error — user diarahkan ke halaman login dengan query param `error`: `${config.FRONTEND_URL}/auth/login?error={errorCode}`
+
+**Error codes:**
+
+| `error` | reason |
+|---------|----------|
+| `missing_params` | `code` atau `state` tidak ada di query params |
+| `account_blocked` | Akun user telah diblokir |
+| `invalid_state` | State di query tidak cocok dengan cookie |
+| `invalid_state_token` | State token tidak valid atau sudah expired |
+| `state_used` | State token sudah pernah dipakai (replay attack) |
+| `no_id_token` | Google tidak mengembalikan id_token |
+| `invalid_google_payload` | Payload dari Google tidak valid atau tidak lengkap |
+
+**Catatan:**
+- Endpoint ini dipanggil otomatis oleh Google setelah user approve consent screen
+- Jangan dipanggil langsung dari frontend
+- State token hanya bisa dipakai 1x (one-time use) untuk mencegah replay attack
+- Cookie `state_token` akan dihapus setelah callback selesai
+
+
+---
+
 # Phone Verification (BELUM)
 
-### 1.1.1 OTP phone
+### 1.3.1 OTP phone
 
-**Endpoint:** `POST /otp/phone/send`  
+**Endpoint:** `POST /api/otp/phone/send`  
 **Request Body (application/json):**
 
 ```json
@@ -271,14 +333,14 @@ Logout untuk keluar aplikasi.
 }
 ```
 
-### 1.1.2 Verify phone
+### 1.3.2 Verify phone
 
-**Endpoint:** `GET /otp/phone/verify`  
+**Endpoint:** `GET /api/otp/phone/verify`  
 **Query params:**
-| Key | Type | Required | Description |
+| Key     | Type   | Required | Description |
 |---------|--------|----------|-------------|
 | `phone` | string | Yes | |
-| `otp` | string | Yes | |
+| `otp`   | string | Yes | |
 
 **Response:** `200 OK`
 
@@ -337,9 +399,9 @@ Logout untuk keluar aplikasi.
 
 # Email Verification
 
-### 1.1.1 LINK to email (public)
+### 1.4.1 LINK to email (public)
 send email verification ke email user saat setelah register
-**Endpoint:** `POST /emailVerifications/send-verification`  
+**Endpoint:** `POST /public/api/emailVerifications/send-verification`  
 **Request body:**
 
 ```json
@@ -402,9 +464,9 @@ send email verification ke email user saat setelah register
 }
 ```
 
-### 1.1.2 Verify email (public)
+### 1.4.2 Verify email (public)
 verifikasi email user menggunakan token dari send email
-**Endpoint:** `GET /emailVerifications/verify`  
+**Endpoint:** `GET /public/api/emailVerifications/verify`  
 **Query param:**
 | Key | Type | Required | Description |
 | ------- | ------ | -------- | ----------- |
@@ -476,7 +538,7 @@ solusi: user bisa login, dan untuk response di login yang sebelumnya hanya acces
 ### 2.1 Get user
 
 Mendapatkan info akun pengguna saat ini.  
-**Endpoint:** `GET /users/current`  
+**Endpoint:** `GET /api/users/current`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -494,7 +556,9 @@ Mendapatkan info akun pengguna saat ini.
     "profilePictUrl": "https://example.url",
     "name": "...",
     "isEmailVerified": false,
-    "isPhoneVerified": false
+    "isPhoneVerified": false,
+    "status": "ACTIVE",
+    "isProfileComplete": true
   }
 }
 ```
@@ -512,7 +576,7 @@ Mendapatkan info akun pengguna saat ini.
 ### 2.2 Update user
 
 Membuat akun pengguna baru.  
-**Endpoint:** `PATCH /users`  
+**Endpoint:** `PATCH /api/users`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -540,7 +604,8 @@ Membuat akun pengguna baru.
     "firstName": "John",
     "lastName": "Doe",
     "birtDate": "YYYY-MM-DD",
-    "updatedAt": DD-MM-YY
+    "updatedAt": DD-MM-YY,
+    "isProfileComplete": true
   }
 }
 ```
@@ -555,10 +620,10 @@ Membuat akun pengguna baru.
 }
 ```
 
-### 2.3 Update profile picture (Belum)
+### 2.3 Update profile picture
 
-Membuat akun pengguna baru.  
-**Endpoint:** `PATCH /users/profilePicture`  
+Update akun pengguna.  
+**Endpoint:** `PATCH /api/users/profilePicture`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -594,10 +659,10 @@ Membuat akun pengguna baru.
 }
 ```
 
-### 2.4 Profile owner (BELUM)
+### 2.4 Profile owner
 
 Mendapatkan profile user sendiri  
-**Endpoint:** `GET /users/profile`  
+**Endpoint:** `GET /api/users/profile`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -619,6 +684,7 @@ Mendapatkan profile user sendiri
     "status": "Active",
     "isEmailVerified": true,
     "isPhoneVerified": false,
+    "isProfileComplete": true,
     "createdAt": "2026-01-01T10:00:00Z",
     "isOwnProfile": true,
     "locations": {
@@ -736,10 +802,10 @@ Mendapatkan profile user sendiri
 }
 ```
 
-### 2.5 Profile other people (BELUM)
+### 2.5 Profile other people
 
 Mendapatkan profil orang lain  
-**Endpoint:** `GET /users/:userId/profile`  
+**Endpoint:** `GET /api/users/:userId/profile`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -846,10 +912,10 @@ Mendapatkan profil orang lain
 }
 ```
 
-### 2.6 Delete profile picture (BELUM)
+### 2.6 Delete profile picture
 
 Mendapatkan profil orang lain  
-**Endpoint:** `DELETE /users/profilePicture`  
+**Endpoint:** `DELETE /api/users/profilePicture`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -875,7 +941,7 @@ Mendapatkan profil orang lain
 ### 3.2 Get provinces
 
 Mencari provinsi sesuai id provinsi.  
-**Endpoint:** `GET /provinces/:provinceId`  
+**Endpoint:** `GET /api/provinces/:provinceId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -917,7 +983,7 @@ Mencari provinsi sesuai id provinsi.
 ### 3.3 Get all provinces
 
 Mencari semua provinsi.  
-**Endpoint:** `GET /provinces`  
+**Endpoint:** `GET /api/provinces`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -967,7 +1033,7 @@ Mencari semua provinsi.
 ### 4.2 Get city
 
 Mendapatkan kota berdasarkan id kota.  
-**Endpoint:** `GET /cities/:cityId`  
+**Endpoint:** `GET /api/cities/:cityId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1014,7 +1080,7 @@ Mendapatkan kota berdasarkan id kota.
 ### 4.3 Get city by provinceId
 
 Mendapatkan kota berdasarkan provinsi.  
-**Endpoint:** `GET /provinces/:provinceId/cities`  
+**Endpoint:** `GET /api/provinces/:provinceId/cities`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1060,7 +1126,7 @@ Mendapatkan kota berdasarkan provinsi.
 ### 4.4 Get all city
 
 Mencari semua kota.  
-**Endpoint:** `GET /cities`  
+**Endpoint:** `GET /api/cities`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1115,7 +1181,7 @@ Mencari semua kota.
 ### 5.2 Get districts
 
 mencari kecamatan berdasarkan id kecamatan.  
-**Endpoint:** `GET /districts/:districtId`  
+**Endpoint:** `GET /api/districts/:districtId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1167,7 +1233,7 @@ mencari kecamatan berdasarkan id kecamatan.
 ### 5.3 Get districts by city
 
 mencari kecamatan berdasarkan id kecamatan.  
-**Endpoint:** `GET /cities/:cityId/districts`  
+**Endpoint:** `GET /api/cities/:cityId/districts`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1213,7 +1279,7 @@ mencari kecamatan berdasarkan id kecamatan.
 ### 5.4 Get all districts
 
 Membuat kecamatan.  
-**Endpoint:** `GET /districts`  
+**Endpoint:** `GET /api/districts`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1273,7 +1339,7 @@ Membuat kecamatan.
 ### 6.2 Get subdistricts
 
 Mendapatkan desa.  
-**Endpoint:** `GET /subdistricts/:subdistrictId`  
+**Endpoint:** `GET /api/subdistricts/:subdistrictId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1330,7 +1396,7 @@ Mendapatkan desa.
 ### 6.3 Get subdistricts by district
 
 Mendapatkan desa berdasarkan id kecamatan  
-**Endpoint:** `GET /districts/:districtId/subdistricts`  
+**Endpoint:** `GET /api/districts/:districtId/subdistricts`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1376,7 +1442,7 @@ Mendapatkan desa berdasarkan id kecamatan
 ### 6.4 Get all subdistricts
 
 Membuat desa.  
-**Endpoint:** `GET /subdistricts`  
+**Endpoint:** `GET /api/subdistricts`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1433,7 +1499,7 @@ set isPrimary = true saat pertama kali buat addresses dan saat user membuat alam
 ### 7.1 Create address
 
 Membuat alamat pengguna.  
-**Endpoint:** `POST /addresses`  
+**Endpoint:** `POST /api/addresses`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1507,7 +1573,7 @@ Membuat alamat pengguna.
 ### 7.2 Get All address
 
 mendapatkan address user saat ini  
-**Endpoint:** `GET /addresses`  
+**Endpoint:** `GET /api/addresses`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1581,7 +1647,7 @@ mendapatkan address user saat ini
 ### 7.3 Get address
 
 mendapatkan address user saat ini  
-**Endpoint:** `GET /addresses/:addressId`  
+**Endpoint:** `GET /api/addresses/:addressId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1651,7 +1717,7 @@ mendapatkan address user saat ini
 ### 7.4 Update address
 
 Update alamat pengguna berdasarkan id address tertentu.  
-**Endpoint:** `PATCH /addresses/:addressId`  
+**Endpoint:** `PATCH /api/addresses/:addressId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1746,7 +1812,7 @@ Update alamat pengguna berdasarkan id address tertentu.
 
 ### 7.4 Delete address
 
-**Endpoint:** `DELETE /addresses/:addressId`  
+**Endpoint:** `DELETE /api/addresses/:addressId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1797,7 +1863,7 @@ Update alamat pengguna berdasarkan id address tertentu.
 
 ### 8.1 Get job category
 
-**Endpoint:** `GET /jobCategories/:jobCategoryId`  
+**Endpoint:** `GET /api/jobCategories/:jobCategoryId`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1829,7 +1895,7 @@ Update alamat pengguna berdasarkan id address tertentu.
 
 ### 8.2 Get all job categories
 
-**Endpoint:** `GET /jobCategories`  
+**Endpoint:** `GET /api/jobCategories`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1870,7 +1936,7 @@ Update alamat pengguna berdasarkan id address tertentu.
 ### 9.1 Create Skills
 
 Membuat skill keahlian user  
-**Endpoint:** `POST /jobCategories/Skills`  
+**Endpoint:** `POST /api/jobCategories/Skills`  
 **ONLY ADMIN**  
 **Request Header:**
 
@@ -1914,7 +1980,7 @@ Membuat skill keahlian user
 ### 9.2 Get all Skills
 
 Membuat skill keahlian user  
-**Endpoint:** `GET /jobCategories/Skills`  
+**Endpoint:** `GET /api/jobCategories/Skills`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -1963,7 +2029,7 @@ Membuat skill keahlian user
 ### 9.3 Get Skills
 
 Membuat skill keahlian user  
-**Endpoint:** `GET /jobCategories/Skills/{skillId}`  
+**Endpoint:** `GET /api/jobCategories/Skills/{skillId}`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -2010,7 +2076,7 @@ Membuat skill keahlian user
 ### 9.4 Update Skills
 
 Membuat skill keahlian user  
-**Endpoint:** `PATCH /jobCategories/Skills/{skillId}`  
+**Endpoint:** `PATCH /api/jobCategories/Skills/{skillId}`  
 **ONLY ADMIN**  
 **Request Header:**
 
@@ -2059,7 +2125,7 @@ Membuat skill keahlian user
 ### 9.5 Delete Skills
 
 Membuat skill keahlian user  
-**Endpoint:** `DELETE /jobCategories/Skills/{skillId}`  
+**Endpoint:** `DELETE /api/jobCategories/Skills/{skillId}`  
 **ONLY ADMIN**  
 **Request Header:**
 
@@ -2104,7 +2170,7 @@ problem: user kadang menulis custom skill mereka dalam b. inggris atau tidak bah
 ### 10.1 Create user skills
 
 Membuat level keahlian user [beginner, intermediate, expert, master]  
-**Endpoint:** `POST /skills/userSkills`  
+**Endpoint:** `POST /api/skills/userSkills`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -2165,7 +2231,7 @@ Membuat level keahlian user [beginner, intermediate, expert, master]
 ### 10.2 Get all user skills
 
 Mendapatkan level keahlian user [beginner, intermediate, expert, master]  
-**Endpoint:** `GET /skills/userSkills`  
+**Endpoint:** `GET /api/skills/userSkills`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -2209,7 +2275,7 @@ Mendapatkan level keahlian user [beginner, intermediate, expert, master]
 ### 10.3 Get user skills
 
 Mendapatkan level keahlian user [beginner, intermediate, expert, master]  
-**Endpoint:** `GET /skills/userSkills/{userSkillId}`  
+**Endpoint:** `GET /api/skills/userSkills/{userSkillId}`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -2249,7 +2315,7 @@ Mendapatkan level keahlian user [beginner, intermediate, expert, master]
 ### 10.4 Update user skills
 
 Update level keahlian user [beginner, intermediate, expert, master]  
-**Endpoint:** `PATCH /skills/userSkills/{userSkillId}`  
+**Endpoint:** `PATCH /api/skills/userSkills/{userSkillId}`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -2295,7 +2361,7 @@ Update level keahlian user [beginner, intermediate, expert, master]
 ### 10.5 Delete user skills
 
 Update level keahlian user [beginner, intermediate, expert, master]  
-**Endpoint:** `DELETE /skills/userSkills/{userSkillId}`  
+**Endpoint:** `DELETE /api/skills/userSkills/{userSkillId}`  
 **Request Header:**
 
 - **Authorization: Bearer <token> (accessToken)**
@@ -2343,7 +2409,7 @@ Update level keahlian user [beginner, intermediate, expert, master]
 ### 12.1 Create Job
 
 User membuat/posting job baru.  
-**Endpoint:** `POST /jobs`  
+**Endpoint:** `POST /api/jobs`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -2460,7 +2526,7 @@ User membuat/posting job baru.
 
 ### 12.2 List Jobs card (FOR LANDING PAGE) (public)
 
-**Endpoint:** `GET /jobs`  
+**Endpoint:** `GET /public/api/jobs`  
 **Query param:**
 
 | Parameter | Type    | Required | Default | Description                         |
@@ -2533,7 +2599,7 @@ User membuat/posting job baru.
 ### 12.3 List Jobs card created by provider (Provider View)
 
 Menampilkan daftar job yang dibuat oleh provider.  
-**Endpoint:** `GET /jobs/provider`  
+**Endpoint:** `GET /api/jobs/provider`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -2637,7 +2703,7 @@ Menampilkan daftar job yang dibuat oleh provider.
 ### 12.3 List Jobs/search job (Marketplace)
 
 Menampilkan daftar job dengan filter dan pagination.  
-**Endpoint:** `GET /jobs/search`  
+**Endpoint:** `GET /api/jobs/search`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -2784,7 +2850,7 @@ Menampilkan daftar job dengan filter dan pagination.
 ### 12.3 Job Detail
 
 user Mendapatkan detail lengkap sebuah job berdasarkan id job  
-**Endpoint:** `GET /jobs/:jobId`  
+**Endpoint:** `GET /api/jobs/:jobId`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -2889,7 +2955,7 @@ user Mendapatkan detail lengkap sebuah job berdasarkan id job
 ### 12.4 update Job
 
 provider update job yang diposting.  
-**Endpoint:** `PATCH /jobs/:jobId`  
+**Endpoint:** `PATCH /api/jobs/:jobId`  
 **`ONLY OWN PROVIDER CAN UPDATE`**  
 **Request Headers:**
 
@@ -3019,7 +3085,7 @@ provider update job yang diposting.
 
 Menghapus job.  
 **ONLY OWNER PROVIDER**  
-**Endpoint:** `DELETE/jobs/:jobId`  
+**Endpoint:** `DELETE /api/jobs/:jobId`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3070,7 +3136,7 @@ Menghapus job.
 
 ### 13.1 Add
 
-**Endpoint:** `POST /jobs/:jobId/bookmarks`  
+**Endpoint:** `POST /api/jobs/:jobId/bookmarks`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3089,7 +3155,7 @@ Menghapus job.
 
 ### 13.1 List
 
-**Endpoint:** `GET /bookmarks`  
+**Endpoint:** `GET /api/bookmarks`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3139,7 +3205,7 @@ Menghapus job.
 
 ### 13.1 Delete
 
-**Endpoint:** `DELETE /bookmarks/:bookmarkId`  
+**Endpoint:** `DELETE /api/bookmarks/:bookmarkId`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3171,7 +3237,7 @@ Menghapus job.
 ### 14.1 Create job applications
 
 Worker membuat surat lamaran untuk job.  
-**Endpoint:** `POST /jobs/:jobId/jobApplications`  
+**Endpoint:** `POST /api/jobs/:jobId/jobApplications`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3287,7 +3353,7 @@ note:
 
 **provider** accept surat lamaran  
 **PROVIDER ONLY**  
-**Endpoint:** `PATCH /jobApplications/:jobApplicationId/status`  
+**Endpoint:** `PATCH /api/jobApplications/:jobApplicationId/status`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3351,7 +3417,7 @@ note:
 ### 14.3 Get job application by id
 
 Melihat surat lamaran untuk job berdasarkan id application.  
-**Endpoint:** `GET /jobApplications/:jobApplicationId`  
+**Endpoint:** `GET /api/jobApplications/:jobApplicationId`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3506,7 +3572,7 @@ Melihat surat lamaran untuk job berdasarkan id application.
 ### 14.4 Get list job applications for a job (Provider view)
 
 melihat list surat lamaran job  
-**Endpoint:** `GET /jobs/:jobId/jobApplications`  
+**Endpoint:** `GET /api/jobs/:jobId/jobApplications`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3586,7 +3652,7 @@ melihat list surat lamaran job
 ### 14.5 Get list job applications for a job (worker view)
 
 melihat list surat lamaran job  
-**Endpoint:** `GET /jobApplications`  
+**Endpoint:** `GET /api/jobApplications`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3675,7 +3741,7 @@ melihat list surat lamaran job
 
 ### 15.1 Get list notification
 
-**Endpoint:** `GET /notifications`  
+**Endpoint:** `GET /api/notifications`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3741,7 +3807,7 @@ melihat list surat lamaran job
 
 ### 15.2 Update notification as read
 
-**Endpoint:** `PUT /notifications/:notificationId`  
+**Endpoint:** `PUT /api/notifications/:notificationId`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3761,7 +3827,7 @@ melihat list surat lamaran job
 
 ### 15.4 Mark all as read
 
-**Endpoint:** `PUT /notifications`  
+**Endpoint:** `PUT /api/notifications`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3780,7 +3846,7 @@ melihat list surat lamaran job
 
 ### 15.4 Delete notification
 
-**Endpoint:** `DELETE /notifications/:notificationId`  
+**Endpoint:** `DELETE /api/notifications/:notificationId`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3810,7 +3876,7 @@ Review bisa dilakukan jika, status pada jobs sudah **closed**
 create review setelah job closed.  
 **provider** bisa review **worker, dan Worker juga** bisa review **provider**
 
-**Endpoint:** `POST /jobApplications/:jobApplicationId/reviews`  
+**Endpoint:** `POST /api/jobApplications/:jobApplicationId/reviews`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3895,7 +3961,7 @@ create review setelah job closed.
 ### 16.2 Reply Review (Belum)
 
 ONLY PROVIDER.  
-**Endpoint:** `POST /reviews/:reviewId/reply`  
+**Endpoint:** `POST /api/reviews/:reviewId/reply`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -3960,7 +4026,7 @@ ONLY PROVIDER.
 ### 16.3.1 Get List Reviews pribadi
 
 Mendapatkan semua review untuk sebuah job untuk profil.  
-**Endpoint:** `GET /users/reviews`  
+**Endpoint:** `GET /api/reviews`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -4028,7 +4094,7 @@ Mendapatkan semua review untuk sebuah job untuk profil.
 ### 16.3.2 Get List Reviews other users
 
 Mendapatkan semua review untuk sebuah job untuk profil.  
-**Endpoint:** `GET /users/:userId/reviews`  
+**Endpoint:** `GET /api/users/:userId/reviews`  
 **Request Headers:**
 
 - **Authorization: Bearer {token}**
@@ -4093,7 +4159,7 @@ Mendapatkan semua review untuk sebuah job untuk profil.
 
 Memperbarui review untuk sebuah job.  
 hanya bisa dilakukan oleh **reviewer** (yang kasih review)  
-**Endpoint:** `PATCH /reviews/:reviewId`  
+**Endpoint:** `PATCH /api/reviews/:reviewId`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -4156,7 +4222,7 @@ hanya bisa dilakukan oleh **reviewer** (yang kasih review)
 
 Memperbarui review untuk sebuah job.  
 hanya bisa dilakukan oleh **reviewee** (yang direview):  
-**Endpoint:** `PATCH /reviews/:reviewId/reply`  
+**Endpoint:** `PATCH /api/reviews/:reviewId/reply`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -4217,7 +4283,7 @@ hanya bisa dilakukan oleh **reviewee** (yang direview):
 ### 16.5 Delete Reviews
 
 hapus review (oleh reviewer)  
-**Endpoint:** `DELETE /reviews/:reviewId`  
+**Endpoint:** `DELETE /api/reviews/:reviewId`  
 **Headers:**
 
 - **Authorization: Bearer {token}**
@@ -4255,7 +4321,7 @@ hapus review (oleh reviewer)
 ### 16.5 Delete Reviews Reply
 
 hapus reply saja (oleh reviewee)  
-**Endpoint:** `DELETE /reviews/:reviewId/reply`  
+**Endpoint:** `DELETE /api/reviews/:reviewId/reply`  
 **Headers:**
 
 - **Authorization: Bearer {token}**

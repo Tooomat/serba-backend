@@ -82,20 +82,25 @@ enum TypeReview {
   PROVIDER_TO_WORKER
 }
 
+enum Providers {
+  GOOGLE
+}
+
 model User {
-  id              String     @id @default(uuid())
-  username        String     @unique @db.VarChar(100)
-  firstName       String     @map("first_name") @db.VarChar(50)
-  lastName        String?    @map("last_name") @db.VarChar(100)
-  email           String     @unique @db.VarChar(100)
-  password        String     @db.VarChar(100)
-  role            Role       @default(USER)
-  phone           String     @db.VarChar(20)
-  profilePictUrl  String?    @map("profile_pict_url") @db.VarChar(255)
-  birthDate       DateTime   @map("birth_date") @db.Date
-  isEmailVerified Boolean    @default(false) @map("is_email_verified")
-  isPhoneVerified Boolean    @default(false) @map("is_phone_verified")
-  status          StatusUser @default(PENDING_VERIFICATION)
+  id                String     @id @default(uuid())
+  username          String     @unique @db.VarChar(100)
+  firstName         String     @map("first_name") @db.VarChar(50)
+  lastName          String?    @map("last_name") @db.VarChar(100)
+  email             String     @unique @db.VarChar(100)
+  password          String?    @db.VarChar(100) // Nullable untuk OAuth users
+  role              Role       @default(USER)
+  phone             String?    @db.VarChar(20)
+  profilePictUrl    String?    @map("profile_pict_url") @db.VarChar(255)
+  birthDate         DateTime?  @map("birth_date") @db.Date
+  isEmailVerified   Boolean    @default(false) @map("is_email_verified")
+  isPhoneVerified   Boolean    @default(false) @map("is_phone_verified")
+  status            StatusUser @default(PENDING_VERIFICATION)
+  isProfileComplete Boolean    @default(false) @map("is_profile_complete")
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -106,13 +111,43 @@ model User {
   emailVerifications EmailVerification[]
   addresses          Address[]
   jobs               Job[]
-  jobApplications    JobApplication[] 
+  jobApplications    JobApplication[]
   notifications      Notifications[]
-  bookmarks Bookmarks[]
-  reviewsGiven   Reviews[] @relation("Reviewer")
-  reviewsReceived Reviews[] @relation("Reviewee")
+  bookmarks          Bookmarks[]
+  reviewsGiven       Reviews[]           @relation("Reviewer")
+  reviewsReceived    Reviews[]           @relation("Reviewee")
+  oauthAccounts      OAuthAccount[]
 
   @@map("users")
+}
+
+model OAuthAccount {
+  id                   String    @id @default(uuid())
+  provider             Providers // 'google', 'github', 'facebook', etc
+  providerUserId       String    @unique @map("provider_user_id") @db.VarChar(255) // ID dari provider
+  email                String?   @unique @db.VarChar(100) // Email dari provider
+  givenName            String    @map("given_name") @db.VarChar(255)
+  familyName           String?   @map("family_name") @db.VarChar(255)
+  profilePictUrl       String?   @map("profile_pict_url") @db.Text
+  accessToken          String?   @map("access_token") @db.Text // JWT token dari provider
+  refreshToken         String?   @map("refresh_token") @db.Text // Untuk refresh access token
+  accessTokenExpiresAt DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  scope                String?   @db.Text // Permissions yang diminta
+  rawData              Json?     @map("raw_data") // Simpan raw response dari provider
+
+  lastUsedAt DateTime? @map("last_used_at")
+  linkedAt   DateTime  @default(now()) @map("linked_at") // kapan user connect Google
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint agar 1 user tidak bisa connect 2x ke provider yang sama
+  @@unique([userId, provider])
+  @@unique([provider, providerUserId])
+  @@map("OAuth_accounts")
 }
 
 model EmailVerification {
@@ -127,7 +162,7 @@ model EmailVerification {
 
   @@map("email_verifications")
 }
- 
+
 model Address {
   id         String  @id @default(uuid())
   street     String  @db.Text
@@ -239,7 +274,7 @@ model CategoriesMapping {
 
   @@map("categories_mapping")
 }
- 
+
 model Job {
   id String @id @default(uuid())
 
@@ -281,20 +316,20 @@ model Job {
   address   Address @relation(fields: [addressId], references: [id])
 
   jobApplications JobApplication[]
-  bookmarks Bookmarks[]
+  bookmarks       Bookmarks[]
 
   @@map("jobs")
 }
 
 model Bookmarks {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   userId String @map("user_id")
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   jobId String @map("job_id")
-  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId]) // menghindari idempotent user saat add bookmark
   @@map("bookmarks")
@@ -317,7 +352,7 @@ model JobApplication {
   jobId         String          @map("job_id")
   job           Job             @relation(fields: [jobId], references: [id])
   notifications Notifications[]
-  reviews Reviews[]
+  reviews       Reviews[]
 
   @@unique([workerId, jobId]) // worker tidak bisa apply job yang sama dua kali (idempotent)
   @@map("job_applications")
@@ -346,17 +381,17 @@ model Notifications {
 model Reviews {
   id String @id @default(uuid())
 
-  rating Int     // 1 - 5
-  comment String? @db.Text
-  type TypeReview
+  rating  Int // 1 - 5
+  comment String?    @db.Text
+  type    TypeReview
 
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  replyComment String?   @map("reply_comment") @db.Text
-  repliedAt    DateTime? @map("replied_at") @db.Timestamptz(3)
+  replyComment     String?   @map("reply_comment") @db.Text
+  repliedAt        DateTime? @map("replied_at") @db.Timestamptz(3)
   repliedUpdatedAt DateTime? @updatedAt @map("replied_updated_at") @db.Timestamptz(3)
-  
+
   // siapa yang kasih review
   reviewerId String @map("reviewer_id")
   reviewer   User   @relation("Reviewer", fields: [reviewerId], references: [id])
@@ -365,7 +400,7 @@ model Reviews {
   revieweeId String @map("reviewee_id")
   reviewee   User   @relation("Reviewee", fields: [revieweeId], references: [id])
 
-  jobApplicationId String @map("job_application_id")
+  jobApplicationId String         @map("job_application_id")
   jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
 
   @@unique([reviewerId, jobApplicationId])

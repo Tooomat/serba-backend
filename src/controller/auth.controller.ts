@@ -37,7 +37,7 @@ export class AuthController {
             securityLogger.loginSuccess(result.userId, req.ip ?? 'unknown')
             success_handler(res, "login successful", {
                 accessToken: result.accessToken,
-                isEmailVerified: result.isEmailVerified === undefined ? undefined : result.isEmailVerified
+                isProfileComplete: result.isProfileComplete
             }, 200)
         } catch (e) {
             securityLogger.loginFailed(
