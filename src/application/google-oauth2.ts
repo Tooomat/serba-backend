@@ -11,7 +11,7 @@ import { config } from "../config/env";
 export const oauth2Client = new google.auth.OAuth2(
   config.GOOGLE_CLIENT_ID,
   config.GOOGLE_CLIENT_SECRET,
-  config.GOOGLE_REDIRECT_URL
+  `${config.APP_URL}${config.GOOGLE_REDIRECT_URL}`
 )
 
 // Access scopes for two non-Sign-In scopes: Read-only Drive activity and Google Calendar.

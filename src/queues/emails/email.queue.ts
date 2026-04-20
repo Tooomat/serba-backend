@@ -4,7 +4,6 @@ import { redisConnection } from "../../application/redis";
 export const emailQueueName = 'email'
 export const emailQueue = new Queue(emailQueueName, {
     connection: redisConnection,
-    prefix: 'bull:queue',
     defaultJobOptions: {
         attempts: 3,
         backoff: {

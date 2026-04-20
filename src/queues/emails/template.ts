@@ -1,8 +1,9 @@
 import { config } from "../../config/env"
 
-const imgLogo = "/public/assets/images/logo/serba-logo.png"
-const baseUrl = config.APP_URL.replace(/\/+$/, '')
-const pathImage = `${baseUrl}${imgLogo.startsWith('/') ? '' : '/'}${imgLogo}`
+// const imgLogo = "/public/assets/images/logo/serba-logo.png"
+// const baseUrl = config.APP_URL.replace(/\/+$/, '')
+// const pathImage = `${baseUrl}${imgLogo.startsWith('/') ? '' : '/'}${imgLogo}`
+const pathImage = "https://res.cloudinary.com/dvlsikkf9/image/upload/v1776583476/serba-logo_ki7e8r.png"
 
 export const emailTemplate = {
     verification: (user: string, link: string): string => `

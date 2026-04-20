@@ -42,7 +42,7 @@ export interface EnvConfig {
   HTTPONLY_COOKIES: boolean
   SECURE_COOKIES: boolean
   SAMESITE_COOKIES: boolean | "lax" | "strict" | "none" | undefined
-  PATH_COOKIES: string
+  PATH_REFRESH_TOKEN_COOKIES: string
 
   CORS_ORIGIN: string
 
@@ -118,7 +118,7 @@ export const config: EnvConfig = {
   HTTPONLY_COOKIES: parseBoolean(process.env.HTTPONLY_COOKIES),
   SECURE_COOKIES: parseBoolean(process.env.SECURE_COOKIES),
   SAMESITE_COOKIES: parseSameSite(process.env.SAMESITE_COOKIES),
-  PATH_COOKIES: process.env.PATH_COOKIES || '/',
+  PATH_REFRESH_TOKEN_COOKIES: process.env.PATH_REFRESH_TOKEN_COOKIES || '/',
 
   CORS_ORIGIN: process.env.CORS_ORIGIN || "",
 

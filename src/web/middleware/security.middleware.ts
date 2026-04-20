@@ -106,18 +106,18 @@ const authRefreshLimiter = createLimiter(
     1 * 60, // menit
     2 // menit block
 )
-// 5 req / 1 menit / IP
+// 2 req / 1 menit / IP
 const authEmailSendLimiter = createLimiter(
     `${config.APP_NAME}:rl:email:send:auth`,
-    { prod: 5, dev: 10 },
+    { prod: 2, dev: 10 },
     1 * 60, // menit
     1 // menit block
 )
-// 10 req / 1 menit / IP
+// 5 req / 1 menit / IP
 const authEmailVerifLimiter = createLimiter(
     `${config.APP_NAME}:rl:email:verif:auth`,
     { prod: 10, dev: 10 },
-    1 * 60, // mwnit
+    5 * 60, // mwnit
     1 // menit block
 )
 
@@ -182,7 +182,7 @@ const createMiddleware = (
 export const publicRateLimit = createMiddleware(
     publicLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Rate limit exceeded, please try again in  30 seconds"
+    "Rate limit exceeded, please try again in  1 minutes"
 )
 
 // OWASP A04 - Insecure Design
@@ -195,12 +195,12 @@ export const authLoginRateLimiter = createMiddleware(
 export const authRegisterRateLimiter = createMiddleware(
     authRegisterLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Too many attempts, please try again in 3 minutes"
+    "Too many attempts, please try again in 1 minutes"
 )
 export const authRefreshRateLimiter = createMiddleware(
     authRefreshLimiter,
     (req) => req.ip || 'ip:unknown',
-    "Too many attempts, please try again in 5 minutes"
+    "Too many attempts, please try again in 1 minutes"
 )
 export const authEmailSendRateLimiter = createMiddleware(
     authEmailSendLimiter,

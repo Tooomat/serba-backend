@@ -414,7 +414,7 @@ export class JobApplicationsService {
                         jobApplication.job.title, 
                         formater.getFullName(jobApplication.job.jobProvider.firstName, jobApplication.job.jobProvider.lastName),
                         jobApplication.job.jobProvider.email,
-                        jobApplication.job.jobProvider.phone
+                        jobApplication.job.jobProvider.phone!
                     ),
                     type: TypeEmail.JOB_ACCEPTED
                 }

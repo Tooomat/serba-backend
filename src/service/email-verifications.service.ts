@@ -21,9 +21,7 @@ import { EmailVerificationValidation } from "../validation/email-verification.va
 // FE tampil halaman sukses "Email berhasil diverifikasi" + tombol "Login Sekarang" →
 // User klik → Masuk halaman login → Input password → Masuk app
 
-const MAX_RESEND_ATTEMPTS = 1
-const RESEND_WINDOW_MS = 2 * 60 * 1000   // 5 menit
-const RETRY_AFTER_SEC = 120               // 5 menit
+const RESEND_WINDOW_MS = 5 * 60 * 1000   // 5 menit
 const TOKEN_EXPIRES_MS = 1 * 60 * 60 * 1000 // 1 jam
 
 export class EmailVerificationsService {

@@ -200,7 +200,7 @@ export class AuthService {
                 httpOnly: config.HTTPONLY_COOKIES,
                 secure: config.SECURE_COOKIES, // localhost
                 sameSite: config.SAMESITE_COOKIES,
-                path: config.PATH_COOKIES, // only send to
+                path: config.PATH_REFRESH_TOKEN_COOKIES, // only send to
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             }
         )
@@ -265,7 +265,7 @@ export class AuthService {
                 httpOnly: config.HTTPONLY_COOKIES,
                 secure: config.SECURE_COOKIES, // localhost
                 sameSite: config.SAMESITE_COOKIES,
-                path: config.PATH_COOKIES, // only send to
+                path: config.PATH_REFRESH_TOKEN_COOKIES, // only send to
             }
         )
     }
