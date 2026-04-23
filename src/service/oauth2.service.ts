@@ -14,7 +14,7 @@ export class OAuth2Service {
     static async initiateGoogleAuth(query: OAuth2Request, res: Response): Promise<OAuth2Response> {
         const validate = Validation.validate(OAuth2Validation.GOOGLE_OAUTH2_SCHEMA, query)
 
-        const allowedRedirects = ["/"] 
+        const allowedRedirects = ["/r", "/g", "/login/complete-profile"] 
         const redirectPath = allowedRedirects.includes(validate.redirectPath)
             ? validate.redirectPath
             : "/"
