@@ -278,8 +278,7 @@ User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.go
 
 ---
 
-# Phone Verification (BELUM)
-
+# Phone Verification
 ### 1.3.1 OTP phone
 
 **Endpoint:** `POST /api/otp/phone/send`  
@@ -287,18 +286,19 @@ User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.go
 
 ```json
 {
-  "phone": "0812345678"
+  "phone": "+62812345678"
 }
 ```
 
-**Response:** `200 OK`
+**Response:** `201 Created`
 
 ```json
 {
   "success": true,
   "message": "OTP send to phone",
   "data": {
-    "expiresIn": 300 //s
+    "phone": "+62820****9078",
+    "expiresIn": 300000 //s
   }
 }
 ```
@@ -337,20 +337,24 @@ User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.go
 ### 1.3.2 Verify phone
 
 **Endpoint:** `GET /api/otp/phone/verify`  
-**Query params:**
-| Key     | Type   | Required | Description |
-|---------|--------|----------|-------------|
-| `phone` | string | Yes | |
-| `otp`   | string | Yes | |
+**Request Body (application/json):**
+
+```json
+{
+  "otp": "+62812345678"
+}
+```
 
 **Response:** `200 OK`
 
 ```json
 {
   "success": true,
-  "message": "phone verified successful",
+  "message": "Phone verified successful",
   "data": {
-	"phoneVerifiedAt": YYYY-MM-DD HH:MI:SS,
+	  "phoneVerifiedAt": YYYY-MM-DD HH:MI:SS,
+    "userId": "uuid",
+    "status": "ACTIVE"
   }
 }
 ```
@@ -362,7 +366,7 @@ User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.go
   "success": false,
   "message": "bad request",
   "errors": "invalid otp",
-  "remainingAttempts": 2
+  "remainingAttempts": 4
 }
 ```
 
@@ -495,33 +499,13 @@ verifikasi email user menggunakan token dari send email
 }
 ```
 
-**Response:** `401 unauthorized`
-
-```json
-{
-  "success": false,
-  "message": "unauthorized",
-  "errors": " "
-}
-```
-
-**Response:** `410 gone`
-
-```json
-{
-  "success": false,
-  "message": "Gone",
-  "errors": "OTP expired"
-}
-```
-
 **Response:** `409 conflict`
 
 ```json
 {
   "success": false,
   "message": "conflict",
-  "errors": "OTP already used"
+  "errors": "Email already verified"
 }
 ```
 

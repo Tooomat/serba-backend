@@ -27,24 +27,32 @@ export class AuthService {
                 email: validation.email 
             }
         })
+        const totalUserWithSamePhone = await prismaClient.user.count({
+            where: { 
+                phone: validation.phone 
+            }
+        })
         if (totalUserWithSameUsername != 0) {
             throw new ResponseError(400, "user already exists")
         }
         if (totalUserWithSameEmail != 0) {
             throw new ResponseError(400, "user already exists")
         }
+        if (totalUserWithSamePhone !== 0) {
+            throw new ResponseError(409, "Phone number already registered")
+        }
 
         validation.password = await bcrypt.hash(validation.password, 10)
 
-        let profilePictUrl: string | undefined
-        if (file) {
-            profilePictUrl = await uploadToCloudinary(file, {
-                folder: "serba/profile-pictures",
-                transformation: [
-                    { width: 400, height: 400, crop: "fill", gravity: "face" }
-                ]
-            })
-        }
+        // let profilePictUrl: string | undefined
+        // if (file) {
+        //     profilePictUrl = await uploadToCloudinary(file, {
+        //         folder: "serba/profile-pictures",
+        //         transformation: [
+        //             { width: 400, height: 400, crop: "fill", gravity: "face" }
+        //         ]
+        //     })
+        // }
         
         const userData: Prisma.UserCreateInput = {
             username: validation.username,
@@ -58,9 +66,6 @@ export class AuthService {
         }
         if (validation.lastName !== undefined) {
             userData.lastName = validation.lastName
-        }
-        if (profilePictUrl !== undefined) {
-            userData.profilePictUrl = profilePictUrl
         }
 
         const user = await prismaClient.user.create({
@@ -81,6 +86,25 @@ export class AuthService {
                 createdAt: true
             }
         })
+
+        // Upload setelah user berhasil dibuat, menghindari race condition
+        let profilePictUrl: string | undefined
+        if (file) {
+            profilePictUrl = await uploadToCloudinary(file, {
+                folder: "serba/profile-pictures",
+                transformation: [
+                    { width: 400, height: 400, crop: "fill", gravity: "face" }
+                ]
+            })
+
+            // Update user dengan foto
+            await prismaClient.user.update({
+                where: { id: user.id },
+                data: { profilePictUrl }
+            })
+
+            user.profilePictUrl = profilePictUrl
+        }
         
         // fire and forget, tidak perlu await agar tidak block response register
         EmailVerificationsService.sendOnRegister({

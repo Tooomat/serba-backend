@@ -13,16 +13,20 @@ import { JobApplicationController } from "../../controller/job-application.contr
 import { NotificationsController } from "../../controller/notifications.controller"
 import { BookmarkController } from "../../controller/bookmarks.controller"
 import { ReviewsController } from "../../controller/reviews.controller"
-import { privateReadRateLimit, privateCUDRateLimit } from "../middleware/security.middleware"
+import { privateReadRateLimit, privateCUDRateLimit, authPhoneSendRateLimiter, authPhoneVerifRateLimiter } from "../middleware/security.middleware"
 import { uploadProfilePict } from "../middleware/upload.middleware"
 import { Verification } from "../middleware/verification.middleware"
 import { ProfileMiddleware } from "../middleware/profile.middleware"
+import { PhoneVerificationController } from "../../controller/phone-verifications.controller"
 export const privateRouter = Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
 
 // auth
 privateRouter.post("/api/auth/logout", privateCUDRateLimit, AuthController.logout)
 
+// phone verification 
+privateRouter.post("/api/otp/phone/send", authPhoneSendRateLimiter, PhoneVerificationController.send)
+privateRouter.post("/api/otp/phone/verify", authPhoneVerifRateLimiter, PhoneVerificationController.verify)
 //user
 privateRouter.get("/api/users/current", privateReadRateLimit, Verification.requireEmailVerified, UsersController.current)
 privateRouter.patch("/api/users", privateCUDRateLimit, Verification.requireEmailVerified, UsersController.update)

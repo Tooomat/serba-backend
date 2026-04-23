@@ -93,7 +93,7 @@ export class UsersService {
 
         const mergedBirthDate = validation.birthDate ?? user.birthDate
         // isProfileComplete = phone sudah verified DAN birthDate sudah ada
-        const isProfileComplete = !!(user.phone && user.isPhoneVerified && mergedBirthDate)
+        const isProfileComplete = !!(user.phone && user.isPhoneVerified && user.phoneVerifiedAt && mergedBirthDate)
         updateData.isProfileComplete = isProfileComplete
 
         const updatedUser = await prismaClient.user.update({
