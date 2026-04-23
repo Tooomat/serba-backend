@@ -100,6 +100,16 @@ export const formater = {
         return `${masked}@${domain}`
     },
 
+    maskPhone(phone: string): string {
+        // if (phone.length < 8) return '****'
+
+        const prefix = phone.slice(0, 5)
+        const suffix = phone.slice(-4)
+        const masked = '*'.repeat(phone.length - 9)
+
+        return `${prefix}${masked}${suffix}`
+    },
+
     toArray(value: any): string[] | undefined {
         if (!value) return undefined
         return Array.isArray(value) ? value : [value]

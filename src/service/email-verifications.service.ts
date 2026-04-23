@@ -26,22 +26,37 @@ const TOKEN_EXPIRES_MS = 1 * 60 * 60 * 1000 // 1 jam
 
 export class EmailVerificationsService {
     static async sendOnRegister(user: { id: string, email: string, username: string }): Promise<void> {
-        const token = `token-${randomUUID()}`
-        const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)
+        const { emailVerif } = await prismaClient.$transaction(async (tx) => {
+            // Invalidate token lama yang belum dipakai
+            await tx.emailVerification.deleteMany({
+                where: {
+                    userId: user.id,
+                    usedAt: null
+                }
+            })
 
-        const emailVerif = await prismaClient.emailVerification.create({
-            data: {
-                id: randomUUID(),
-                token,
-                expiresAt,
-                userId: user.id
-            },
-            select: {
-                id: true
-            }
+            const token = randomUUID()
+            // const token = crypto.randomBytes(32).toString('hex')
+            const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)
+    
+            const emailVerif = await prismaClient.emailVerification.create({
+                data: {
+                    id: randomUUID(),
+                    token,
+                    expiresAt,
+                    userId: user.id
+                },
+                select: {
+                    id: true,
+                    token: true
+                }
+            })
+
+            return { emailVerif }
         })
 
-        const link = `${config.FRONTEND_URL}/login/verify-email?token=${token}`
+
+        const link = `${config.FRONTEND_URL}/login/verify-email?token=${emailVerif.token}`
 
         await enqueueEmail(
             {
@@ -70,6 +85,7 @@ export class EmailVerificationsService {
         })
 
         if (!user || (user.isEmailVerified && user.emailVerifiedAt)) {
+            await new Promise(r => setTimeout(r, 300 + Math.random() * 200)) // normalize timing
             return toSendEmailVerificationResponse(
                 null, 
                 new Date(Date.now() + TOKEN_EXPIRES_MS)
@@ -77,56 +93,64 @@ export class EmailVerificationsService {
             // Balas seolah-olah sukses — "Email sent if account exists"
         }
 
-        // AMBIL TOKEN TERAKHIR
-        // 1 request dalam 2 menit
-        const lastVerification = await prismaClient.emailVerification.findFirst({
-            where: {
-                userId: user.id
-            },
-            orderBy: {
-                createdAt: 'desc'
+        const { emailVerif, expiresAt } = await prismaClient.$transaction(async (tx) => {
+            // AMBIL TOKEN TERAKHIR
+            // 1 request dalam 2 menit
+            const lastVerification = await tx.emailVerification.findFirst({
+                where: {
+                    userId: user.id
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            })
+
+            if (lastVerification) {
+                const nextAllowedTime = lastVerification.createdAt.getTime() + RESEND_WINDOW_MS
+
+                if (Date.now() < nextAllowedTime) {
+                    const retryAfter = Math.ceil((nextAllowedTime - Date.now()) / 1000)
+
+                    throw new ResponseError(
+                        429,
+                        "Please wait before requesting again",
+                        retryAfter
+                    )
+                }
             }
-        })
 
-        if (lastVerification) {
-            const nextAllowedTime = lastVerification.createdAt.getTime() + RESEND_WINDOW_MS
+            // Invalidate token lama yang belum dipakai
+            await tx.emailVerification.deleteMany({
+                where: {
+                    userId: user.id,
+                    usedAt: null
+                }
+            })
 
-            if (Date.now() < nextAllowedTime) {
-                const retryAfter = Math.ceil((nextAllowedTime - Date.now()) / 1000)
+            const token = randomUUID()
+            const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)   
+            
+            const emailVerif = await tx.emailVerification.create({
+                data: {
+                    id: randomUUID(),
+                    token: token,
+                    expiresAt: expiresAt,
+                    userId: user.id
+                },
+                select: {
+                    id: true,
+                    token: true
+                }
+            })
 
-                throw new ResponseError(
-                    429,
-                    "Please wait before requesting again",
-                    retryAfter
-                )
-            }
-        }
+            return { emailVerif, expiresAt }
 
-        // Invalidate token lama yang belum dipakai
-        await prismaClient.emailVerification.deleteMany({
-            where: {
-                userId: user.id,
-                usedAt: null
-            }
-        })
-
-        const token = `token-${randomUUID()}`
-        const expiresAt = new Date(Date.now() + TOKEN_EXPIRES_MS)   
-        
-        const emailVerif = await prismaClient.emailVerification.create({
-            data: {
-                id: randomUUID(),
-                token: token,
-                expiresAt: expiresAt,
-                userId: user.id
-            },
-            select: {
-                id: true
-            }
+        },{
+            isolationLevel: 'Serializable'  // <-- fix race condition
         })
 
         // link direct halaman login khusus verify email
-        const link = `${config.FRONTEND_URL}/login/verify-email?token=${token}`
+        const link = `${config.FRONTEND_URL}/login/verify-email?token=${emailVerif.token}`
 
         await enqueueEmail(
             {
@@ -161,16 +185,16 @@ export class EmailVerificationsService {
         })
 
         if (!verification) {
-            throw new ResponseError(400, "Invalid token")
+            throw new ResponseError(400, "Invalid or expired token")
         }
         if (verification.usedAt) {
-            throw new ResponseError(409, "Token already used")
+            throw new ResponseError(400, "Invalid or expired token")
         }
         if (verification.expiresAt < new Date()) {
-            throw new ResponseError(410, "Token expired")
+            throw new ResponseError(400, "Invalid or expired token")
         }
         if (verification.user.emailVerifiedAt && verification.user.isEmailVerified === true) {
-            throw new ResponseError(409, "User already verified")
+            throw new ResponseError(409, "Email already verified")
         }
 
         const [updatedUser] = await prismaClient.$transaction([

@@ -113,12 +113,26 @@ const authEmailSendLimiter = createLimiter(
     1 * 60, // menit
     1 // menit block
 )
-// 5 req / 1 menit / IP
+// 5 req / 5 menit / IP
 const authEmailVerifLimiter = createLimiter(
     `${config.APP_NAME}:rl:email:verif:auth`,
-    { prod: 10, dev: 10 },
+    { prod: 5, dev: 10 },
     5 * 60, // mwnit
     1 // menit block
+)
+// 2 req / 5 menit / IP
+const authPhoneSendLimiter = createLimiter(
+    `${config.APP_NAME}:rl:phone:send:auth`,
+    { prod: 2, dev: 10 },
+    5 * 60,  // 5 menit
+    5        // block 5 menit setelah exceed
+)
+// 5 req / 5 menit / IP — brute force OTP 6 digit
+const authPhoneVerifLimiter = createLimiter(
+    `${config.APP_NAME}:rl:phone:verif:auth`,
+    { prod: 5, dev: 10 },
+    5 * 60,  // 5 menit
+    10       // block 10 menit setelah exceed — lebih panjang karena brute force risk
 )
 
 
@@ -211,6 +225,16 @@ export const authEmailVerifRateLimiter = createMiddleware(
     authEmailVerifLimiter,
     (req) => req.ip || 'ip:unknown',
     "Too many attempts, please try again in 1 minutes"
+)
+export const authPhoneSendRateLimiter = createMiddleware(
+    authPhoneSendLimiter,
+    (req) => req.ip || 'ip:unknown',
+    "Too many attempts, please try again in 5 minutes"
+)
+export const authPhoneVerifRateLimiter = createMiddleware(
+    authPhoneVerifLimiter,
+    (req) => req.ip || 'ip:unknown',
+    "Too many attempts, please try again in 10 minutes"
 )
 
 // OWASP A04 - Insecure Design

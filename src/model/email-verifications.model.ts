@@ -14,7 +14,7 @@ export function toSendEmailVerificationResponse(
     user: Pick<User, 'email'> | null,
     expiresAt: Date,
 ): sendEmailVerificationResponse {
-    const expiresIn = Math.floor((expiresAt.getTime() - Date.now()) / 1000)
+    const expiresIn = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000))
     return {
         email: user?.email ? formater.maskEmail(user.email) : 'hidden',
         expiresIn: expiresIn
