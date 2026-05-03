@@ -37,7 +37,7 @@ export class BookmarkController {
             const { id: userId } = auth.user!
             const bookmarkId: string = String(auth.params.bookmarkId)
 
-            const result = BookmarkService.delete(userId, bookmarkId)
+            const result = await BookmarkService.delete(userId, bookmarkId)
             success_handler_without_data(res, "Delete bookmark successful", 200)
         } catch (e) {
            next(e) 

@@ -83,7 +83,7 @@ export class ReviewsController {
             const reviewId: string = String(auth.params.reviewId)
             const { id: userId } = auth.user!
 
-            const result = ReviewsService.update(userId, reviewId, request)
+            const result = await ReviewsService.update(userId, reviewId, request)
             success_handler(res, "Update reviews successfully", result, 200)
         } catch (e) {
             next(e)
@@ -96,7 +96,7 @@ export class ReviewsController {
             const reviewId: string = String(auth.params.reviewId)
             const { id: userId } = auth.user!
 
-            const result = ReviewsService.updateReply(userId, reviewId, request)
+            const result = await ReviewsService.updateReply(userId, reviewId, request)
             success_handler(res, "Update reply reviews successfully", result, 200)
         } catch (e) {
             next(e)

@@ -10,7 +10,7 @@ export class PhoneVerificationController {
             const { id: userId } = auth.user!
             const request: sendOtpRequest = auth.body as sendOtpRequest
 
-            const result = PhoneVerificationService.send(userId, request)
+            const result = await PhoneVerificationService.send(userId, request)
             success_handler(res, "OTP send to phone", result, 201)
         } catch (e) {
             next(e)
@@ -22,7 +22,7 @@ export class PhoneVerificationController {
             const { id: userId } = auth.user!
             const request: verifyOtpRequest = auth.body as verifyOtpRequest
             
-            const result = PhoneVerificationService.verify(userId, request)
+            const result = await PhoneVerificationService.verify(userId, request)
             success_handler(res, "Phone verified successful", result, 200)
         } catch (e) {
             next(e)

@@ -9,7 +9,7 @@ export class UsersController {
         try {
             const { id: userId } = auth.user!
 
-            const result = UsersService.current(userId)
+            const result = await UsersService.current(userId)
             success_handler(res, "get user successful", result, 200)
         } catch (e) {
             next(e)
@@ -21,7 +21,7 @@ export class UsersController {
             const request: updateUserRequest = auth.body as updateUserRequest
             const { id: userId } = auth.user!
 
-            const result = UsersService.update(userId, request)
+            const result = await UsersService.update(userId, request)
             success_handler(res, "Update profile successful", result, 200)
         } catch (e) {
             next(e)
@@ -40,7 +40,7 @@ export class UsersController {
 
             const { id: userId } = auth.user!
 
-            const result = UsersService.updateProfilePict(userId, file)
+            const result = await UsersService.updateProfilePict(userId, file)
             success_handler(res, "Update profile picture successful", result, 200)
         } catch (e) {
             next(e)
@@ -50,7 +50,7 @@ export class UsersController {
     static async ownProfile(auth: AuthRequest, res: Response, next: NextFunction) {
         try {
             const { id: userId } = auth.user!
-            const result = UsersService.profile(userId, true)
+            const result = await UsersService.profile(userId, true)
 
             success_handler(res, "Get own profile successfully", result, 200)
         } catch (e) {
