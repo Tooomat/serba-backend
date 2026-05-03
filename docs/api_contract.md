@@ -95,7 +95,6 @@ Membuat akun pengguna baru.
 | `birthDate`   | Text | Yes      | Format: YYYY-MM-DD                                                                                                             |
 | `phone`       | Text | Yes      | Format: +62xxxxxxxxx                                                                                                           |
 
-
 **Response:** `201 Created`
 
 ```json
@@ -151,7 +150,9 @@ Login untuk mendapatkan JWT token.
   "message": "Login successful",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "isProfileComplete": true or false
+    "isEmailVerified": true or undifined,
+    "isPhoneVerified": true or undifined,
+    "isBirthDateVerified": true or undifined
   }
 }
 ```
@@ -169,7 +170,7 @@ Login untuk mendapatkan JWT token.
 ### 1.3 Renew access token (public)
 
 Renew access token yang sudah EXP untuk generate token baru, selama refresh token masih berlaku  
-**Endpoint:** `POST /public/api/auth/refresh`  
+**Endpoint:** `POST /public/api/auth/refresh`
 
 **Response:** `200 OK`
 
@@ -216,12 +217,13 @@ Logout untuk keluar aplikasi.
 ---
 
 # Continue With Google (Public)
+
 ### 1.2.1 URL Authorize
 
 **Endpoint:** `GET /public/api/auth/google`
 
 **Query params:**
-| Key     | Type   | Required | Description |
+| Key | Type | Required | Description |
 |---------|--------|----------|-------------|
 | `redirectPath` | string | Yes | redirect setelah login, ex: `/auth/profile`|
 
@@ -233,7 +235,8 @@ User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.go
       state=eyJhbGc... ← STATE TOKEN KIRIM KE GOOGLE
       access_type=offline`
 
-**Response:** `400 Bad Request`  
+**Response:** `400 Bad Request`
+
 ```json
 {
   "success": false,
@@ -244,41 +247,43 @@ User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.go
 
 ### 1.2.2 Google callback
 
-**Endpoint:** `GET /public/api/auth/google/callback`  
+**Endpoint:** `GET /public/api/auth/google/callback`
 
 **Query params:**
-| Key     | Type   | Required | Description |
+| Key | Type | Required | Description |
 |---------|--------|----------|-------------|
-| `code`  | string | Yes      | Authorization code dari Google |
-| `state` | string | Yes      | State untuk validasi dan redirectPath |
+| `code` | string | Yes | Authorization code dari Google |
+| `state` | string | Yes | State untuk validasi dan redirectPath |
 
-**Response:** `302 Redirect`  
-- Sukses — user diarahkan ke url frontend: `${config.FRONTEND_URL}${redirectPath}?accessToken=${accessToken}&isProfileComplete=${user.isProfileComplete ?? false}`
+**Response:** `302 Redirect`
+
+- Sukses — user diarahkan ke url frontend: `${config.FRONTEND_URL}${payload.redirect}?accessToken=${accessToken}&isBirthDateCompleted=${user.birthDate ? true : false}&isPhoneCompleted=${user.isPhoneVerified === true && user.phoneVerifiedAt ? true : false}`
 
 - Error — user diarahkan ke halaman login dengan query param `error`: `${config.FRONTEND_URL}/auth/login?error={errorCode}`
 
 **Error codes:**
 
-| `error` | reason |
-|---------|----------|
-| `missing_params` | `code` atau `state` tidak ada di query params |
-| `account_blocked` | Akun user telah diblokir |
-| `invalid_state` | State di query tidak cocok dengan cookie |
-| `invalid_state_token` | State token tidak valid atau sudah expired |
-| `state_used` | State token sudah pernah dipakai (replay attack) |
-| `no_id_token` | Google tidak mengembalikan id_token |
+| `error`                  | reason                                             |
+| ------------------------ | -------------------------------------------------- |
+| `missing_params`         | `code` atau `state` tidak ada di query params      |
+| `account_blocked`        | Akun user telah diblokir                           |
+| `invalid_state`          | State di query tidak cocok dengan cookie           |
+| `invalid_state_token`    | State token tidak valid atau sudah expired         |
+| `state_used`             | State token sudah pernah dipakai (replay attack)   |
+| `no_id_token`            | Google tidak mengembalikan id_token                |
 | `invalid_google_payload` | Payload dari Google tidak valid atau tidak lengkap |
 
 **Catatan:**
+
 - Endpoint ini dipanggil otomatis oleh Google setelah user approve consent screen
 - Jangan dipanggil langsung dari frontend
 - State token hanya bisa dipakai 1x (one-time use) untuk mencegah replay attack
 - Cookie `state_token` akan dihapus setelah callback selesai
 
-
 ---
 
 # Phone Verification
+
 ### 1.3.1 OTP phone
 
 **Endpoint:** `POST /api/otp/phone/send`  
@@ -405,6 +410,7 @@ User akan langsung diarahkan ke Google OAuth consent screen `https://accounts.go
 # Email Verification
 
 ### 1.4.1 LINK to email (public)
+
 send email verification ke email user saat setelah register
 **Endpoint:** `POST /public/api/emailVerifications/send-verification`  
 **Request body:**
@@ -470,6 +476,7 @@ send email verification ke email user saat setelah register
 ```
 
 ### 1.4.2 Verify email (public)
+
 verifikasi email user menggunakan token dari send email
 **Endpoint:** `GET /public/api/emailVerifications/verify`  
 **Query param:**
@@ -511,8 +518,7 @@ verifikasi email user menggunakan token dari send email
 
 problem [User error]: semisal user saat ingin validasi email tetapi tidak sengaja keluar dari halaman verification dan verifikasi di email sudah kadaluwarsa
 
-solusi: user bisa login, dan untuk response di login yang sebelumnya hanya access token ditambah isEmailVerified, jadi saat  isEmailVerified = false maka FE akan direct ke halaman verifikasi email
-
+solusi: user bisa login, dan untuk response di login yang sebelumnya hanya access token ditambah isEmailVerified, jadi saat isEmailVerified = false maka FE akan direct ke halaman verifikasi email
 
 // JIKA PHONE DAN EMAIL USER SUDAH VERIFIED UBAH user status = ACTIVE
 

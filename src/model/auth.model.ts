@@ -62,7 +62,9 @@ export type loginRequest = {
 
 export type loginResponse = {
     accessToken: string
-    isProfileComplete: boolean
+    isEmailVerified?: boolean | undefined
+    isPhoneVerified?: boolean | undefined
+    isBirthDateVerified?: boolean | undefined
     userId: string
 }
 

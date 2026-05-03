@@ -27,9 +27,10 @@ privateRouter.post("/api/auth/logout", privateCUDRateLimit, AuthController.logou
 // phone verification 
 privateRouter.post("/api/otp/phone/send", authPhoneSendRateLimiter, PhoneVerificationController.send)
 privateRouter.post("/api/otp/phone/verify", authPhoneVerifRateLimiter, PhoneVerificationController.verify)
+
 //user
 privateRouter.get("/api/users/current", privateReadRateLimit, Verification.requireEmailVerified, UsersController.current)
-privateRouter.patch("/api/users", privateCUDRateLimit, Verification.requireEmailVerified, UsersController.update)
+privateRouter.patch("/api/users", privateCUDRateLimit, UsersController.update)
 privateRouter.patch("/api/users/profilePicture", privateCUDRateLimit, Verification.requireEmailVerified, uploadProfilePict.single("profilePict"), UsersController.updateProfilePict)
 privateRouter.get("/api/users/profile", privateReadRateLimit, Verification.requireEmailVerified, UsersController.ownProfile)
 privateRouter.get("/api/users/:userId/profile", privateReadRateLimit, Verification.requireEmailVerified, UsersController.otherProfile)

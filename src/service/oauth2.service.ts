@@ -120,7 +120,10 @@ export class OAuth2Service {
                         username: true,
                         role: true,
                         status: true,
-                        isProfileComplete: true
+                        birthDate: true,
+                        isProfileComplete: true,
+                        isPhoneVerified: true,
+                        phoneVerifiedAt: true
                     }
                 } 
             }
@@ -158,8 +161,11 @@ export class OAuth2Service {
                     username: true,
                     role: true,
                     profilePictUrl: true,
+                    birthDate: true,
                     status: true,
                     isProfileComplete: true,
+                    isPhoneVerified: true,
+                    phoneVerifiedAt: true
                 }
             })
 
@@ -277,8 +283,9 @@ export class OAuth2Service {
             path: config.GOOGLE_REDIRECT_URL
         })
 
+
         res.redirect(
-            `${config.FRONTEND_URL}${payload.redirect}?accessToken=${accessToken}&isProfileComplete=${user.isProfileComplete ?? false}`
+            `${config.FRONTEND_URL}${payload.redirect}?accessToken=${accessToken}&isBirthDateCompleted=${user.birthDate ? true : false}&isPhoneCompleted=${user.isPhoneVerified === true && user.phoneVerifiedAt ? true : false}`
         )
         return
     }

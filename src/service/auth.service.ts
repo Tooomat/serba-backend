@@ -129,8 +129,8 @@ export class AuthService {
         const ATTEMPT_PREFIX = `${config.APP_NAME}:login:attempts`
         const BLOCK_PREFIX   = `${config.APP_NAME}:login:block`
         const MAX_ATTEMPTS   = 10
-        const ATTEMPT_WINDOW = 30 * 60  // 30 menit
-        const BLOCK_DURATION = 30 * 60  // 30 menit
+        const ATTEMPT_WINDOW = 5 * 60  // 5 menit
+        const BLOCK_DURATION = 5 * 60  // 5 menit
 
         const identifier = validation.usernameOrEmail.toLowerCase()
 
@@ -178,9 +178,12 @@ export class AuthService {
                 status: true,
                 emailVerifiedAt: true,
                 isEmailVerified: true,
+                isPhoneVerified: true,
+                phoneVerifiedAt: true,
                 username: true,
                 role: true,
                 isProfileComplete: true,
+                birthDate: true
             }
         })
 
@@ -198,9 +201,9 @@ export class AuthService {
             throw new ResponseError(403, "Account has been blocked");
         }
 
-        if (!user.emailVerifiedAt  && user.isEmailVerified === false) {
-            throw new ResponseError(403, "Verify your email first")
-        }
+        // if (!user.emailVerifiedAt  && user.isEmailVerified === false) {
+        //     throw new ResponseError(403, "Verify your email first")
+        // }
 
         const payload: accessTokenPayload = {
             sub: user.id,
@@ -231,7 +234,9 @@ export class AuthService {
         
         return {
             accessToken: accessToken,
-            isProfileComplete: user.isProfileComplete,
+            isEmailVerified: user.isEmailVerified === false && !user.emailVerifiedAt ? false : undefined,
+            isPhoneVerified: user.isPhoneVerified === false && !user.phoneVerifiedAt ? false : undefined,
+            isBirthDateVerified: user.birthDate ? undefined : false,
             userId: user.id
         }
     }
