@@ -113,62 +113,111 @@ export class UsersService {
         return toUpdateUserResponse(updatedUser)
     }
 
+    // static async updateProfilePict(userId: string, file?: UploadUpdateProfilePict): Promise<updateProfilePictResponse> {
+    //     if (!file) throw new ResponseError(400, "Profile picture is required")
+            
+    //     const user = await prismaClient.user.findUnique({
+    //         where: { 
+    //             id: userId 
+    //         }
+    //     })
+    //     if (!user) {
+    //         throw new ResponseError(
+    //             404,
+    //             "user not found"
+    //         )
+    //     }
+
+    //     return await prismaClient.$transaction(async (tx) => {
+            
+    //         let newProfilePictUrl: string = await uploadToCloudinary(file, {
+    //             folder: "serba/profile-pictures",
+    //             transformation: [
+    //                 { width: 400, height: 400, crop: "fill", gravity: "face" }
+    //             ]
+    //         })
+
+    //         const newPicture = await tx.user.update({
+    //             where: {
+    //                 id: user.id
+    //             },
+    //             data: {
+    //                 profilePictUrl: newProfilePictUrl
+    //             },
+    //             select: {
+    //                 id: true,
+    //                 profilePictUrl: true,
+    //                 updatedAt: true
+    //             }
+    //         })
+
+    //         let deleteOldFailed = false
+    //         if (user.profilePictUrl) {
+    //             const publicId = extractCloudinaryPublicId(user.profilePictUrl)
+    //             if (publicId) {
+    //                 try {
+    //                     await cloudinary.uploader.destroy(publicId)
+    //                 } catch (e) {
+    //                     deleteOldFailed = true
+    //                     // logger.error("Failed to delete old profile picture", { publicId, error: e.message })
+    //                 }
+    //             }
+    //         }
+            
+    //         return toUpdateProfilePictResponse(
+    //             newPicture,
+    //             deleteOldFailed === true ? "Profile picture updated, but old picture could not be removed" : undefined
+    //         )
+    //     }) 
+    // }
+    
     static async updateProfilePict(userId: string, file?: UploadUpdateProfilePict): Promise<updateProfilePictResponse> {
         if (!file) throw new ResponseError(400, "Profile picture is required")
-            
+
         const user = await prismaClient.user.findUnique({
-            where: { 
-                id: userId 
-            }
+            where: { id: userId }
         })
-        if (!user) {
-            throw new ResponseError(
-                404,
-                "user not found"
-            )
-        }
+        if (!user) throw new ResponseError(404, "User not found")
 
-        return await prismaClient.$transaction(async (tx) => {
-            
-            let newProfilePictUrl: string = await uploadToCloudinary(file, {
-                folder: "serba/profile-pictures",
-                transformation: [
-                    { width: 400, height: 400, crop: "fill", gravity: "face" }
-                ]
-            })
+        // Upload dulu SEBELUM transaksi — jangan blokir koneksi DB
+        const newProfilePictUrl = await uploadToCloudinary(file, {
+            folder: "serba/profile-pictures",
+            transformation: [
+                { width: 400, height: 400, crop: "fill", gravity: "face" }
+            ]
+        })
 
-            const newPicture = await tx.user.update({
-                where: {
-                    id: user.id
-                },
-                data: {
-                    profilePictUrl: newProfilePictUrl
-                },
+        // Transaksi sekarang hanya operasi DB murni — cepat
+        const result = await prismaClient.$transaction(async (tx) => {
+            return await tx.user.update({
+                where: { id: userId },
+                data: { profilePictUrl: newProfilePictUrl },
                 select: {
                     id: true,
                     profilePictUrl: true,
                     updatedAt: true
                 }
             })
+        })
 
-            let deleteOldFailed = false
-            if (user.profilePictUrl) {
-                const publicId = extractCloudinaryPublicId(user.profilePictUrl)
-                if (publicId) {
-                    try {
-                        await cloudinary.uploader.destroy(publicId)
-                    } catch (e) {
-                        deleteOldFailed = true
-                        // logger.error("Failed to delete old profile picture", { publicId, error: e.message })
-                    }
+        // Delete gambar lama SETELAH transaksi commit
+        let deleteOldFailed = false
+        if (user.profilePictUrl) {
+            const publicId = extractCloudinaryPublicId(user.profilePictUrl)
+            if (publicId) {
+                try {
+                    await cloudinary.uploader.destroy(publicId)
+                } catch (e) {
+                    deleteOldFailed = true
+                    // logger.error("Failed to delete old profile picture", { publicId, error: e })
                 }
             }
-            
-            return toUpdateProfilePictResponse(
-                newPicture,
-                deleteOldFailed === true ? "Profile picture updated, but old picture could not be removed" : undefined
-            )
-        }) 
+        }
+
+        return toUpdateProfilePictResponse(
+            result,
+            deleteOldFailed ? "Profile picture updated, but old picture could not be removed" : undefined
+        )
     }
 
     static async profile(userId: string, isOwnProfile: boolean): Promise<getProfileResponse> {

@@ -11,17 +11,43 @@ interface UploadOptions {
     transformation: object[] 
 }
 
+// export async function uploadToCloudinary(file: UploadedFile, options: UploadOptions): Promise<string> {
+//     return new Promise((resolve, reject) => {
+//         const stream = cloudinary.uploader.upload_stream (
+//             {
+//                 folder: options.folder,
+//                 resource_type: "image",
+//                 transformation: options.transformation
+//             },
+//             (error, result) => {
+//                 if (error || !result) return reject(error ?? new ResponseError(400, "Upload failed"))
+//                     resolve(result.secure_url)
+//             }
+//         )
+
+//         stream.end(file.buffer)
+//     })
+// }
+
 export async function uploadToCloudinary(file: UploadedFile, options: UploadOptions): Promise<string> {
     return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream (
+        const TIMEOUT_MS = 8000 // 8 detik
+
+        const timer = setTimeout(() => {
+            reject(new ResponseError(408, "Upload to Cloudinary timed out"))
+        }, TIMEOUT_MS)
+
+        const stream = cloudinary.uploader.upload_stream(
             {
                 folder: options.folder,
                 resource_type: "image",
-                transformation: options.transformation
+                transformation: options.transformation,
+                timeout: TIMEOUT_MS,  // timeout sisi SDK juga
             },
             (error, result) => {
+                clearTimeout(timer)
                 if (error || !result) return reject(error ?? new ResponseError(400, "Upload failed"))
-                    resolve(result.secure_url)
+                resolve(result.secure_url)
             }
         )
 

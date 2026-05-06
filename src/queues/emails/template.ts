@@ -1,8 +1,5 @@
 import { config } from "../../config/env"
 
-// const imgLogo = "/public/assets/images/logo/serba-logo.png"
-// const baseUrl = config.APP_URL.replace(/\/+$/, '')
-// const pathImage = `${baseUrl}${imgLogo.startsWith('/') ? '' : '/'}${imgLogo}`
 const pathImage = "https://res.cloudinary.com/dvlsikkf9/image/upload/v1776583476/serba-logo_ki7e8r.png"
 
 export const emailTemplate = {
@@ -10,15 +7,20 @@ export const emailTemplate = {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
 
             <!-- HEADER -->
-            <div style="background:#0f5132;padding:24px 32px;text-align:center;border-radius:10px 10px 0 0;">
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                    <img src=${pathImage} 
-                        width="70" height="70" alt="serba">
-                    <p style="color:#fff;font-size:18px;font-weight:800;letter-spacing:1px;margin:0;">
-                        SERBA
-                    </p>
-                </div>
-            </div>
+            <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f5132" style="background:#0f5132;border-radius:10px 10px 0 0;">
+                <tr>
+                    <td align="center" style="padding:24px 32px;">
+                        <img src=${pathImage} width="70" height="70" alt="serba" style="display:block;">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding-top:6px;">
+                        <p style="color:#fff;font-size:18px;font-weight:800;letter-spacing:1px;margin:0;">
+                            SERBA
+                        </p>
+                    </td>
+                </tr>
+            </table>
 
             <!-- CONTENT -->
             <div style="background:#ffffff;padding:0;border-radius:0 0 10px 10px;overflow:hidden;"> 
