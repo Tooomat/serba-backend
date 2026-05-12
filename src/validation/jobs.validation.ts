@@ -60,6 +60,7 @@ export class JobsValidation {
                 val === "urgent" ? TypeJob.URGENT : TypeJob.NON_URGENT
             ),
         required: z
+            .coerce
             .number()
             .min(1),
         jobSite: z 
@@ -74,10 +75,12 @@ export class JobsValidation {
                 return JobSite.REMOTE
             }),
         budgetMin: z
+            .coerce
             .number()
             .min(1)
             .optional(),
         budgetMax: z
+            .coerce
             .number()
             .min(1)
             .optional(),
