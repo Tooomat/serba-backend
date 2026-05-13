@@ -6,8 +6,8 @@ export class ReviewsValidation {
             .string(),
         rating: z
             .coerce
-            .number()
-            .positive()
+            .number("Rating must be a number")
+            .positive("Rating must be a positive positive")
             .min(0, { message: "Minimum 0 star is allowed" })
             .max(5, { message: "Maximum 5 star is allowed" })
             
@@ -37,16 +37,16 @@ export class ReviewsValidation {
             .optional(),
         page: z
             .coerce
-            .number()
-            .min(1)
-            .positive()
+            .number("Page must be a number" )
+            .min(1, "Page must be at least 1")
+            .positive("Page must be positive")
             .default(1),
         size: z
             .coerce
-            .number()
-            .min(1)
-            .max(20)
-            .positive()
+            .number("Size must be a number" )
+            .min(1, "Size must be at least 1")
+            .max(20, "Size must be at most 20")
+            .positive("Size must be positive")
             .default(10),
     })
     static readonly UPDATE_SCHEMA = z.object({
@@ -55,8 +55,8 @@ export class ReviewsValidation {
             .optional(),
         rating: z
             .coerce
-            .number()
-            .positive()
+            .number("Rating must be a number")
+            .positive("Rating must be positive")
             .min(0, { message: "Minimum 0 star is allowed" })
             .max(5, { message: "Maximum 5 star is allowed" })
             .optional(),

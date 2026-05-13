@@ -13,11 +13,12 @@ import { JobApplicationController } from "../../controller/job-application.contr
 import { NotificationsController } from "../../controller/notifications.controller"
 import { BookmarkController } from "../../controller/bookmarks.controller"
 import { ReviewsController } from "../../controller/reviews.controller"
-import { privateReadRateLimit, privateCUDRateLimit, authPhoneSendRateLimiter, authPhoneVerifRateLimiter } from "../middleware/security.middleware"
+import { privateReadRateLimit, privateCUDRateLimit, authPhoneSendRateLimiter, authPhoneVerifRateLimiter, geocodingRateLimit } from "../middleware/security.middleware"
 import { uploadProfilePict } from "../middleware/upload.middleware"
 import { Verification } from "../middleware/verification.middleware"
 import { ProfileMiddleware } from "../middleware/profile.middleware"
 import { PhoneVerificationController } from "../../controller/phone-verifications.controller"
+import { GeocodingController } from "../../controller/geocoding.controller"
 export const privateRouter = Router()
 privateRouter.use(AuthMiddleware.checkAuthorization)
 
@@ -60,14 +61,17 @@ privateRouter.get("/api/subDistricts", privateReadRateLimit, Verification.requir
 privateRouter.get("/api/districts/:districtId/subDistricts", privateReadRateLimit, Verification.requireEmailVerified, SubDistrictsController.getByDistrict)
 
 // addresses
-privateRouter.get("/api/addresses", privateReadRateLimit, Verification.requireEmailVerified, AddressesController.getAll)
+privateRouter.get("/api/addresses", privateReadRateLimit, Verification.requireEmailVerified, Verification.requirePhoneVerified, AddressesController.getAll)
 privateRouter.post("/api/addresses", privateCUDRateLimit, Verification.requireEmailVerified, AddressesController.create)
 privateRouter.get("/api/addresses/:addressId", privateReadRateLimit, Verification.requireEmailVerified, AddressesController.get)
-privateRouter.patch("/api/addresses/:addressId", privateCUDRateLimit, Verification.requireEmailVerified, AddressesController.update)
+privateRouter.patch("/api/addresses/:addressId", privateCUDRateLimit, Verification.requireEmailVerified, Verification.requirePhoneVerified, AddressesController.update)
 privateRouter.delete("/api/addresses/:addressId", privateCUDRateLimit, Verification.requireEmailVerified, AddressesController.delete)
 
+//Geocoding
+privateRouter.get("/api/geocoding", geocodingRateLimit, Verification.requireEmailVerified, GeocodingController.search)
+
 // jobs
-privateRouter.post("/api/jobs", privateCUDRateLimit ,Verification.requireEmailVerified, ProfileMiddleware.requireCompleteProfile, JobsController.create)
+privateRouter.post("/api/jobs", privateCUDRateLimit, Verification.requireEmailVerified, Verification.requirePhoneVerified, ProfileMiddleware.requireCompleteProfile,  ProfileMiddleware.requireActiveUser, JobsController.create)
 privateRouter.get("/api/jobs/provider", privateReadRateLimit, Verification.requireEmailVerified, JobsController.listMyCreatedJobs)
 privateRouter.get("/api/jobs/search", privateReadRateLimit, Verification.requireEmailVerified, JobsController.searchJobs)
 privateRouter.get("/api/jobs/:jobId", privateReadRateLimit, Verification.requireEmailVerified, JobsController.get)
@@ -80,15 +84,15 @@ privateRouter.get("/api/bookmarks", privateReadRateLimit, Verification.requireEm
 privateRouter.delete("/api/bookmarks/:bookmarkId", privateCUDRateLimit, Verification.requireEmailVerified, BookmarkController.delete)
 
 // job application
-privateRouter.post("/api/jobs/:jobId/jobApplications", privateCUDRateLimit, ProfileMiddleware.requireCompleteProfile, Verification.requireEmailVerified, JobApplicationController.create)
-privateRouter.patch("/api/jobApplications/:jobApplicationId/status", privateCUDRateLimit, Verification.requireEmailVerified, JobApplicationController.updateStatus)
+privateRouter.post("/api/jobs/:jobId/jobApplications", privateCUDRateLimit, ProfileMiddleware.requireCompleteProfile, Verification.requirePhoneVerified, Verification.requireEmailVerified,  ProfileMiddleware.requireActiveUser, JobApplicationController.create)
+privateRouter.patch("/api/jobApplications/:jobApplicationId/status", privateCUDRateLimit, Verification.requireEmailVerified, Verification.requirePhoneVerified, JobApplicationController.updateStatus)
 privateRouter.get("/api/jobApplications/:jobApplicationId", privateReadRateLimit, Verification.requireEmailVerified, JobApplicationController.getDetail)
 privateRouter.get("/api/jobs/:jobId/jobApplications", privateReadRateLimit, Verification.requireEmailVerified, JobApplicationController.getListForJobProvider)
 privateRouter.get("/api/jobApplications", privateReadRateLimit, Verification.requireEmailVerified, JobApplicationController.getListForWorker)
 
 // reviews
-privateRouter.post("/api/jobApplications/:jobApplicationId/reviews", privateCUDRateLimit, Verification.requireEmailVerified, ProfileMiddleware.requireCompleteProfile, ReviewsController.create)
-privateRouter.post("/api/reviews/:reviewId/reply", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.reply)
+privateRouter.post("/api/jobApplications/:jobApplicationId/reviews", privateCUDRateLimit, Verification.requireEmailVerified,Verification.requirePhoneVerified, ProfileMiddleware.requireCompleteProfile, ReviewsController.create)
+privateRouter.post("/api/reviews/:reviewId/reply", privateCUDRateLimit, Verification.requireEmailVerified, Verification.requirePhoneVerified, ReviewsController.reply)
 privateRouter.get("/api/reviews", privateReadRateLimit, Verification.requireEmailVerified, ReviewsController.getListSelf)
 privateRouter.get("/api/users/:userId/reviews", privateReadRateLimit, Verification.requireEmailVerified, ReviewsController.getListVisitor)
 privateRouter.patch("/api/reviews/:reviewId", privateCUDRateLimit, Verification.requireEmailVerified, ReviewsController.update)

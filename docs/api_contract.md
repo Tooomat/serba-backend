@@ -15,6 +15,7 @@ API Documentation untuk platform marketplace jasa harian dengan sistem dual-role
 - [Cities](#master-cities)
 - [Districts](#master-districts)
 - [Sub Districts](#master-subdistricts)
+- [Geocoding](#Geocoding)
 - [Addresses](#addresses)
 - [Job Categories](#job-categories)
 - [Skills](#skills-belum)
@@ -1483,6 +1484,86 @@ Membuat desa.
 
 ---
 
+# Geocoding
+
+### 7.2.1
+**Endpoint:** `GET /api/geocoding`  
+**Request Header:**
+
+- **Authorization: Bearer <token> (accessToken)**
+
+**Query Param:**
+| Key           | Type   | Required | Description                           | 
+| ------------- | ------ | -------- | ------------------------------------- |
+| `street`      | string | No       | Nama jalan                            |                   
+| `subDistrict` | string | No       | Nama kelurahan/desa                   |                   
+| `district`    | string | No       | Nama kecamatan                        |                   
+| `city`        | string | No       | Nama kota/kabupaten                   |                   
+| `province`    | string | No       | Nama provinsi                         |                   
+| `postalCode`  | string | No       | Nama Kode pos (5 digit)               |                   
+
+> Note: Semakin lengkap field yang diisi → hasil geocoding semakin akurat. Urutan query yang digabung di service sudah diurutkan dari spesifik → umum (street → province) agar Nominatim lebih mudah mengenali lokasi.
+
+**Response:** `200 Success`
+```json
+{
+  "success": true,
+  "message": "Search Geocoding successful",
+  "data": [
+      {
+          "lat": "-7.4478349",
+          "lng": "112.7183490",
+          "displayName": "Sidoarjo, Kabupaten Sidoarjo, Jawa Timur, Indonesia"
+      },
+      {
+          "lat": "-7.4500123",
+          "lng": "112.7200456",
+          "displayName": "Sidoarjo, Kecamatan Sidoarjo, Kabupaten Sidoarjo, Jawa Timur, Indonesia"
+      }
+  ]
+}
+```
+
+**Response:** `400 Bad Request`
+
+```json
+{
+  "success": false,
+  "message": "bad request",
+  "errors": "Address must be at least 3 characters"
+}
+```
+**Response:** `404 Not Found`
+
+```json
+{
+  "success": false,
+  "message": "not found",
+  "errors": "Address not found"
+}
+```
+**Response:** `429 Too Many Requests`
+
+```json
+{
+  "success": false,
+  "message": "Too many requests",
+  "errors": "Too many requests, please try again in 2 minutes",
+  "retryAfter": 120
+}
+```
+**Response:** `502 Bad Gateway`
+
+```json
+{
+  "success": false,
+  "message": "Bad Gateway",
+  "errors": "Geocoding service unavailable"
+}
+```
+
+---
+
 # Addresses
 
 set isPrimary = true saat pertama kali buat addresses dan saat user membuat alamat lagi set isPrimary = false
@@ -1505,8 +1586,8 @@ Membuat alamat pengguna.
   "benchmark": "depan tugu",
   "markAs": "home",
   "isPrimary": true,
-  "lat": -6.0,
-  "lng": 5.33333
+  "lat": "-6.0",
+  "lng": "5.33333"
 }
 ```
 
@@ -1521,8 +1602,8 @@ Membuat alamat pengguna.
     "street": "Jln. Subroto No. 4",
    	"country": "Indonesia",
     "postalCode": "xxxxx",
-    "lat": -6.00000,
-    "lng": 5.33333,
+    "lat": "-6.0",
+    "lng": "5.33333",
     "isPrimary": true,
     "locations": {
       "subdistrict": {
@@ -1581,8 +1662,8 @@ mendapatkan address user saat ini
       "street": "Jln. Subroto No. 4",
       "country": "Indonesia",
       "postalCode": "xxxxx",
-      "lat": -6.00000,
-      "lng": 5.33333,
+      "lat": "-6.0",
+      "lng": "5.33333",
       "isPrimary": "true",
       "locations": {
         "subdistrict": {
@@ -1654,8 +1735,8 @@ mendapatkan address user saat ini
     "street": "Jln. Subroto No. 4",
     "country": "Indonesia",
     "postalCode": "xxxxx",
-    "lat": -6.00000,
-    "lng": 5.33333,
+    "lat": "-6.0",
+    "lng": "5.33333",
     "isPrimary": "true",
     "locations": {
       "subdistrict": {
@@ -1723,8 +1804,8 @@ Update alamat pengguna berdasarkan id address tertentu.
   "isPrimary": true,
   "benchmark": "...",
   "markAs": "Office",
-  "lat": -6.0,
-  "lng": 5.33333
+  "lat": "-6.0",
+  "lng": "5.33333",
 }
 ```
 
@@ -1739,8 +1820,8 @@ Update alamat pengguna berdasarkan id address tertentu.
     "street": "jln. soekarno hatta",
     "postaCode": "xxxxx",
     "subDistrictId": "id-fk-subDistrict",
-    "lat": -6.00000,
-    "lng": 5.33333,
+    "lat": "-6.0",
+    "lng": "5.33333",
     "isPrimary": true,
     "benchmark": "......",
     "markAs": "Office",
@@ -2391,11 +2472,11 @@ Update level keahlian user [beginner, intermediate, expert, master]
 
 # Jobs
 
-- job site = [On site, Hybrid, Remote]
-- budget type = [Fixed, Hourly, Negotiable]
-- status = [Open, Canceled, In Progress, Closed] //default open
-- level = [Beginner, Intermediate, Advanced, Expert]
-- type = [Urgent, Non urgent]
+- job site = [on site, hybrid, remote]
+- budget type = [fixed, hourly, negotiable]
+- status = [open, canceled, in Progress, closed] //default open
+- level = [beginner, intermediate, advanced, expert]
+- type = [urgent, non urgent]
 
 ### 12.1 Create Job
 
@@ -2445,8 +2526,8 @@ User membuat/posting job baru.
     "addressId": "uuid-fk-address",
     "isPublic": true,
     "location": {
-      "lat": -6.00000,
-      "lng": 5.33333,
+      "lat": "-6.0",
+      "lng": "5.33333",
       "street": "Jln. semangka",
       "postalCode": "xxxxx",
       "masterLocation": {
@@ -2539,8 +2620,8 @@ User membuat/posting job baru.
       "location": {
         "street": "Jln. semangka",
         "postalCode": "xxxxx",
-        "lat": -6.00000,
-        "lng": 5.33333,
+        "lat": "-6.0",
+        "lng": "5.33333",
         "subdistrict": {
           "id": "subdistrict-id",
           "name": "Keude Bakongan",
@@ -2628,8 +2709,8 @@ Menampilkan daftar job yang dibuat oleh provider.
       "location": {
         "street": "Jln. semangka",
         "postalCode": "xxxxx",
-        "lat": -6.00000,
-        "lng": 5.33333,
+        "lat": "-6.0",
+      "lng": "5.33333",
         "subdistrict": {
           "id": "subdistrict-id",
           "name": "Keude Bakongan",
@@ -2739,8 +2820,8 @@ Menampilkan daftar job dengan filter dan pagination.
       "location": {
         "street": "Jln. semangka",
         "postalCode": "xxxxx",
-        "lat": -6.00000,
-        "lng": 5.33333,
+        "lat": "-6.0",
+        "lng": "5.33333",
         "subdistrict": {
           "id": "subdistrict-id",
           "name": "Keude Bakongan",
@@ -2878,8 +2959,8 @@ user Mendapatkan detail lengkap sebuah job berdasarkan id job
     "location": {
       "street": "Jln. semangka",
       "postalCode": "xxxxx",
-      "lat": -6.00000,
-      "lng": 5.33333,
+      "lat": "-6.0",
+      "lng": "5.33333",
       "subdistrict": {
         "id": "subdistrict-id",
         "name": "Keude Bakongan",
@@ -2993,8 +3074,8 @@ provider update job yang diposting.
     "location": {
       "street": "Jln. semangka",
       "postalCode": "xxxxx",
-      "lat": -6.00000,
-      "lng": 5.33333,
+      "lat": "-6.0",
+      "lng": "5.33333",
       "subdistrict": {
         "id": "subdistrict-id",
         "name": "Keude Bakongan",

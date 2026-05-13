@@ -151,6 +151,16 @@ const privateCUDLimiter = createLimiter(
     1 // menit
 )
 
+// THIRD PARTY
+//Geocoding
+const geocodingLimiter = createLimiter(
+    `${config.APP_NAME}:rl:geocoding:private`,
+    { prod: 20, dev: 20 },
+    1 * 60,  // 1 menit
+    2        // block 2 menit setelah exceed
+)
+
+
 const createMiddleware = (
     limiter: RateLimiterAbstract,
     keyFn: (req: Request) => string,
@@ -258,6 +268,17 @@ export const privateCUDRateLimit = createMiddleware(
     "Rate limit exceeded, please try again in 1 minutes"
 )
 
+//THIRD PARTY
+//Geocoding
+export const geocodingRateLimit = createMiddleware(
+    geocodingLimiter,
+    (req) => {
+        const userId = (req as any).user?.id
+        const ip = req.ip
+        return userId ? `user:${userId}` : `ip:${ip}`
+    },
+    "Too many requests, please try again in 2 minutes"
+)
 
 // ================================
 // HELMET — HTTP Security Headers

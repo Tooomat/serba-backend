@@ -20,6 +20,7 @@ export interface EnvConfig {
   NODE_ENV: 'development' | 'production' | 'test'
   APP_PORT: number
   APP_NAME: string
+  APP_V: string
   APP_URL: string
 
   FRONTEND_URL: string
@@ -91,6 +92,7 @@ export const config: EnvConfig = {
   APP_PORT: Number(process.env.APP_PORT || 3000),
   APP_URL: required("APP_URL"),
   APP_NAME: required("APP_NAME"),
+  APP_V: required("APP_V"),
 
   FRONTEND_URL: required("FRONTEND_URL"),
 

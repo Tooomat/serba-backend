@@ -7,8 +7,8 @@ import { locationUtils } from "../utils/location.utils"
 import { timeUtils } from "../utils/time.utils"
 
 export type locationJobJson = {
-    lat: Decimal
-    lng: Decimal
+    lat: string
+    lng: string
     street: string
     postalCode: string
     masterLocations: {
