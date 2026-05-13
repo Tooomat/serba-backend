@@ -42,8 +42,8 @@ export type addressesResponse = {
     postalCode: string
     benchmark?: string | null // Bisa null dari database
     markAs: string
-    lat: Decimal
-    lng: Decimal
+    lat: string
+    lng: string
     isPrimary: boolean
     locations: locationJson
     createdAt: Date
@@ -59,8 +59,8 @@ export function toAddressesResponse(address: Address): addressesResponse {
         postalCode: address.postalCode,
         benchmark: address.benchmark,
         markAs: address.markAs === "HOME" ? "Home" : "Office",
-        lat: address.lat,
-        lng: address.lng,
+        lat: address.lat.toString(),
+        lng: address.lng.toString(),
         isPrimary: address.isPrimary,
         locations: locations,
         createdAt: address.createdAt,

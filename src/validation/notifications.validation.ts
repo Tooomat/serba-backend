@@ -25,16 +25,16 @@ export class NotificationsValications {
             .optional(),
         page: z
             .coerce
-            .number()
-            .min(1)
-            .positive()
+            .number("Page must be a number" )
+            .min(1, "Page must be at least 1")
+            .positive("Page must be positive")
             .default(1),
         size: z
             .coerce
-            .number()
-            .min(1)
-            .max(20)
-            .positive()
+            .number("Size must be a number" )
+            .min(1, "Size must be at least 1")
+            .max(20, "Size must be at most 20")
+            .positive("Size must be positive")
             .default(10),
     })
 }

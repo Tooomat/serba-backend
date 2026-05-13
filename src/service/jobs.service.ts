@@ -84,8 +84,8 @@ export class JobsService {
                 jobSite: validate.jobSite,
                 status: validate.status,
                 locations: {
-                    lat: address.lat,
-                    lng: address.lng,
+                    lat: address.lat.toString(),
+                    lng: address.lng.toString(),
                     street: address.street,
                     masterLocations: address.locations
                 },
@@ -577,8 +577,8 @@ export class JobsService {
                     throw new ResponseError(404, "Address not found")
                 }
                 jobData.locations = {
-                    lat: address.lat,
-                    lng: address.lng,
+                    lat: address.lat.toString(),
+                    lng: address.lng.toString(),
                     street: address.street,
                     masterLocations: address.locations
                 }

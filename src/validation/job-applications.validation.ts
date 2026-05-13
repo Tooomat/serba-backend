@@ -9,28 +9,32 @@ export class JobApplicationsValidation {
     })
     static readonly UPDATE_SCHEMA = z.object({
         jobMessage: z
-            .string(),
-        rejectedGlobalMessage: z
-            .string(),
-        status: z
             .string()
+            .min(1, "Job message must be at least 1 character")
+            .optional(),
+        rejectedGlobalMessage: z
+            .string()
+            .min(1, "Rejected message must be at least 1 character")
+            .optional(),
+        status: z
+            .string("Status is required")
             .toLowerCase()
             .refine((val) => ["accepted", "rejected", "shortlisted"].includes(val), {
                 message: "Status must be one of: Accepted, Rejected or Shortlisted"
             })
             .transform((val): statusJobApplication => {
                 const statusJobAppMap: Record<"shortlisted" | "accepted" | "rejected", statusJobApplication> = {
-                "shortlisted": statusJobApplication.SHORTLISTED,
-                "accepted": statusJobApplication.ACCEPTED,
-                "rejected": statusJobApplication.REJECTED
-            }
-            return statusJobAppMap[val as "shortlisted" | "accepted" | "rejected"]
+                    "shortlisted": statusJobApplication.SHORTLISTED,
+                    "accepted": statusJobApplication.ACCEPTED,
+                    "rejected": statusJobApplication.REJECTED
+                }
+                return statusJobAppMap[val as "shortlisted" | "accepted" | "rejected"]
             })
     }).superRefine((data, ctx) => {
-        if ((data.status === 'ACCEPTED' || data.status === 'REJECTED') && data.jobMessage === undefined) {
+        if ((data.status === statusJobApplication.ACCEPTED || data.status === statusJobApplication.REJECTED) && !data.jobMessage) {
             ctx.addIssue({
                 code: "custom",
-                message: "Status accepted/rejected should add job message",
+                message: "Job message is required when status is Accepted or Rejected",
                 path: ["jobMessage"]
             })
         }
@@ -59,16 +63,16 @@ export class JobApplicationsValidation {
             .optional(),
         page: z
             .coerce
-            .number()
-            .min(1)
-            .positive()
+            .number("Page must be a number" )
+            .min(1, "Page must be at least 1")
+            .positive("Page must be positive")
             .default(1),
         size: z
             .coerce
-            .number()
-            .min(1)
-            .max(20)
-            .positive()
+            .number("Size must be a number" )
+            .min(1, "Size must be at least 1")
+            .max(20, "Size must be at most 20")
+            .positive("Size must be positive")
             .default(10),
     })
 
@@ -94,16 +98,16 @@ export class JobApplicationsValidation {
             .optional(),
         page: z
             .coerce
-            .number()
-            .min(1)
-            .positive()
+            .number("Page must be a number" )
+            .min(1, "Page must be at least 1")
+            .positive("Page must be positive")
             .default(1),
         size: z
             .coerce
-            .number()
-            .min(1)
-            .max(20)
-            .positive()
+            .number("Size must be a number" )
+            .min(1, "Size must be at least 1")
+            .max(20, "Size must be at most 20")
+            .positive("Size must be positive")
             .default(10),
     })
 }
