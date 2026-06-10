@@ -12,6 +12,10 @@ export class AddressesValidation {
             .string()
             .min(1, "Street must be at least 1 characters"), 
 
+        benchmark: z
+            .string()
+            .optional(),
+
         postalCode: z
             .string()
             .trim()

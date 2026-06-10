@@ -102,7 +102,7 @@ export class AddressesService {
 
             const address = await tx.address.create({
                 data: addressData
-            })
+            }) 
 
             return toAddressesResponse(address)
         })
