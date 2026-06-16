@@ -13,26 +13,411 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  username String  @id @db.VarChar(100)
-  password String  @db.VarChar(100)
-  name     String  @db.VarChar(100)
-  token    String? @db.VarChar(100)
+enum Role {
+  USER
+  ADMIN
+}
 
-  contacts Contact[]
+enum StatusUser {
+  PENDING_VERIFICATION
+  ACTIVE
+  BLOCKED
+}
+
+enum Mark {
+  HOME
+  OFFICE
+}
+
+enum JobSite {
+  ON_SITE
+  HYBRID
+  REMOTE
+}
+
+enum BudgetTypeJob {
+  FIXED
+  HOURLY
+  DAILY
+  MONTHLY
+  NEGOTIABLE
+}
+
+enum LevelJob {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum TypeJob {
+  NON_URGENT
+  URGENT
+}
+
+enum StatusJob {
+  OPEN
+  IN_PROGRESS
+  CANCELED
+  CLOSED
+}
+
+enum statusJobApplication {
+  APPLIED
+  REVIEWED
+  SHORTLISTED
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  JOB_APPLIED
+  JOB_REVIEWED
+  JOB_ACCEPTED
+  JOB_REJECTED
+}
+
+enum TypeReview {
+  WORKER_TO_PROVIDER
+  PROVIDER_TO_WORKER
+}
+
+enum Providers {
+  GOOGLE
+}
+
+model User {
+  id                String     @id @default(uuid())
+  username          String     @unique @db.VarChar(100)
+  firstName         String     @map("first_name") @db.VarChar(50)
+  lastName          String?    @map("last_name") @db.VarChar(100)
+  email             String     @unique @db.VarChar(100)
+  password          String?    @db.VarChar(100) // Nullable untuk OAuth users
+  role              Role       @default(USER)
+  phone             String?    @unique @db.VarChar(20)
+  profilePictUrl    String?    @map("profile_pict_url") @db.VarChar(255)
+  birthDate         DateTime?  @map("birth_date") @db.Date
+  isEmailVerified   Boolean    @default(false) @map("is_email_verified")
+  isPhoneVerified   Boolean    @default(false) @map("is_phone_verified")
+  status            StatusUser @default(PENDING_VERIFICATION)
+  isProfileComplete Boolean    @default(false) @map("is_profile_complete")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
+  phoneVerifiedAt DateTime? @map("phone_verified_at") @db.Timestamptz(3)
+
+  emailVerifications EmailVerification[]
+  addresses          Address[]
+  jobs               Job[]
+  jobApplications    JobApplication[]
+  notifications      Notifications[]
+  bookmarks          Bookmarks[]
+  reviewsGiven       Reviews[]           @relation("Reviewer")
+  reviewsReceived    Reviews[]           @relation("Reviewee")
+  oauthAccounts      OAuthAccount[]
+  phoneVerifications PhoneVerification[]
 
   @@map("users")
 }
 
-model Contact {
-  id         String  @id @unique @default(uuid())
-  first_name String  @db.VarChar(100)
-  last_name  String? @db.VarChar(100)
-  email      String? @db.VarChar(100)
-  phone      String? @db.VarChar(20)
-  username   String  @db.VarChar(100)
+model OAuthAccount {
+  id                   String    @id @default(uuid())
+  provider             Providers // 'google', 'github', 'facebook', etc
+  providerUserId       String    @unique @map("provider_user_id") @db.VarChar(255) // ID dari provider
+  email                String?   @unique @db.VarChar(100) // Email dari provider
+  givenName            String    @map("given_name") @db.VarChar(255)
+  familyName           String?   @map("family_name") @db.VarChar(255)
+  profilePictUrl       String?   @map("profile_pict_url") @db.Text
+  accessToken          String?   @map("access_token") @db.Text // JWT token dari provider
+  refreshToken         String?   @map("refresh_token") @db.Text // Untuk refresh access token
+  accessTokenExpiresAt DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  scope                String?   @db.Text // Permissions yang diminta
+  rawData              Json?     @map("raw_data") // Simpan raw response dari provider
 
-  user User @relation(fields: [username], references: [username])
+  lastUsedAt DateTime? @map("last_used_at")
+  linkedAt   DateTime  @default(now()) @map("linked_at") // kapan user connect Google
 
-  @@map("contacts")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint agar 1 user tidak bisa connect 2x ke provider yang sama
+  @@unique([userId, provider])
+  @@unique([provider, providerUserId])
+  @@map("OAuth_accounts")
+}
+
+model EmailVerification {
+  id        String    @id
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_verifications")
+}
+
+model PhoneVerification {
+  id        String    @id @default(uuid())
+  otp       String    @unique
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  attemps   Int       @default(0)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("phone_verifications")
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  street     String  @db.Text
+  country    String  @default("Indonesia")
+  postalCode String  @map("postal_code") @db.VarChar(10)
+  benchmark  String? @db.Text
+  markAs     Mark    @map("mark_as")
+  isPrimary  Boolean @default(true) @map("is_primary")
+  locations  Json
+  lat        Decimal @db.Decimal(10, 7)
+  lng        Decimal @db.Decimal(10, 7)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  subdistrictId String            @map("subdistrict_id")
+  subdistrict   MasterSubdistrict @relation(fields: [subdistrictId], references: [id])
+
+  jobs Job[]
+
+  @@map("addresses")
+}
+
+model MasterProvince {
+  id   String @id
+  name String @db.VarChar(255)
+  code String @unique @db.VarChar(20)
+
+  masterCities MasterCity[]
+
+  @@map("master_provinces")
+}
+
+model MasterCity {
+  id       String @id
+  name     String @db.VarChar(255)
+  code     String @unique @db.VarChar(20)
+  province Json
+
+  provinceId     String         @map("province_id")
+  masterProvince MasterProvince @relation(fields: [provinceId], references: [id])
+
+  masterDistricts MasterDistrict[]
+
+  @@map("master_cities")
+}
+
+model MasterDistrict {
+  id       String @id
+  name     String @db.VarChar(255)
+  code     String @unique @db.VarChar(20)
+  province Json
+  city     Json
+
+  cityId     String     @map("city_id")
+  masterCity MasterCity @relation(fields: [cityId], references: [id])
+
+  masterSubdistricts MasterSubdistrict[]
+
+  @@map("master_districts")
+}
+
+model MasterSubdistrict {
+  id       String @id
+  name     String @db.VarChar(255)
+  code     String @unique @db.VarChar(20)
+  province Json
+  city     Json
+  district Json
+
+  districtId     String         @map("district_id")
+  masterDistrict MasterDistrict @relation(fields: [districtId], references: [id])
+
+  addresses Address[]
+
+  @@map("master_subdistricts")
+}
+
+model JobCategory {
+  id       String  @id
+  code     String  @unique @db.VarChar(50)
+  name     String  @unique @db.VarChar(100)
+  image1   String?
+  image2   String?
+  image3   String?
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  categoriesMapping CategoriesMapping[]
+
+  @@map("job_categories")
+}
+
+model CategoriesMapping {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  jobCategoryId String      @map("job_category_id")
+  jobCategory   JobCategory @relation(fields: [jobCategoryId], references: [id])
+
+  jobId String @map("job_id")
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("categories_mapping")
+}
+
+model Job {
+  id String @id @default(uuid())
+
+  title        String  @db.VarChar(255)
+  introduction String? @db.Text
+  description  String  @db.Text
+
+  jobSite    JobSite        @map("job_site")
+  budgetMin  Int?           @map("budget_min")
+  budgetMax  Int?           @map("budget_max")
+  budgetType BudgetTypeJob? @map("budget_type")
+
+  level    LevelJob[]
+  required Int
+
+  status           StatusJob @default(OPEN)
+  acceptedCount    Int       @default(0) @map("accepted_count")
+  applicationCount Int       @default(0) @map("application_count")
+
+  startTime DateTime? @map("start_time") @db.Time()
+  endTime   DateTime? @map("end_time") @db.Time()
+  startDate DateTime? @map("start_date") @db.Date()
+  endDate   DateTime? @map("end_date") @db.Date()
+
+  locations Json
+  isPublic  Boolean @default(true) @map("is_public")
+
+  type TypeJob @default(NON_URGENT)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  categoriesMapping CategoriesMapping[]
+
+  jobProviderId String @map("job_provider_id")
+  jobProvider   User   @relation(fields: [jobProviderId], references: [id])
+
+  addressId String  @map("address_id")
+  address   Address @relation(fields: [addressId], references: [id])
+
+  jobApplications JobApplication[]
+  bookmarks       Bookmarks[]
+
+  @@map("jobs")
+}
+
+model Bookmarks {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  jobId String @map("job_id")
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId]) // menghindari idempotent user saat add bookmark
+  @@map("bookmarks")
+}
+
+model JobApplication {
+  id          String  @id @default(uuid())
+  coverLetter String? @map("cover_letter") @db.Text
+
+  appliedAt  DateTime  @default(now()) @map("applied_at") @db.Timestamptz(3)
+  acceptedAt DateTime? @map("accepted_at") @db.Timestamptz(3)
+  rejectedAt DateTime? @map("rejected_at") @db.Timestamptz(3)
+  reviewedAt DateTime? @map("reviewed_at") @db.Timestamptz(3)
+
+  status statusJobApplication @default(APPLIED)
+
+  workerId String @map("worker_id")
+  worker   User   @relation(fields: [workerId], references: [id])
+
+  jobId         String          @map("job_id")
+  job           Job             @relation(fields: [jobId], references: [id])
+  notifications Notifications[]
+  reviews       Reviews[]
+
+  @@unique([workerId, jobId]) // worker tidak bisa apply job yang sama dua kali (idempotent)
+  @@map("job_applications")
+}
+
+model Notifications {
+  id String @id @default(uuid())
+
+  type    NotificationType
+  title   String
+  message String           @db.Text
+
+  isRead Boolean @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  jobApplicationId String         @map("job_application_id")
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
+
+  @@map("notifications")
+}
+
+model Reviews {
+  id String @id @default(uuid())
+
+  rating  Int // 1 - 5
+  comment String?    @db.Text
+  type    TypeReview
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  replyComment     String?   @map("reply_comment") @db.Text
+  repliedAt        DateTime? @map("replied_at") @db.Timestamptz(3)
+  repliedUpdatedAt DateTime? @updatedAt @map("replied_updated_at") @db.Timestamptz(3)
+
+  // siapa yang kasih review
+  reviewerId String @map("reviewer_id")
+  reviewer   User   @relation("Reviewer", fields: [reviewerId], references: [id])
+
+  // siapa yang direview
+  revieweeId String @map("reviewee_id")
+  reviewee   User   @relation("Reviewee", fields: [revieweeId], references: [id])
+
+  jobApplicationId String         @map("job_application_id")
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
+
+  @@unique([reviewerId, jobApplicationId])
+  @@map("reviews")
 }

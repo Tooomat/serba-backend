@@ -1,14 +1,14 @@
-import winston from "winston";
 import * as env from "../config/env"
+import winston from "winston";
 
 export const logger = winston.createLogger({
-    level: env.config.NODE_ENV === "development" ? "debug" : "info",
+    level: (env.config.NODE_ENV === "development" || env.config.NODE_ENV === "test") ? "debug" : "info",
     format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.json()
     ),
     transports: [
-        new winston.transports.Console(), //kirim ke console
+        new winston.transports.Console(),
         //new winston.transports.File({ filename: 'combined.log' })
     ]
 })
